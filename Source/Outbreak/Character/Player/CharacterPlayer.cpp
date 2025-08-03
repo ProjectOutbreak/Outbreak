@@ -310,8 +310,6 @@ void ACharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 	UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent);
 	EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ACharacterPlayer::Move);
-	EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Completed, this, &ACharacterPlayer::StopMove);
-	EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Canceled, this, &ACharacterPlayer::StopMove);
 	EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ACharacterPlayer::Look);
 	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacterPlayer::Jump);
 	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacterPlayer::StopJumping);
@@ -431,56 +429,6 @@ void ACharacterPlayer::Move(const FInputActionValue& Value)
 
 		AddMovementInput(ForwardDirection, MovementVector.Y);  // W/S
 		AddMovementInput(RightDirection, MovementVector.X);    // A/D
-
-		if (!bIsMoving)
-		{
-			bIsMoving = true;
-			StartMoveSoundTimer();
-		}
-	}
-}
-
-void ACharacterPlayer::StopMove()
-{
-	if (bIsMoving)
-	{
-		bIsMoving = false;
-		GetWorld()->GetTimerManager().ClearTimer(MoveSoundTimerHandle);
-	}
-}
-
-void ACharacterPlayer::StartMoveSoundTimer()
-{
-	Super::StartMoveSoundTimer();
-
-	PlayMoveSound();
-	
-	const float StepInterval = bIsSprinting ? 0.2f : 0.4f;
-
-	GetWorld()->GetTimerManager().SetTimer(
-		MoveSoundTimerHandle,
-		this,
-		&ACharacterPlayer::PlayMoveSound,
-		StepInterval,
-		true
-	);	
-}
-
-void ACharacterPlayer::PlayMoveSound()
-{
-	Super::PlayMoveSound();
-	
-	if (!IsLocallyControlled()) return;
-
-	if (bIsSprinting)
-	{
-		const int32 RandomIndex = FMath::RandRange(0, SprintSounds.Num() - 1);
-		UGameplayStatics::PlaySoundAtLocation(this, SprintSounds[RandomIndex], GetActorLocation(), 0.5f);
-	}
-	else
-	{
-		const int32 RandomIndex = FMath::RandRange(0, WalkSounds.Num() - 1);
-		UGameplayStatics::PlaySoundAtLocation(this, WalkSounds[RandomIndex], GetActorLocation(), 0.5f);
 	}
 }
 

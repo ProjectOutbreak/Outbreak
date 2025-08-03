@@ -49,8 +49,6 @@ protected:
 	virtual void SetupMovement() override;
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 	virtual void OnRep_Die() override;
-	virtual void StartMoveSoundTimer() override;
-	virtual void PlayMoveSound() override;
 	
 	virtual FGenericTeamId GetGenericTeamId() const override { return TeamId; }
 	void SetCharacterControl(EPlayerControlType NewCharacterControlType);
@@ -65,7 +63,6 @@ protected:
 
 	// Movement
 	void Move(const FInputActionValue& Value);
-	void StopMove();
 	void Look(const FInputActionValue& Value);
 
 	UFUNCTION(Server, Reliable)
