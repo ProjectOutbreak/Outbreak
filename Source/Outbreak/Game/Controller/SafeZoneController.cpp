@@ -33,7 +33,6 @@ void ASafeZoneController::BeginPlay()
 	{
 		InvisibleWall = Cast<AInvisibleWall>(FoundWalls[0]);
 	}
-	// 플레이어가 콜리전에 들어오거나 나갈때 실행할 함수 지정
 	if (StartSafeZoneCollision)
 	{
 		StartSafeZoneCollision->OnComponentBeginOverlap.AddDynamic(this, &ASafeZoneController::OnStartZoneEnter);
@@ -74,7 +73,7 @@ void ASafeZoneController::OnEndZoneEnter(UPrimitiveComponent* OverlappedComp, AA
 		{
 			UE_LOG(LogTemp, Log, TEXT("[SafeZone] 캐릭터 %s 종료 존에 진입"), *Character->GetName());
 
-			PlayersInEndZone.Add(Character); // 들어온 캐릭터 목록에 추가
+			PlayersInEndZone.Add(Character);
 
 			int32 TotalPlayers = UGameplayStatics::GetNumPlayerControllers(GetWorld());
 

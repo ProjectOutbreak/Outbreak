@@ -236,11 +236,6 @@ void ACharacterPlayer::InitCharacterData()
 void ACharacterPlayer::BeginPlay()
 {
 	Super::BeginPlay();
-
-	if (AOutBreakPlayerState* PS = Cast<AOutBreakPlayerState>(GetPlayerState()); PS && PlayerNameText)
-	{
-		PlayerNameText->SetText(FText::FromString(PS->PlayerNickname));
-	}
 	
 	GetMesh()->SetOwnerNoSee(true);
 

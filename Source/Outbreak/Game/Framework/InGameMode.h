@@ -16,7 +16,6 @@ public:
 	virtual void BeginPlay() override;
 	AInGameMode();
 
-	// 레벨 이동 함수
 	UFUNCTION()
 	void ProceedToNextLevel() const;
 };
