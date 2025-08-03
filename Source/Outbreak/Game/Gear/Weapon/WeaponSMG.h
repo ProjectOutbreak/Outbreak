@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "MainWeapon.h"
-#include "Outbreak/Util/Define.h"
+#include "Outbreak/Data/GameData.h"
 #include "WeaponSMG.generated.h"
 
 UCLASS()

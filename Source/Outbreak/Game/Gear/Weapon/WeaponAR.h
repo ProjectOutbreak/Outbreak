@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "MainWeapon.h"
-#include "Outbreak/Util/Define.h"
+#include "Outbreak/Data/GameData.h"
 #include "WeaponAR.generated.h"
 
 UCLASS()

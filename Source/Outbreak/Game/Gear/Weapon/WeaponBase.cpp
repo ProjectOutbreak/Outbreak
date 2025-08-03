@@ -31,6 +31,7 @@ void AWeaponBase::Reload()
 }
 void AWeaponBase::BeginPlay()
 {
+	Super::BeginPlay();
 	
 }
 void AWeaponBase::InitializeWeaponData(FWeaponData* InData)

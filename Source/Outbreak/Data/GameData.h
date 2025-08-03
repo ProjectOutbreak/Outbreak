@@ -29,16 +29,30 @@ struct FSingleEnemyData
 };
 
 USTRUCT(BlueprintType)
-struct FWaveData : public FTableRowBase
+struct FWaveData
 {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere)
 	TArray<FSingleEnemyData> Enemies;
-	
+
 	FWaveData()
 	{
 		Enemies.Empty();
+	}
+};
+
+USTRUCT(BlueprintType)
+struct FWavesData : public FTableRowBase
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere)
+	TArray<FWaveData> Waves;
+	
+	FWavesData()
+	{
+		Waves.Empty();
 	}
 };
 
@@ -208,31 +222,31 @@ struct FWeaponData : public FTableRowBase
 	GENERATED_BODY()
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
-	float TraceMaxDistance;
+	float TraceMaxDistance = 0.0f;
 	
 	UPROPERTY(EditDefaultsOnly, Category="Weapon|Recoil")
-	float BulletSpread;
+	float BulletSpread = 0.0f;
 	
 	UPROPERTY(EditDefaultsOnly, Category="Weapon|Sound")
-	USoundBase* ShotSound;
+	USoundBase* ShotSound = nullptr;
 
 	UPROPERTY(VisibleAnywhere, Category="Weapon")
-	float FireFrequency;
+	float FireFrequency = 0.0f;
 
 	UPROPERTY(EditDefaultsOnly, Category="Weapon|Ammo")
-	int32 MagazineCapacity;
+	int32 MagazineCapacity = 0;
 
 	UPROPERTY(EditAnywhere, Category="Weapon|Ammo")
-	int32 TotalAmmo;
+	int32 TotalAmmo = 0;
 
 	UPROPERTY(VisibleAnywhere, Category="Weapon|Ammo")
-	int32 CurrentAmmo;
+	int32 CurrentAmmo = 0;
 
 	UPROPERTY(VisibleAnywhere, Category="Weapon|Ammo")
-	int32 MaxAmmo;
+	int32 MaxAmmo = 0;
 	
 	UPROPERTY(EditDefaultsOnly, Category="Weapon|Ammo")
-	float ReloadDuration;
+	float ReloadDuration = 0.0f;
 	
 	UPROPERTY(EditDefaultsOnly, Category="Weapon|Ammo")
 	bool bIsReloading = false;

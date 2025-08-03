@@ -3,6 +3,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Outbreak/Data/GameData.h"
 #include "Outbreak/Util/Define.h"
 #include "WeaponBase.generated.h"
 

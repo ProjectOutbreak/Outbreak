@@ -21,7 +21,7 @@ AWeaponSMG::AWeaponSMG()
     }
     WeaponMesh->SetHiddenInGame(true);
     
-    static ConstructorHelpers::FObjectFinder<USoundBase> ShotSoundObj(TEXT("/Game/Sounds/AR_Single.AR_Single"));
+    static ConstructorHelpers::FObjectFinder<USoundBase> ShotSoundObj(TEXT("/Script/Engine.SoundWave'/Game/Audio/SFX/AR_Single.AR_Single'"));
     if (ShotSoundObj.Succeeded())
     {
         WeaponData.ShotSound = ShotSoundObj.Object; 

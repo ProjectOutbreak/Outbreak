@@ -46,7 +46,7 @@ ACharacterPlayer::ACharacterPlayer()
 	SceneCapture->SetRelativeRotation(FRotator(-90.f, 0.f, 0.f)); 
 	SceneCapture->bCaptureEveryFrame = true;
 	SceneCapture->bCaptureOnMovement = false;
-	static ConstructorHelpers::FObjectFinder<UTextureRenderTarget2D> RenderTargetRef(TEXT("/Game/UI/MiniMap/RT_Minimap.RT_Minimap"));
+	static ConstructorHelpers::FObjectFinder<UTextureRenderTarget2D> RenderTargetRef(TEXT("/Script/Engine.TextureRenderTarget2D'/Game/Art/UI/MiniMap/RT_MiniMap.RT_MiniMap'"));
 	if (RenderTargetRef.Succeeded())
 	{
 		SceneCapture->TextureTarget = RenderTargetRef.Object;
@@ -60,7 +60,7 @@ ACharacterPlayer::ACharacterPlayer()
 	PlayerIconSprite->SetRelativeScale3D(FVector(0.5f));       
 	PlayerIconSprite->SetVisibility(true);
 	PlayerIconSprite->bVisibleInSceneCaptureOnly = true;
-	static ConstructorHelpers::FObjectFinder<UPaperSprite> PlayerIconAsset(TEXT("/Game/UI/MiniMap/PlayerIcon_Sprite.PlayerIcon_Sprite"));
+	static ConstructorHelpers::FObjectFinder<UPaperSprite> PlayerIconAsset(TEXT("/Script/Paper2D.PaperSprite'/Game/Art/UI/MiniMap/PlayerIcon_Sprite.PlayerIcon_Sprite'"));
 	if (PlayerIconAsset.Succeeded())
 	{
 		PlayerIconSprite->SetSprite(PlayerIconAsset.Object);
