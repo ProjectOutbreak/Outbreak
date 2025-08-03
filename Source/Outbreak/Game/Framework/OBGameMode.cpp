@@ -4,6 +4,7 @@
 #include "OutBreakGameState.h"
 #include "OutBreakPlayerState.h"
 #include "Outbreak/Character/Player/CharacterPlayer.h"
+#include "Outbreak/Manager/CharacterSpawnManager.h"
 
 AOBGameMode::AOBGameMode()
 {
@@ -15,4 +16,8 @@ AOBGameMode::AOBGameMode()
 void AOBGameMode::BeginPlay()
 {
 	Super::BeginPlay();
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	SpawnManager = GetWorld()->SpawnActor<ACharacterSpawnManager>(ACharacterSpawnManager::StaticClass(), SpawnParams);
 }

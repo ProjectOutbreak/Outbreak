@@ -1,9 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
-
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Outbreak/Character/Player/CharacterPlayer.h"
 #include "Outbreak/Data/GameData.h"
 #include "Outbreak/Util/Define.h"
 #include "CharacterSpawnManager.generated.h"
@@ -36,18 +36,30 @@ public:
 	void SetSettingId(FName InSettingId);
 	void SetWaveId(FName InWaveId);
 
+	void Activate(const TObjectPtr<ACharacterPlayer>& InTarget);
+	void Deactivate();
+	
 protected:
 	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaSeconds) override;
 
 private:
 	bool GetSettingDataFromDataTable(FName InSettingsID, FSpawnerSettingData& OutSetting);
-	bool GetWaveDataFromDataTable(FName InWaveId, FWaveData& OutWaveData);
-	FSpawnerSettingData GetCurrentSettingData() { return SpawnerSettingData; }
-	FWaveData GetCurrentWaveData() { return WaveData; }
+	bool GetWaveDataFromDataTable(FName InWaveId, FWavesData& OutWaveData);
+	FORCEINLINE FSpawnerSettingData* GetCurrentSettingData() { return &SpawnerSettingData; }
+	FORCEINLINE FWavesData* GetCurrentWaveData() { return &WavesData; }
 	void UpdateSettingData();
 	void UpdateWaveData();
-
 	void ClampSettingDataValues(FSpawnerSettingData& Setting);
+
+	FORCEINLINE bool CheckSpawnChance(const float Chance) const { return FMath::FRand() <= Chance; }
+	FORCEINLINE int32 GetRandomSpawnCount(const int32 Min, const int32 Max) const { return FMath::RandRange(Min, Max); }
+	FORCEINLINE bool IsExceededEnemyLimit() const { return SpawnedEnemies >= SpawnerSettingData.MaxEnemies; }
+	
+	FWaveData GetWaveData(const int32 WaveIndex);
+	FVector FindRandomSpawnLocation(float MinDistance, float MaxDistance);
+	FVector GetRandomLocationInRadius(const FVector& OptimalHeight, float Radius, bool bDebug) const;
+	void SpawnEnemies();
 
 	// TODO : Move to utility class
 	template <typename T>
@@ -70,11 +82,43 @@ private:
 		}
 	}
 
+	// TODO : Move to utility class
+	template<typename Type>
+	static void ShuffleArray(FRandomStream& Stream, TArray<Type>& Array)
+	{
+		const int32 LastIndex = Array.Num() - 1;
+
+		for (int32 i = 0; i <= LastIndex; i += 1)
+		{
+			const int32 Index = Stream.RandRange(i, LastIndex);
+			if (i == Index)
+			{
+				continue;
+			}
+
+			Array.Swap(i, Index);
+		}
+	}
+
+	// TODO : Move to utility class
+	template<typename Type>
+	static Type GetRandomElementInArray(const TArray<Type>& Array)
+	{
+		check(Array.Num() > 0);
+		int32 RandomIndex = FMath::RandRange(0, Array.Num() - 1);
+		return Array[RandomIndex];
+	}
+	
 
 // --------------------
 // Variables
 // --------------------
 private:
+	UPROPERTY()
+	TObjectPtr<ACharacter> Target;
+	
+	int32 SpawnedEnemies = 0;
+	
 	UPROPERTY()
 	TObjectPtr<UDataTable> SpawnerSettingDataTable;
 
@@ -82,10 +126,11 @@ private:
 	TObjectPtr<UDataTable> WaveDataTable;
 
 	FSpawnerSettingData SpawnerSettingData;
-	FWaveData WaveData;
+	FWavesData WavesData;
 	
 	FName SpawnerSettingId = FName("Default");
 	FName WaveId = FName("0");
+	int32 CurrentWaveIndex = 0;
 	
 	UPROPERTY()
 	TObjectPtr<class UCharacterFactory> CharacterFactory;
@@ -98,4 +143,7 @@ private:
 	
 	TMap<FString, FZombieData*> ZombieDataMap;
 	TMap<FString, FPlayerData*> PlayerDataMap;
+
+	FTimerHandle SpawnTimerHandle;
+	bool bIsActivated = false;
 };

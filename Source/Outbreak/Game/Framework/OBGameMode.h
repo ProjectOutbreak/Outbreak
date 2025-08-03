@@ -16,8 +16,13 @@ class OUTBREAK_API AOBGameMode : public AGameMode
 
 public:
 	AOBGameMode();
+	FORCEINLINE TObjectPtr<class ACharacterSpawnManager> GetSpawnManager() const { return SpawnManager; }
 	
 protected:
 	virtual void BeginPlay() override;
-	
+
+
+private:
+	UPROPERTY()
+	TObjectPtr<class ACharacterSpawnManager> SpawnManager;
 };

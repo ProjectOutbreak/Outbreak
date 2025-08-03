@@ -12,10 +12,12 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
+#include "Outbreak/Game/Framework/OBGameMode.h"
 #include "Outbreak/Game/Framework/OutBreakGameState.h"
 #include "Outbreak/Game/Framework/OutBreakPlayerState.h"
 #include "Outbreak/Game/Gear/Weapon/WeaponAR.h"
 #include "Outbreak/Game/Gear/Weapon/WeaponSMG.h"
+#include "Outbreak/Manager/CharacterSpawnManager.h"
 #include "Outbreak/UI/OBHUD.h"
 #include "Outbreak/Util/EnumHelper.h"
 
@@ -209,13 +211,13 @@ void ACharacterPlayer::InitCharacterData()
 	
 	if (HasAuthority())
 	{
-		const AOutBreakGameState* GameState = Cast<AOutBreakGameState>(UGameplayStatics::GetGameState(GetWorld()));
-		if (!GameState)
+		const AOBGameMode * GameMode = Cast<AOBGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+		if (!GameMode)
 		{
-			UE_LOG(LogTemp, Error, TEXT("[%s] GameState is null!"), CURRENT_CONTEXT);
+			UE_LOG(LogTemp, Error, TEXT("[%s] GameMode is null!"), CURRENT_CONTEXT);
 			return;
 		}
-		ACharacterSpawnManager* SpawnManager = GameState->GetSpawnManager();
+		ACharacterSpawnManager* SpawnManager = GameMode->GetSpawnManager();
 		if (!SpawnManager)
 		{
 			UE_LOG(LogTemp, Error, TEXT("[%s] SpawnManager is null!"), CURRENT_CONTEXT);
@@ -224,6 +226,7 @@ void ACharacterPlayer::InitCharacterData()
 
 		const FPlayerData* Data = SpawnManager->GetPlayerData(PlayerType);
 		PlayerData = *Data;
+		SpawnManager->Activate(this);
 	}
 	
 	CurrentHealth = PlayerData.MaxHealth;

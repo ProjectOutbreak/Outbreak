@@ -5,8 +5,10 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
+#include "Outbreak/Game/Framework/OBGameMode.h"
 #include "Outbreak/Game/Framework/OutBreakGameState.h"
 #include "Outbreak/Game/Framework/OutBreakPlayerState.h"
+#include "Outbreak/Manager/CharacterSpawnManager.h"
 #include "Outbreak/Util/EnumHelper.h"
 #include "Outbreak/Util/MeshLoadHelper.h"
 
@@ -62,13 +64,13 @@ void ACharacterZombie::InitCharacterData()
 	
 	if (HasAuthority())
 	{
-		const AOutBreakGameState* GameState = Cast<AOutBreakGameState>(UGameplayStatics::GetGameState(GetWorld()));
-		if (!GameState)
+		const AOBGameMode * GameMode = Cast<AOBGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+		if (!GameMode)
 		{
-			UE_LOG(LogTemp, Error, TEXT("[%s] GameState is null!"), CURRENT_CONTEXT);
+			UE_LOG(LogTemp, Error, TEXT("[%s] GameMode is null!"), CURRENT_CONTEXT);
 			return;
 		}
-		ACharacterSpawnManager* SpawnManager = GameState->GetSpawnManager();
+		ACharacterSpawnManager* SpawnManager = GameMode->GetSpawnManager();
 		if (!SpawnManager)
 		{
 			UE_LOG(LogTemp, Error, TEXT("[%s] SpawnManager is null!"), CURRENT_CONTEXT);
