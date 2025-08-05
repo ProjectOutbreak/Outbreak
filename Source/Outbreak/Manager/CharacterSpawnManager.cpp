@@ -1,14 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "CharacterSpawnManager.h"
 #include "CharacterFactory.h"
-#include "EngineUtils.h"
 #include "NavigationSystem.h"
 #include "GameFramework/Character.h"
-#include "GameFramework/GameModeBase.h"
-#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Outbreak/Character/Player/CharacterPlayer.h"
 #include "Outbreak/Data/GameData.h"
+#include "Outbreak/Util/CollectionHelper.h"
 #include "Outbreak/Util/EnumHelper.h"
 
 ACharacterSpawnManager::ACharacterSpawnManager()
@@ -376,8 +374,8 @@ FVector ACharacterSpawnManager::FindRandomSpawnLocation(float MinDistance, float
 			{
 				FRandomStream Stream;
 				Stream.GenerateNewSeed();
-				ShuffleArray(Stream, PossibleHeights);
-				OptimalHeight = GetRandomElementInArray(PossibleHeights);
+				CollectionHelper::ShuffleArray(Stream, PossibleHeights);
+				OptimalHeight = CollectionHelper::GetRandomElementInArray(PossibleHeights);
 			}
 
 			const FVector RandomLocation = GetRandomLocationInRadius(OptimalHeight, Radius, Data->bDebug);
@@ -395,9 +393,9 @@ FVector ACharacterSpawnManager::FindRandomSpawnLocation(float MinDistance, float
 	
 	FRandomStream Stream;
 	Stream.GenerateNewSeed();
-	ShuffleArray(Stream, PossibleLocation);
+	CollectionHelper::ShuffleArray(Stream, PossibleLocation);
 	
-	return GetRandomElementInArray(PossibleLocation);
+	return CollectionHelper::GetRandomElementInArray(PossibleLocation);
 }
 
 FVector ACharacterSpawnManager::GetRandomLocationInRadius(const FVector& OptimalHeight, const float Radius, bool bDebug) const
