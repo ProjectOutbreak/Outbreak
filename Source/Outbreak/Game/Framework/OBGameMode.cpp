@@ -4,11 +4,13 @@
 #include "OutBreakGameState.h"
 #include "OutBreakPlayerState.h"
 #include "Outbreak/Character/Player/CharacterPlayer.h"
+#include "Outbreak/Game/Controller/OBPlayerController.h"
 #include "Outbreak/Manager/CharacterSpawnManager.h"
 
 AOBGameMode::AOBGameMode()
 {
     DefaultPawnClass = ACharacterPlayer::StaticClass();
+	PlayerControllerClass = AOBPlayerController::StaticClass();
 	PlayerStateClass = AOutBreakPlayerState::StaticClass();
 	GameStateClass = AOutBreakGameState::StaticClass();
 }

@@ -14,12 +14,7 @@
 #include "Net/UnrealNetwork.h"
 #include "Outbreak/Game/Framework/OBGameMode.h"
 #include "Outbreak/Game/Framework/OutBreakGameState.h"
-#include "Outbreak/Game/Framework/OutBreakPlayerState.h"
-#include "Outbreak/Game/Gear/Weapon/WeaponAR.h"
-#include "Outbreak/Game/Gear/Weapon/WeaponSMG.h"
 #include "Outbreak/Manager/CharacterSpawnManager.h"
-#include "Outbreak/UI/OBHUD.h"
-#include "Outbreak/Util/EnumHelper.h"
 
 ACharacterPlayer::ACharacterPlayer()
 {
@@ -86,111 +81,25 @@ ACharacterPlayer::ACharacterPlayer()
 		GetMesh()->SetSkeletalMesh(DefaultMesh.Object);
 	}
 	GetMesh()->SetOwnerNoSee(true);
-	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceClassRef(TEXT("/Game/Animations/3rdPersonAnim/ABP_Move.ABP_Move_C"));
+	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceClassRef(TEXT("/Script/Engine.AnimBlueprint'/Game/Characters/Mannequins/Animations/ABP_Manny.ABP_Manny_C'"));
 	if (AnimInstanceClassRef.Class)
 	{
 		GetMesh()->SetAnimInstanceClass(AnimInstanceClassRef.Class);
 	}
-
-	FirstPersonMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FirstPersonMesh"));
-	static ConstructorHelpers::FObjectFinder<USkeletalMesh> FirstPersonMeshRef(TEXT("/Script/Engine.SkeletalMesh'/Game/FPS_Weapon_Pack/SkeletalMeshes/Arms/SK_fps_armRig.SK_fps_armRig'"));
-	if (FirstPersonMeshRef.Succeeded())
-	{
-		FirstPersonMesh->SetSkeletalMesh(FirstPersonMeshRef.Object);
-	}
-	FirstPersonMesh->SetupAttachment(FirstPersonCamera);
-	FirstPersonMesh->SetRelativeLocation(FVector(15.f, 15.f, -20.f));
-	FirstPersonMesh->SetRelativeRotation(FRotator(0.0f,270.0f,0.0f));
-	FirstPersonMesh->SetOnlyOwnerSee(true);
-	FirstPersonMesh->bCastDynamicShadow = false;
-	FirstPersonMesh->CastShadow = false;
 	
-	GunMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("GunMesh"));
-	GunMesh->SetupAttachment(FirstPersonMesh,TEXT("weapon_socket_l"));
-	GunMesh->bCastDynamicShadow = false;
-	GunMesh->CastShadow = false;
-	GunMesh->SetOnlyOwnerSee(false);
-
-	static ConstructorHelpers::FObjectFinder<USkeletalMesh> SmgMesh(TEXT("/Game/FPS_Weapon_Pack/SkeletalMeshes/SMG02/SK_weapon_SMG_02.SK_weapon_SMG_02"));
-	if (SmgMesh.Object)
-	{
-		SMGMesh = SmgMesh.Object;
-	}
-	static ConstructorHelpers::FObjectFinder<USkeletalMesh> ArMesh(TEXT("/Game/FPS_Weapon_Pack/SkeletalMeshes/AR2/SM_weapon_AR2.SM_weapon_AR2"));
-	if (ArMesh.Object)
-	{
-		ARMesh = ArMesh.Object;
-	}
-
 	// ----- Input
 	static ConstructorHelpers::FObjectFinder<UInputMappingContext> InputMappingContextRef(TEXT("/Script/EnhancedInput.InputMappingContext'/Game/Inputs/IMC_Player.IMC_Player'"));
 	if (InputMappingContextRef.Object)
 	{
 		InputMappingContext = InputMappingContextRef.Object;
 	}
-
-	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionJumpRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Inputs/IA_Jump.IA_Jump'"));
-	if (InputActionJumpRef.Object)
-	{
-		JumpAction = InputActionJumpRef.Object;
-	}
-	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionMoveRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Inputs/IA_Move.IA_Move'"));
-	if (InputActionMoveRef.Object)
-	{
-		MoveAction = InputActionMoveRef.Object;
-	}
-	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionLookRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Inputs/IA_Look.IA_Look'"));
-	if (InputActionLookRef.Object)
-	{
-		LookAction = InputActionLookRef.Object;
-	}
-	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionSprintRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Inputs/IA_Sprint.IA_Sprint'"));
-	if (InputActionSprintRef.Object)
-	{
-		SprintAction = InputActionSprintRef.Object;
-	}
-	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionCrouchRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Inputs/IA_Crouch.IA_Crouch'"));
-	if (InputActionCrouchRef.Object)
-	{
-		CrouchAction = InputActionCrouchRef.Object;
-	}
 	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionChangeCamRef(TEXT("/Script/EnhancedInputComponent.InputAction'/Game/Inputs/IA_ChangePerspective.IA_ChangePerspective'"));
 	if (InputActionChangeCamRef.Object)
 	{
 		ChangeCameraAction = InputActionChangeCamRef.Object;
 	}
-	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionFireRef(TEXT("/Script/EnhancedInputComponent.InputAction'/Game/Inputs/IA_Fire.IA_Fire'"));
-	if (InputActionFireRef.Object)
-	{
-		FireAction = InputActionFireRef.Object;
-	}
-	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionChangeFireModeRef(TEXT("/Script/EnhancedInputComponent.InputAction'/Game/Inputs/IA_ToggleFireMode.IA_ToggleFireMode'"));
-	if (InputActionChangeFireModeRef.Object)
-	{
-		ChangeFireModeAction = InputActionChangeFireModeRef.Object;
-	}
-
-	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionReloadRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Inputs/IA_Reload.IA_Reload'"));
-	if (InputActionReloadRef.Object)
-	{
-		ReloadAction = InputActionReloadRef.Object;
-	}
-
-	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionSwap1(TEXT("/Script/EnhancedInput.InputAction'/Game/Inputs/IA_SwapSlot1.IA_SwapSlot1'"));
-	if (InputActionReloadRef.Object)
-	{
-		SwapSlot1 = InputActionSwap1.Object;
-	}
-
-	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionSwap2(TEXT("/Script/EnhancedInput.InputAction'/Game/Inputs/IA_SwapSlot2.IA_SwapSlot2'"));
-	if (InputActionReloadRef.Object)
-	{
-		SwapSlot2 = InputActionSwap2.Object;
-	}
 	
 	CurrentCharacterControlType = EPlayerControlType::Top;
-	CurrentWeapon = nullptr;
-	CurrentSlotIndex = -1;
 }
 
 void ACharacterPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -199,10 +108,6 @@ void ACharacterPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 
 	DOREPLIFETIME(ACharacterPlayer, PlayerData);
 	DOREPLIFETIME(ACharacterPlayer, PlayerType);
-	DOREPLIFETIME(ACharacterPlayer, WeaponInventory);
-	DOREPLIFETIME(ACharacterPlayer, WeaponInstances);
-	DOREPLIFETIME(ACharacterPlayer, CurrentWeapon);
-	DOREPLIFETIME(ACharacterPlayer, bIsSprinting);
 }
 
 void ACharacterPlayer::InitCharacterData()
@@ -251,55 +156,6 @@ void ACharacterPlayer::BeginPlay()
 			TopViewCamera->SetActive(false);
 		}
 	}
-	else
-	{
-		GunMesh->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("weapon_socket_TP"));
-		GunMesh->SetRelativeRotation(FRotator(0.0f, 65.f, -27.0f));
-	}
-
-	WeaponInventory.Add(AWeaponAR::StaticClass());
-	WeaponInventory.Add(AWeaponSMG::StaticClass());
-
-	if (HasAuthority())
-	{
-		for (int32 i = 0; i < WeaponInventory.Num(); ++i)
-		{
-			FActorSpawnParameters SpawnParams;
-			SpawnParams.Owner = this;
-			SpawnParams.Instigator = GetInstigator();
-			SpawnParams.bDeferConstruction = true;  
-			AWeaponBase* NewWeapon = GetWorld()->SpawnActorDeferred<AWeaponBase>(
-				WeaponInventory[i],
-				FTransform::Identity,
-				SpawnParams.Owner,
-				SpawnParams.Instigator,
-				ESpawnActorCollisionHandlingMethod::AlwaysSpawn
-			);
-			if (NewWeapon)
-			{
-				NewWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, FName(TEXT("weapon_socket_l"))); 
-				NewWeapon->SetActorHiddenInGame(true);
-				NewWeapon->SetActorEnableCollision(false);
-
-				UGameplayStatics::FinishSpawningActor(NewWeapon, FTransform::Identity);
-
-				WeaponInstances.Add(NewWeapon);
-			}
-		}
-	}
-
-	// TODO : 땜빵. 리플리케이션 기다리려고 임시로 딜레이 줌.
-	FTimerHandle TimerHandle;
-	GetWorld()->GetTimerManager().SetTimer(
-		TimerHandle,
-		FTimerDelegate::CreateLambda([this]()
-		{
-			SwapToSlot(EInventorySlotType::SecondMainWeapon);
-			ChangeArm();
-		}),
-		0.2f,
-		false
-	);
 }
 
 void ACharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -307,24 +163,8 @@ void ACharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 	UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent);
-	EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ACharacterPlayer::Move);
-	EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ACharacterPlayer::Look);
-	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacterPlayer::Jump);
-	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacterPlayer::StopJumping);
-	EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Started, this, &ACharacterPlayer::StartSprinting);
-	EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &ACharacterPlayer::StopSprinting);;
-	EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Started, this, &ACharacterPlayer::BeginCrouch);
-	EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Completed, this, &ACharacterPlayer::EndCrouch);
 	
-	EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Started, this, &ACharacterPlayer::OnFirePressed);
-	EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Completed, this, &ACharacterPlayer::OnFireReleased);
-	
-	EnhancedInputComponent->BindAction(ChangeFireModeAction, ETriggerEvent::Completed, this, &ACharacterPlayer::OnToggleFireMode);
 	EnhancedInputComponent->BindAction(ChangeCameraAction, ETriggerEvent::Triggered, this, &ACharacterPlayer::ToggleCameraMode);
-
-	EnhancedInputComponent->BindAction(ReloadAction,ETriggerEvent::Triggered,this,&ACharacterPlayer::OnReload);
-	EnhancedInputComponent->BindAction(SwapSlot1,ETriggerEvent::Triggered,this,&ACharacterPlayer::OnPressedSlot1);
-	EnhancedInputComponent->BindAction(SwapSlot2,ETriggerEvent::Triggered,this,&ACharacterPlayer::OnPressedSlot2);
 }
 
 void ACharacterPlayer::OnRep_Die()
@@ -340,7 +180,6 @@ void ACharacterPlayer::OnRep_Die()
 	DetachFromControllerPendingDestroy();
 }
 
-
 void ACharacterPlayer::ToggleCameraMode()
 {
 	if (CurrentCameraMode == ECameraMode::FPS)
@@ -349,8 +188,6 @@ void ACharacterPlayer::ToggleCameraMode()
 		FirstPersonCamera->SetActive(false);
 		FirstPersonCamera -> SetRelativeRotation(FRotator(-10.f,0.f,0.f));
 		GetMesh()->SetOwnerNoSee(false);
-		GunMesh->AttachToComponent(GetMesh(),FAttachmentTransformRules::KeepRelativeTransform,TEXT("weapon_socket_TP"));
-		FirstPersonMesh->SetHiddenInGame(true);
 		TopViewCamera->SetActive(true);
 	}
 	else
@@ -358,47 +195,8 @@ void ACharacterPlayer::ToggleCameraMode()
 		CurrentCameraMode = ECameraMode::FPS;
 		TopViewCamera->SetActive(false);
 		GetMesh()->SetOwnerNoSee(true);
-		GunMesh->AttachToComponent(FirstPersonMesh,FAttachmentTransformRules::KeepRelativeTransform,TEXT("weapon_socket_l"));
-		FirstPersonMesh->SetHiddenInGame(false);
 		FirstPersonCamera->SetActive(true);
 	}
-}
-
-void ACharacterPlayer::OnReload()
-{
-	CurrentWeapon->Reload();
-}
-
-void ACharacterPlayer::OnFirePressed()
-{
-	if (!CurrentWeapon || bIsCutscenePlaying) return;
-
-	if (bIsAutoFire)
-	{
-		bIsShooting = true;
-		CurrentWeapon->StartFire();
-	}
-	else
-	{
-		bIsShooting = true;
-		CurrentWeapon->StartFire();
-		bIsShooting = false;
-		CurrentWeapon->StopFire();
-	}
-}
-
-void ACharacterPlayer::OnFireReleased()
-{
-	if (bIsAutoFire && CurrentWeapon)
-	{
-		CurrentWeapon->StopFire();
-		bIsShooting = false;
-	}
-}
-
-void ACharacterPlayer::OnToggleFireMode()
-{
-	bIsAutoFire = !bIsAutoFire;
 }
 
 void ACharacterPlayer::SetCharacterControl(EPlayerControlType NewCharacterControlType)
@@ -411,204 +209,6 @@ void ACharacterPlayer::SetCharacterControl(EPlayerControlType NewCharacterContro
 		Subsystem->AddMappingContext(InputMappingContext, 0);
 	}
 	CurrentCharacterControlType = NewCharacterControlType;
-}
-
-void ACharacterPlayer::Move(const FInputActionValue& Value)
-{
-	FVector2D MovementVector = Value.Get<FVector2D>();
-	
-	if (Controller && MovementVector != FVector2D::ZeroVector)
-	{
-		const FRotator Rotation = Controller->GetControlRotation();
-		const FRotator YawRotation(0, Rotation.Yaw, 0);
-
-		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-
-		AddMovementInput(ForwardDirection, MovementVector.Y);  // W/S
-		AddMovementInput(RightDirection, MovementVector.X);    // A/D
-	}
-}
-
-void ACharacterPlayer::ChangeArm()
-{
-	UClass* ArmAnimClass = nullptr;
-	UClass* WeaponAnimClass = nullptr;
-
-	if (!CurrentWeapon)	return;
-
-	if (CurrentWeapon->GetClass() == AWeaponAR::StaticClass())
-	{
-		ArmAnimClass = StaticLoadClass(UAnimInstance::StaticClass(), nullptr, TEXT("/Game/Animations/ARAnim/Arm/ABP_Arms_AR02.ABP_Arms_AR02_C"));
-		WeaponAnimClass = StaticLoadClass(UAnimInstance::StaticClass(), nullptr, TEXT("/Game/Animations/ARAnim/Gun/ABP_AR02.ABP_AR02_C"));
-		GunMesh->SetSkeletalMesh(ARMesh);
-	}
-	else if (CurrentWeapon->GetClass() == AWeaponSMG::StaticClass())
-	{
-		ArmAnimClass = StaticLoadClass(UAnimInstance::StaticClass(), nullptr, TEXT("/Game/Animations/SMGAnim/Arm/ABP_Arms_MP2.ABP_Arms_MP2_C"));
-		WeaponAnimClass = StaticLoadClass(UAnimInstance::StaticClass(), nullptr, TEXT("/Game/Animations/SMGAnim/Gun/ABP_SMG02.ABP_SMG02_C"));
-		GunMesh->SetSkeletalMesh(SMGMesh);
-	}
-	else
-	{
-		ArmAnimClass = StaticLoadClass(UAnimInstance::StaticClass(), nullptr, TEXT("/Game/Animations/SMGAnim/Arm/ABP_Arms_MP2.ABP_Arms_MP2_C"));
-		WeaponAnimClass = StaticLoadClass(UAnimInstance::StaticClass(), nullptr, TEXT("/Game/Animations/SMGAnim/Gun/ABP_SMG02.ABP_SMG02_C"));
-	}
-	
-	CurrentWeapon->AttachToComponent(FirstPersonMesh, FAttachmentTransformRules::SnapToTargetNotIncludingScale,TEXT("weapon_l_Socket"));
-	FirstPersonMesh->SetAnimInstanceClass(ArmAnimClass);
-	if (!IsLocallyControlled())
-	{
-		GunMesh->SetAnimInstanceClass(UAnimInstance::StaticClass());
-	}
-	else
-	{
-		GunMesh->SetAnimInstanceClass(WeaponAnimClass);
-	}
-}
-
-void ACharacterPlayer::SwapToSlot(EInventorySlotType InSlotType)
-{
-	const int32 NewSlotIndex = EnumHelper::EnumToInt(InSlotType);
-	
-	if (NewSlotIndex < 0 || NewSlotIndex >= WeaponInstances.Num()) return;
-	if (CurrentSlotIndex == NewSlotIndex) return;
-	
-	if (CurrentWeapon)
-	{
-		CurrentWeapon->SetActorHiddenInGame(true);
-		CurrentWeapon->SetActorEnableCollision(false);
-	}
-	
-	AWeaponBase* NewWeapon = WeaponInstances[NewSlotIndex];
-	if (NewWeapon)
-	{
-		NewWeapon->SetActorHiddenInGame(false);
-		NewWeapon->SetActorEnableCollision(true);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[%s] No weapon found for slot index %d"), CURRENT_CONTEXT, NewSlotIndex);
-		return;
-	}
-
-	CurrentWeapon = NewWeapon;
-	CurrentWeapon->NotifyAmmoUpdate();
-	CurrentSlotIndex = NewSlotIndex;
-
-	FString WeaponType;
-	if (NewSlotIndex == 0) WeaponType = "AR";
-	else if (NewSlotIndex == 1) WeaponType = "SMG";
-	if (const APlayerController* PC = Cast<APlayerController>(GetController()))
-	{
-		if (AOBHUD* HUD = Cast<AOBHUD>(PC->GetHUD()))
-		{
-			HUD->DisplayWeaponType(WeaponType);
-		}
-	}
-}
-
-void ACharacterPlayer::OnPressedSlot1()
-{
-	if (HasAuthority())
-	{
-		Multi_ChangeArm(EInventorySlotType::FirstMainWeapon);
-	}
-	else
-	{
-		Server_ChangeArm(EInventorySlotType::FirstMainWeapon);
-	}
-}
-
-void ACharacterPlayer::OnPressedSlot2()
-{
-	if (HasAuthority())
-	{
-		Multi_ChangeArm(EInventorySlotType::SecondMainWeapon);
-	}
-	else
-	{
-		Server_ChangeArm(EInventorySlotType::SecondMainWeapon);
-	}
-}
-
-void ACharacterPlayer::Server_ChangeArm_Implementation(EInventorySlotType NewSlot)
-{
-	Multi_ChangeArm(NewSlot);
-}
-
-void ACharacterPlayer::Multi_ChangeArm_Implementation(EInventorySlotType NewSlot)
-{
-	SwapToSlot(NewSlot);
-	ChangeArm();
-}
-
-
-void ACharacterPlayer::Look(const FInputActionValue& Value)
-{
-	FVector2D LookAxis = Value.Get<FVector2D>();
-	FRotator CameraRotation = FirstPersonCamera->GetComponentRotation();
-	FRotator TargetRotation = FRotator(0.f, CameraRotation.Yaw, 0.f);
-
-	AddControllerYawInput(LookAxis.X);
-	AddControllerPitchInput(LookAxis.Y);
-}
-
-void ACharacterPlayer::Server_SetSprinting_Implementation(bool bNewSprinting)
-{
-	bIsSprinting = bNewSprinting;
-	GetCharacterMovement()->MaxWalkSpeed = bIsSprinting ? SprintSpeed : WalkSpeed;
-}
-
-void ACharacterPlayer::StartSprinting()
-{
-	bIsSprinting = true;
-	GetCharacterMovement()->MaxWalkSpeed = SprintSpeed;
-	Server_SetSprinting(true);
-}
-
-void ACharacterPlayer::StopSprinting()
-{
-	bIsSprinting = false;
-	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
-	Server_SetSprinting(false);
-}
-void ACharacterPlayer::BeginCrouch()
-{
-	bIsCrouching = true;
-	GetCharacterMovement() -> MaxWalkSpeed = CrouchSpeed;
-}
-
-void ACharacterPlayer::EndCrouch()
-{
-	bIsCrouching = false;
-	GetCharacterMovement() -> MaxWalkSpeed = WalkSpeed;
-}
-
-bool ACharacterPlayer::IsCrouching() const
-{
-	return bIsCrouching;
-}
-
-bool ACharacterPlayer::IsSprinting() const
-{
-	return bIsSprinting; 
-}
-
-bool ACharacterPlayer::IsShooting() const
-{
-	return bIsShooting;
-}
-
-bool ACharacterPlayer::GetFireMode() const
-{
-	return bIsAutoFire;
-}
-
-bool ACharacterPlayer::IsReloading() const
-{
-	if (!CurrentWeapon) return false;
-	return CurrentWeapon->IsReloading();
 }
 
 void ACharacterPlayer::SetupCollision()
