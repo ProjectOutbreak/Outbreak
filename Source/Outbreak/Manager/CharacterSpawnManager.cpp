@@ -46,7 +46,6 @@ void ACharacterSpawnManager::BeginPlay()
 
 	UpdateSettingData();
 	UpdateWaveData();
-	ClampSettingDataValues(SpawnerSettingData);
 }
 
 void ACharacterSpawnManager::Tick(float DeltaSeconds)
@@ -100,30 +99,26 @@ void ACharacterSpawnManager::Deactivate()
 void ACharacterSpawnManager::UpdateSettingData()
 {
 	FSpawnerSettingData NewSettings;
-	if (DataTableHelper::GetDataFromDataTable(SpawnerSettingDataTable, SpawnerSettingId, NewSettings))
-	{
-		SpawnerSettingData = NewSettings;
-		ClampSettingDataValues(SpawnerSettingData);
-		UE_LOG(LogTemp, Log, TEXT("[%s] Update Setting Done. : %s"), CURRENT_CONTEXT, *SpawnerSettingId.ToString());
-	}
-	else
+	if (!DataTableHelper::GetDataFromDataTable(SpawnerSettingDataTable, SpawnerSettingId, NewSettings))
 	{
 		UE_LOG(LogTemp, Error, TEXT("[%s] Update Setting Failed : %s"), CURRENT_CONTEXT, *SpawnerSettingId.ToString());
+		return;
 	}
+	
+	SpawnerSettingData = NewSettings;
+	ClampSettingDataValues(SpawnerSettingData);
 }
 
 void ACharacterSpawnManager::UpdateWaveData()
 {
 	FWavesData NewWaveData;
-	if (DataTableHelper::GetDataFromDataTable(WaveDataTable, WaveId, NewWaveData))
-	{
-		WavesData = NewWaveData;
-		UE_LOG(LogTemp, Log, TEXT("[%s] Update Wave Done. : %s"), CURRENT_CONTEXT, *WaveId.ToString());
-	}
-	else
+	if (!DataTableHelper::GetDataFromDataTable(WaveDataTable, WaveId, NewWaveData))
 	{
 		UE_LOG(LogTemp, Error, TEXT("[%s] Update Wave Failed : %s"), CURRENT_CONTEXT, *WaveId.ToString());
+		return;
 	}
+	
+	WavesData = NewWaveData;
 }
 
 void ACharacterSpawnManager::ClampSettingDataValues(FSpawnerSettingData& Setting)
@@ -141,8 +136,7 @@ FWaveData ACharacterSpawnManager::GetWaveData(const int32 WaveIndex)
 		return FWaveData();
 	}
 	
-	FWaveData CurrentWaveData = WavesData.Waves[WaveIndex];
-	return CurrentWaveData;
+	return WavesData.Waves[WaveIndex];
 }
 
 FVector ACharacterSpawnManager::FindRandomSpawnLocation(float MinDistance, float MaxDistance)
@@ -165,8 +159,6 @@ FVector ACharacterSpawnManager::FindRandomSpawnLocation(float MinDistance, float
 	for (int32 i = 0; i < Amount; ++i)
 	{
 		TArray<FVector> PossibleHeights;
-		bool Comparing = false;
-		float OptimalDistance = 0.0f;
 		FVector OptimalHeight = FVector::ZeroVector;
 
 		float YawAngle = i * (360.0f / Amount);
@@ -187,16 +179,8 @@ FVector ACharacterSpawnManager::FindRandomSpawnLocation(float MinDistance, float
 		ObjectTypes.AddObjectTypesToQuery(ECC_WorldStatic);
 		ObjectTypes.AddObjectTypesToQuery(ECC_WorldDynamic);
 
-		bool bHit = GetWorld()->SweepMultiByObjectType(
-			HitResults,
-			Start,
-			End,
-			FQuat::Identity,
-			ObjectTypes,
-			FCollisionShape::MakeSphere(Radius),
-			Params);
+		bool bHit = GetWorld()->SweepMultiByObjectType(HitResults, Start, End, FQuat::Identity, ObjectTypes, FCollisionShape::MakeSphere(Radius), Params);
 		
-		// Debugging
 		if (Data->bDebug)
 		{
 			float DebugDuration = Data->SpawnInterval;
@@ -211,14 +195,6 @@ FVector ACharacterSpawnManager::FindRandomSpawnLocation(float MinDistance, float
 			// 	DrawDebugSphere(GetWorld(), Hit.Location, 8.0f, 8, FColor::Orange, false, DebugDuration);
 			// 	DrawDebugDirectionalArrow(GetWorld(), Hit.Location, 
 			// 		Hit.Location + Hit.Normal * 50.0f, 20.0f, FColor::Blue, false, DebugDuration);
-   //      
-			// 	if (Hit.GetActor())
-			// 	{
-			// 		DrawDebugString(GetWorld(), Hit.Location + FVector(0, 0, 30), 
-			// 			FString::Printf(TEXT("%s [%d]"), *Hit.GetActor()->GetName(), j), 
-			// 			nullptr, FColor::White, DebugDuration);
-			// 	}
-			// }
 		}
 
 		for (const FHitResult& Hit : HitResults)
@@ -262,6 +238,8 @@ FVector ACharacterSpawnManager::FindRandomSpawnLocation(float MinDistance, float
 			{
 				if (PossibleHeights.Num() > 1)
 				{
+					float OptimalDistance = 0.0f;
+					bool Comparing = false;
 					for (const FVector& PossibleHeight : PossibleHeights)
 					{
 						float A = FMath::Abs(PossibleHeight.Z - Target->GetActorLocation().Z);
