@@ -70,9 +70,6 @@ private:
 	int32 CurrentWaveIndex = 0;
 	
 	UPROPERTY()
-	TObjectPtr<class UCharacterFactory> CharacterFactory;
-	
-	UPROPERTY()
 	TObjectPtr<UDataTable> ZombieDataTable;
 	
 	UPROPERTY()

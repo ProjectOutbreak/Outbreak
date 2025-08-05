@@ -1,6 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "CharacterSpawnManager.h"
-#include "CharacterFactory.h"
 #include "NavigationSystem.h"
 #include "GameFramework/Character.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -12,7 +11,6 @@
 
 ACharacterSpawnManager::ACharacterSpawnManager()
 {
-	CharacterFactory = CreateDefaultSubobject<UCharacterFactory>(TEXT("CharacterFactory"));
 	static ConstructorHelpers::FObjectFinder<UDataTable> ZombieDataTableAsset(TEXT("/Script/Engine.DataTable'/Game/Data/ZombieDataTable.ZombieDataTable'"));
 	if (ZombieDataTableAsset.Succeeded())
 	{
@@ -366,9 +364,8 @@ void ACharacterSpawnManager::SpawnEnemies()
 			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
 			SpawnParams.Instigator = GetInstigator();
 
-			const bool bIsSpawned = CharacterFactory->SpawnCharacter(EnemyData.Class, SpawnTransform, SpawnParams);
-			
-			if (bIsSpawned)
+			const AActor* SpawnedActor = GetWorld()->SpawnActor<AActor>(EnemyData.Class, SpawnTransform, SpawnParams);
+			if (SpawnedActor)
 			{
 				SpawnedEnemies++;
 			}
