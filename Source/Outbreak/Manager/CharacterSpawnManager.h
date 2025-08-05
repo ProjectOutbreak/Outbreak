@@ -8,16 +8,6 @@
 #include "Outbreak/Util/Define.h"
 #include "CharacterSpawnManager.generated.h"
 
-struct FCharacterSpawnParam
-{
-	ECharacterType CharacterType;
-	EPlayerType PlayerType;
-	EZombieSubType ZombieSubType;
-	FVector SpawnLocation = FVector::ZeroVector;
-	FRotator SpawnRotation = FRotator::ZeroRotator;
-	int32 SpawnCount = 1;
-};
-
 UCLASS()
 class OUTBREAK_API ACharacterSpawnManager : public AActor
 {
@@ -28,8 +18,6 @@ class OUTBREAK_API ACharacterSpawnManager : public AActor
 // --------------------
 public:	
 	ACharacterSpawnManager();
-	// TODO : After Spawn 'Player', Need to decide who will be possessing player
-	void SpawnCharacter(const FCharacterSpawnParam& InSpawnParam) const;
 	FZombieData* GetZombieData(const EZombieSubType Type);
 	FPlayerData* GetPlayerData(const EPlayerType Type);
 	

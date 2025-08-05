@@ -17,17 +17,11 @@ class OUTBREAK_API UCharacterFactory : public UObject
 // --------------------
 public:
 	UCharacterFactory();
-	ACharacterBase* CreateCharacter(UWorld* InWorld, const FCharacterSpawnParam& InSpawnParam);
+	bool SpawnCharacter(const TSubclassOf<AActor>& SpawnClass, const FTransform& SpawnTransform, const FActorSpawnParameters& SpawnParams);
 	
-private:
-	void InitializeFactoryMaps();
-	TSubclassOf<ACharacterBase> GetCharacterClassFromType(const FCharacterSpawnParam& InSpawnParam);
-
 // --------------------
 // Variables
 // --------------------
 private:
-	TMap<EZombieSubType, TSubclassOf<ACharacterBase>> ZombieClassMap;
 	TMap<EPlayerType, TSubclassOf<ACharacterBase>> PlayerClassMap;
-
 };

@@ -46,61 +46,11 @@ void ACharacterSpawnManager::BeginPlay()
 	UpdateSettingData();
 	UpdateWaveData();
 	ClampSettingDataValues(SpawnerSettingData);
-
-	// Test Spawn
-	FCharacterSpawnParam FatZombieSpawnParam =
-	{
-		ECharacterType::Zombie,
-		EPlayerType::None,
-		EZombieSubType::Fat,
-		FVector(100, 1500, 0),
-		FRotator::ZeroRotator,
-		1
-	};
-
-	FCharacterSpawnParam RunnerZombieSpawnParam =
-	{
-		ECharacterType::Zombie,
-		EPlayerType::None,
-		EZombieSubType::Runner,
-		FVector(200, 1500, 0),
-		FRotator::ZeroRotator,
-		1
-	};
-
-	FCharacterSpawnParam WalkerZombieSpawnParam =
-	{
-		ECharacterType::Zombie,
-		EPlayerType::None,
-		EZombieSubType::Walker,
-		FVector(300, 1500, 0),
-		FRotator::ZeroRotator,
-		1
-	};
-
-	FCharacterSpawnParam GymZombieSpawnParam =
-	{
-		ECharacterType::Zombie,
-		EPlayerType::None,
-		EZombieSubType::GymRat,
-		FVector(400, 1500, 0),
-		FRotator::ZeroRotator,
-		1
-	};
-	
-	// SpawnCharacter(FatZombieSpawnParam);
-	// SpawnCharacter(RunnerZombieSpawnParam);
-	// SpawnCharacter(WalkerZombieSpawnParam);
-	// SpawnCharacter(GymZombieSpawnParam);
 }
 
 void ACharacterSpawnManager::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-
-	
-}
-
 bool ACharacterSpawnManager::GetSettingDataFromDataTable(const FName InSettingsID, FSpawnerSettingData& OutSetting)
 {
 	if (!SpawnerSettingDataTable)
@@ -398,7 +348,7 @@ FVector ACharacterSpawnManager::FindRandomSpawnLocation(float MinDistance, float
 	return CollectionHelper::GetRandomElementInArray(PossibleLocation);
 }
 
-FVector ACharacterSpawnManager::GetRandomLocationInRadius(const FVector& OptimalHeight, const float Radius, bool bDebug) const
+FVector ACharacterSpawnManager::GetRandomLocationInRadius(const FVector& OptimalHeight, const float Radius, const bool bDebug) const
 {
 	if (bDebug)
 	{
@@ -429,7 +379,6 @@ void ACharacterSpawnManager::SpawnEnemies()
 		UE_LOG(LogTemp, Warning, TEXT("[%s] Target not found!"), CURRENT_CONTEXT);
 		return;
 	}
-
 
 	FWaveData WaveData = GetWaveData(CurrentWaveIndex);
 	const FSpawnerSettingData* SettingData = GetCurrentSettingData();
@@ -466,26 +415,19 @@ void ACharacterSpawnManager::SpawnEnemies()
 
 			SpawnLocation.Z += EnemyData.CapsuleHalfHeight;
 			FVector TargetLocation = Target->GetActorLocation();
-    
 			FRotator LookAtRotation = UKismetMathLibrary::FindLookAtRotation(SpawnLocation, TargetLocation);
-
 			FTransform SpawnTransform;
 			SpawnTransform.SetLocation(SpawnLocation);
 			SpawnTransform.SetRotation(FQuat(LookAtRotation));
 			SpawnTransform.SetScale3D(FVector::OneVector);
 
 			FActorSpawnParameters SpawnParams;
-			SpawnParams.SpawnCollisionHandlingOverride = 
-				ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
+			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
 			SpawnParams.Instigator = GetInstigator();
 
-			const AActor* SpawnedActor = GetWorld()->SpawnActor<AActor>(
-				EnemyData.Class,
-				SpawnTransform,
-				SpawnParams
-			);
-    
-			if (SpawnedActor)
+			const bool bIsSpawned = CharacterFactory->SpawnCharacter(EnemyData.Class, SpawnTransform, SpawnParams);
+			
+			if (bIsSpawned)
 			{
 				SpawnedEnemies++;
 			}
@@ -515,12 +457,4 @@ FPlayerData* ACharacterSpawnManager::GetPlayerData(const EPlayerType Type)
 
 	UE_LOG(LogTemp, Error, TEXT("[%s] No Player data found for type: %d"), CURRENT_CONTEXT, (int32)Type);
 	return nullptr;
-}
-
-void ACharacterSpawnManager::SpawnCharacter(const FCharacterSpawnParam& InSpawnParam) const
-{
-	for (int i = 0; i < InSpawnParam.SpawnCount; i++)
-	{
-		CharacterFactory->CreateCharacter(GetWorld(), InSpawnParam);
-	}
 }
