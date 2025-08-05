@@ -47,27 +47,6 @@ private:
 	FVector GetRandomLocationInRadius(const FVector& OptimalHeight, float Radius, bool bDebug) const;
 	void SpawnEnemies();
 
-	// TODO : Move to utility class
-	template <typename T>
-	void LoadDataTableToMap(const TObjectPtr<UDataTable> DataTable, TMap<FString, T*>& OutMap)
-	{
-		if (!DataTable)
-		{
-			UE_LOG(LogTemp, Error, TEXT("[%s] DataTable is null!"), CURRENT_CONTEXT);
-			return;
-		}
-
-		const TMap<FName, uint8*> RowMap = DataTable->GetRowMap();
-
-		for (const TPair<FName, uint8*>& Row : RowMap)
-		{
-			if (T* TypedRow = reinterpret_cast<T*>(Row.Value))
-			{
-				OutMap.Add(Row.Key.ToString(), TypedRow);
-			}
-		}
-	}
-
 // --------------------
 // Variables
 // --------------------

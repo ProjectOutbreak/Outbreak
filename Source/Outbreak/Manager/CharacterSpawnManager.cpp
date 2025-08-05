@@ -41,8 +41,8 @@ void ACharacterSpawnManager::BeginPlay()
 {
 	Super::BeginPlay();
 
-	LoadDataTableToMap(ZombieDataTable, ZombieDataMap);
-	LoadDataTableToMap(PlayerDataTable, PlayerDataMap);
+	DataTableHelper::LoadDataTableToMap(ZombieDataTable, ZombieDataMap);
+	DataTableHelper::LoadDataTableToMap(PlayerDataTable, PlayerDataMap);
 
 	UpdateSettingData();
 	UpdateWaveData();
