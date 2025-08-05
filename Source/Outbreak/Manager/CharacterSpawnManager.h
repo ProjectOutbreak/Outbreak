@@ -32,8 +32,6 @@ protected:
 	virtual void Tick(float DeltaSeconds) override;
 
 private:
-	bool GetSettingDataFromDataTable(FName InSettingsID, FSpawnerSettingData& OutSetting);
-	bool GetWaveDataFromDataTable(FName InWaveId, FWavesData& OutWaveData);
 	FORCEINLINE FSpawnerSettingData* GetCurrentSettingData() { return &SpawnerSettingData; }
 	FORCEINLINE FWavesData* GetCurrentWaveData() { return &WavesData; }
 	void UpdateSettingData();

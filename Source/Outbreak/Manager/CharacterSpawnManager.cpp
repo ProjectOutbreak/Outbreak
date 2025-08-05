@@ -7,6 +7,7 @@
 #include "Outbreak/Character/Player/CharacterPlayer.h"
 #include "Outbreak/Data/GameData.h"
 #include "Outbreak/Util/CollectionHelper.h"
+#include "Outbreak/Util/DataTableHelper.h"
 #include "Outbreak/Util/EnumHelper.h"
 
 ACharacterSpawnManager::ACharacterSpawnManager()
@@ -51,44 +52,6 @@ void ACharacterSpawnManager::BeginPlay()
 void ACharacterSpawnManager::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-bool ACharacterSpawnManager::GetSettingDataFromDataTable(const FName InSettingsID, FSpawnerSettingData& OutSetting)
-{
-	if (!SpawnerSettingDataTable)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[%s] DataTable is null"), CURRENT_CONTEXT);
-		return false;
-	}
-
-	const FSpawnerSettingData* FoundRow = SpawnerSettingDataTable->FindRow<FSpawnerSettingData>(InSettingsID,TEXT("GetSettingsDataFromDataTable"));
-
-	if (FoundRow)
-	{
-		OutSetting = *FoundRow;
-		return true;
-	}
-	
-	UE_LOG(LogTemp, Warning, TEXT("[%s] Row '%s' not found in data table"), CURRENT_CONTEXT, *InSettingsID.ToString());
-	return false;
-}
-
-bool ACharacterSpawnManager::GetWaveDataFromDataTable(FName InWaveId, FWavesData& OutWaveData)
-{
-	if (!WaveDataTable)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[%s] DataTable is null"), CURRENT_CONTEXT);
-		return false;
-	}
-
-	const FWavesData* FoundRow = WaveDataTable->FindRow<FWavesData>(InWaveId, TEXT("GetWaveDataFromDataTable"));
-
-	if (FoundRow)
-	{
-		OutWaveData = *FoundRow;
-		return true;
-	}
-
-	UE_LOG(LogTemp, Warning, TEXT("[%s] Row '%s' not found in data table"), CURRENT_CONTEXT, *InWaveId.ToString());
-	return false;
 }
 
 void ACharacterSpawnManager::SetSettingId(const FName InSettingId)
@@ -137,7 +100,7 @@ void ACharacterSpawnManager::Deactivate()
 void ACharacterSpawnManager::UpdateSettingData()
 {
 	FSpawnerSettingData NewSettings;
-	if (GetSettingDataFromDataTable(SpawnerSettingId, NewSettings))
+	if (DataTableHelper::GetDataFromDataTable(SpawnerSettingDataTable, SpawnerSettingId, NewSettings))
 	{
 		SpawnerSettingData = NewSettings;
 		ClampSettingDataValues(SpawnerSettingData);
@@ -152,7 +115,7 @@ void ACharacterSpawnManager::UpdateSettingData()
 void ACharacterSpawnManager::UpdateWaveData()
 {
 	FWavesData NewWaveData;
-	if (GetWaveDataFromDataTable(WaveId, NewWaveData))
+	if (DataTableHelper::GetDataFromDataTable(WaveDataTable, WaveId, NewWaveData))
 	{
 		WavesData = NewWaveData;
 		UE_LOG(LogTemp, Log, TEXT("[%s] Update Wave Done. : %s"), CURRENT_CONTEXT, *WaveId.ToString());
