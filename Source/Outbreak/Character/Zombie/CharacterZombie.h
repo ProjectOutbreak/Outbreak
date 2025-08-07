@@ -5,6 +5,7 @@
 #include "Outbreak/Character/CharacterBase.h"
 #include "Outbreak/Character/Player/CharacterPlayer.h"
 #include "Outbreak/Component/ZombieAIComponent.h"
+#include "Outbreak/Data/GameData.h"
 #include "Outbreak/Util/Define.h"
 #include "CharacterZombie.generated.h"
 
@@ -27,13 +28,6 @@ public:
 
 	UFUNCTION(NetMulticast,Reliable)
 	void Multicast_PlayAnimation(EZombieStateType InStateType);
-
-	virtual void StartMoveSoundTimer() override;
-	
-	UFUNCTION(NetMulticast, Unreliable)
-	void Multicast_PlayMoveSound();
-	
-	void ClearMoveSoundTimer() { GetWorld()->GetTimerManager().ClearTimer(MoveSoundTimerHandle); }
 
 protected:
 	virtual void BeginPlay() override;

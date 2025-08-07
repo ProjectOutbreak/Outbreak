@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/HUD.h"
-#include "Outbreak/Util/Define.h"
+#include "Outbreak/Data/GameData.h"
 #include "OBHUD.generated.h"
 
 UCLASS()

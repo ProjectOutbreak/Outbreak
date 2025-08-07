@@ -40,34 +40,6 @@ ACharacterBase::ACharacterBase()
 	GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
 	GetMesh()->SetCollisionProfileName(TEXT("CharacterMesh"));
 	GetMesh()->SetHiddenInGame(false);
-
-	TArray<FString> WalkSoundPaths = {
-		TEXT("/Script/Engine.SoundWave'/Game/Sounds/walk_gravel_0.walk_gravel_0'"),
-		TEXT("/Script/Engine.SoundWave'/Game/Sounds/walk_gravel_1.walk_gravel_1'"),
-		TEXT("/Script/Engine.SoundWave'/Game/Sounds/walk_gravel_2.walk_gravel_2'"),
-		TEXT("/Script/Engine.SoundWave'/Game/Sounds/walk_gravel_3.walk_gravel_3'"),
-	};
-	TArray<FString> RunSoundPaths = {
-		TEXT("/Script/Engine.SoundWave'/Game/Sounds/run_gravel_0.run_gravel_0'"),
-		TEXT("/Script/Engine.SoundWave'/Game/Sounds/run_gravel_1.run_gravel_1'"),
-		TEXT("/Script/Engine.SoundWave'/Game/Sounds/run_gravel_2.run_gravel_2'"),
-		TEXT("/Script/Engine.SoundWave'/Game/Sounds/run_gravel_3.run_gravel_3'"),
-	};
-
-	for (const FString& Path : WalkSoundPaths)
-	{
-		if (ConstructorHelpers::FObjectFinder<USoundBase> WalkSoundFinder(*Path); WalkSoundFinder.Succeeded())
-		{
-			WalkSounds.Add(WalkSoundFinder.Object);
-		}
-	}
-	for (const FString& Path : RunSoundPaths)
-	{
-		if (ConstructorHelpers::FObjectFinder<USoundBase> RunSoundFinder(*Path); RunSoundFinder.Succeeded())
-		{
-			SprintSounds.Add(RunSoundFinder.Object);
-		}
-	}
 }
 
 float ACharacterBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -156,14 +128,6 @@ bool ACharacterBase::IsDead() const
 		return true;
 	}
 	return false;
-}
-
-void ACharacterBase::StartMoveSoundTimer()
-{
-}
-
-void ACharacterBase::PlayMoveSound()
-{
 }
 
 void ACharacterBase::Die()

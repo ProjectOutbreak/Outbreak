@@ -103,131 +103,19 @@ UENUM(BlueprintType)
 enum class EZombieSubType : uint8
 {
 	None,
-	// 일반 좀비 서브타입
 	Walker      UMETA(DisplayName = "걷는 좀비"),
 	Runner      UMETA(DisplayName = "뛰는 좀비"),
 	Fat         UMETA(DisplayName = "뚱뚱 좀비"),
 	Soldier     UMETA(DisplayName = "군인 좀비"),
     
-	// 특수 좀비 서브타입
 	GymRat      UMETA(DisplayName = "헬창 좀비"),
 	Radioactive UMETA(DisplayName = "방사능 좀비"),
 	Ghost       UMETA(DisplayName = "유체화 좀비"),
 	Shield      UMETA(DisplayName = "방패 좀비"),
 	Berserker   UMETA(DisplayName = "광분화 좀비"),
     
-	// 보스 좀비는 별도 관리
-};
-
-USTRUCT(BlueprintType)
-struct FCharacterBaseData : public FTableRowBase
-{
-	GENERATED_BODY()
-	
-	UPROPERTY(VisibleAnywhere)
-	float MaxWalkSpeed;
-	
-	UPROPERTY(VisibleAnywhere)
-	float MaxRunSpeed;
-
-	UPROPERTY(VisibleAnywhere)
-	uint8 bIsCanRun;
-
-	UPROPERTY(VisibleAnywhere)
-	float AttackRate;
-
-	UPROPERTY(VisibleAnywhere)
-	int32 RegenRate;
-
-	UPROPERTY(VisibleAnywhere)
-	int32 MaxHealth;
-
-	UPROPERTY(VisibleAnywhere)
-	int32 MaxExtraHealth;
-};
-
-USTRUCT(BlueprintType)
-struct FPlayerData : public FCharacterBaseData
-{
-	GENERATED_BODY()
-
-	UPROPERTY(VisibleAnywhere)
-	EPlayerType PlayerType;
-	
-	UPROPERTY(VisibleAnywhere)
-	int32 BottomHealth;
-	
-	UPROPERTY(VisibleAnywhere)
-	float MaxCrouchSpeed;
-};
-
-USTRUCT(BlueprintType)
-struct FZombieData : public FCharacterBaseData
-{
-	GENERATED_BODY()
-
-	UPROPERTY(VisibleAnywhere)
-	EZombieType ZombieType;
-	
-	UPROPERTY(VisibleAnywhere)
-	EZombieSubType ZombieSubType;
-	
-	UPROPERTY(VisibleAnywhere)
-	float MaxWanderSpeed;
-	
-	UPROPERTY(VisibleAnywhere)
-	int32 AttackDamage;
-	
-	UPROPERTY(VisibleAnywhere)
-	float AttackRange;
-	
-	UPROPERTY(VisibleAnywhere)
-	float SightRadius;
-	
-	UPROPERTY(VisibleAnywhere)
-	float LoseSightRadius;
-	
-	UPROPERTY(VisibleAnywhere)
-	float PeripheralVisionAngleDegrees;
-	
-	UPROPERTY(VisibleAnywhere)
-	float TurnRate;
-};
-
-USTRUCT(BlueprintType)
-struct FWeaponData : public FTableRowBase
-{
-	GENERATED_BODY()
-	
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
-	float TraceMaxDistance;
-	
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Recoil")
-	float BulletSpread;
-	
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Sound")
-	USoundBase* ShotSound;
-
-	UPROPERTY(VisibleAnywhere, Category="Weapon")
-	float FireFrequency;
-
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Ammo")
-	int32 MagazineCapacity;
-
-	UPROPERTY(EditAnywhere, Category="Weapon|Ammo")
-	int32 TotalAmmo;
-
-	UPROPERTY(VisibleAnywhere, Category="Weapon|Ammo")
-	int32 CurrentAmmo;
-
-	UPROPERTY(VisibleAnywhere, Category="Weapon|Ammo")
-	int32 MaxAmmo;
-	
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Ammo")
-	float ReloadDuration;
-	
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Ammo")
-	bool bIsReloading = false;
+    // TODO : Boss Zombie Manage
+	Boss_0,
 };
 
 class OUTBREAK_API Define { };

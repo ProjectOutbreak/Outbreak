@@ -73,13 +73,7 @@ void UCutsceneController::OnCutSceneFinished()
 			}
 		}
 	}
-	if (WorldRef && WorldRef->GetAuthGameMode() != nullptr)
-	{
-		if (AOutBreakGameState* GS = WorldRef->GetGameState<AOutBreakGameState>())
-		{
-			GS->SpawnerSetup();
-		}
-	}
+
 	if (APlayerController* PC2 = UGameplayStatics::GetPlayerController(WorldRef, 0))
 	{
 		if (AOBHUD* HUD = Cast<AOBHUD>(PC2->GetHUD()))

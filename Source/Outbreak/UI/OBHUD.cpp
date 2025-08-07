@@ -7,7 +7,7 @@
 
 AOBHUD::AOBHUD()
 {
-	static ConstructorHelpers::FClassFinder<UUserWidget> WidgetBPClass(TEXT("/Script/UMGEditor.WidgetBlueprint'/Game/Blueprints/UI/WBP_OBWidget.WBP_OBWidget'"));
+	static ConstructorHelpers::FClassFinder<UUserWidget> WidgetBPClass(TEXT("/Script/UMGEditor.WidgetBlueprint'/Game/Blueprints/UI/WBP_OBWidget.WBP_OBWidget_C'"));
 	if (WidgetBPClass.Succeeded())
 	{
 		WidgetClass = WidgetBPClass.Class;

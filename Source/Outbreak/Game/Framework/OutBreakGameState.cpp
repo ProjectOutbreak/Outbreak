@@ -24,10 +24,6 @@ void AOutBreakGameState::BeginPlay()
 	else if (CurrentLevel == TEXT("SecondPhase")) CurrentPhase = "LEVEL 2 : Devastated Village";
 	else if (CurrentLevel == TEXT("ThirdPhase")) CurrentPhase = "LEVEL 3 : Skyscrapers";
 	else if (CurrentLevel == TEXT("LastPhase")) CurrentPhase = "LEVEL 4 : Last Forest";
-
-	FActorSpawnParameters SpawnParams;
-	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	SpawnManager = GetWorld()->SpawnActor<ACharacterSpawnManager>(ACharacterSpawnManager::StaticClass(), SpawnParams);
 }
 
 void AOutBreakGameState::Tick(float DeltaTime)
@@ -57,25 +53,6 @@ void AOutBreakGameState::Tick(float DeltaTime)
 		}
 	}
 }
-
-void AOutBreakGameState::SpawnerSetup()
-{
-	if (HasAuthority())
-	{
-		UClass* SpawnerClass = StaticLoadClass(
-			AActor::StaticClass(),
-			nullptr,
-			TEXT("/Script/Engine.Blueprint'/Game/SSS/Blueprints/BP_SwarmSpawner.BP_SwarmSpawner_C'")
-		);
-
-		if (SpawnerClass)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Spawn Success!"));
-			SpawnerInstance = GetWorld()->SpawnActor<AActor>(SpawnerClass, FVector::ZeroVector, FRotator::ZeroRotator);
-		}
-	}
-}
-
 
 void AOutBreakGameState::OnRep_TotalZombieKills()
 {

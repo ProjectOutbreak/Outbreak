@@ -2,7 +2,6 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameState.h"
-#include "Outbreak/Manager/CharacterSpawnManager.h"
 #include "OutBreakGameState.generated.h"
 
 UCLASS()
@@ -23,8 +22,6 @@ public:
 	
 	FORCEINLINE float GetMatchTime() const { return MatchTime; }
 	FORCEINLINE FString GetCurrentPhase() const { return CurrentPhase; }
-
-	TObjectPtr<ACharacterSpawnManager> GetSpawnManager() const { return SpawnManager; }
 	
 // --------------------
 // Variables
@@ -48,10 +45,6 @@ public:
 	UPROPERTY(ReplicatedUsing = OnRep_AlivePlayerCount)
 	int32 AlivePlayerCount; // 살아있는 플레이어 수
 	
-private:
-	UPROPERTY()
-	ACharacterSpawnManager* SpawnManager;
-	
 // --------------------
 // Functions
 // --------------------
@@ -60,9 +53,6 @@ public:
 	UFUNCTION()
 	void AddTotalZombieKill();
 
-	UFUNCTION()
-	void SpawnerSetup();
-	
 protected:
 	UFUNCTION()
 	void OnRep_TotalZombieKills();
