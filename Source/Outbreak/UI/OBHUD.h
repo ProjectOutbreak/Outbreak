@@ -14,7 +14,6 @@ class OUTBREAK_API AOBHUD : public AHUD
 
 
 public:
-	AOBHUD();
 	virtual void BeginPlay() override;
 	
 	void DisplayAlivePlayerCount(int32 AlivePlayerCount);
