@@ -7,12 +7,60 @@
 #define CURRENT_CONTEXT *FString(__FUNCTION__)
 
 UENUM()
-enum class EInventorySlotType : uint8
+enum class EMedicineType : uint8
 {
-	FirstMainWeapon = 0,
-	SecondMainWeapon = 1,
-	SubWeapon = 2,
-	Max,
+	None,
+	Medkit,
+	Bandage,
+	Painkillers,
+	Adrenaline,
+};
+
+UENUM()
+enum class EThrowableType : uint8
+{
+	None,
+	Grenade,
+	Molotov,
+	FlashBang,
+	Shuriken,
+};
+
+UENUM()
+enum class EFirableType : uint8
+{
+	None,
+	AssaultRifle,
+	SniperRifle,
+	Pistol,
+	Shotgun,
+};
+
+
+UENUM()
+enum class EFireType : uint8
+{
+	None,
+	Single,
+	Burst,
+	Auto,
+};
+
+UENUM()
+enum class EWeaponType : uint8
+{
+	None,
+	Firable,
+	Throwable,
+	Melee,
+};
+
+UENUM()
+enum class EEquipmentType : uint8
+{
+	None,
+	Weapon,
+	Medicine,
 };
 
 enum class EAvoidanceGroupType : uint8
