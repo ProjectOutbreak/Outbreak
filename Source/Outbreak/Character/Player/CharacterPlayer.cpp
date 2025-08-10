@@ -75,13 +75,13 @@ ACharacterPlayer::ACharacterPlayer()
 	PlayerNameText->bVisibleInSceneCaptureOnly = true;
 	
 	// ----- Mesh
-	static ConstructorHelpers::FObjectFinder<USkeletalMesh> DefaultMesh(TEXT("/Game/FPSAnimationPack/Demo/Characters/Mannequins/Meshes/SKM_Manny.SKM_Manny"));
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> DefaultMesh(TEXT("/Script/Engine.SkeletalMesh'/Game/Art/Characters/Mannequins/Meshes/SKM_Manny.SKM_Manny'"));
 	if (DefaultMesh.Succeeded())
 	{
 		GetMesh()->SetSkeletalMesh(DefaultMesh.Object);
 	}
-	GetMesh()->SetOwnerNoSee(true);
-	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceClassRef(TEXT("/Script/Engine.AnimBlueprint'/Game/Characters/Mannequins/Animations/ABP_Manny.ABP_Manny_C'"));
+	
+	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceClassRef(TEXT("/Script/Engine.AnimBlueprint'/Game/Art/Characters/Mannequins/Animations/ABP_Manny.ABP_Manny_C'"));
 	if (AnimInstanceClassRef.Class)
 	{
 		GetMesh()->SetAnimInstanceClass(AnimInstanceClassRef.Class);
