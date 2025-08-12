@@ -6,7 +6,7 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "GraphicsSettingsLibrary.generated.h"
 
-UENUM(BlueprintType)
+UENUM()
 enum class EOBGraphicsPreset : uint8
 {
 	Low = 0,
@@ -14,7 +14,22 @@ enum class EOBGraphicsPreset : uint8
 	High = 2,
 };
 
-USTRUCT(BlueprintType)
+UENUM()
+enum class EScalabilityGroup : uint8
+{
+	ViewDistance,
+	AntiAliasing,
+	PostProcess,
+	Shadows,
+	GlobalIllumination,
+	Reflections,
+	Textures,
+	Effects,
+	Foliage,
+	Shading
+};
+
+USTRUCT()
 struct FScalabilityPreset
 {
 	GENERATED_BODY()
@@ -22,7 +37,7 @@ struct FScalabilityPreset
 	UPROPERTY() int32 AntiAliasing = 1;
 	UPROPERTY() int32 PostProcess = 1;
 	UPROPERTY() int32 Shadows = 1;
-	UPROPERTY() int32 GlobalIllimination = 1;
+	UPROPERTY() int32 GlobalIllumination = 1;
 	UPROPERTY() int32 Reflections = 1;
 	UPROPERTY() int32 Textures = 1;
 	UPROPERTY() int32 Effects = 1;
@@ -42,7 +57,7 @@ public:
 	static void ApplyCustom(const FScalabilityPreset& Custom, bool bSave = true);
 
 	UFUNCTION()
-	static int32 GetOverallLevel();
+	static FScalabilityPreset GetCurrent();
 
 	UFUNCTION()
 	static void ApplyDefaultGraphics();

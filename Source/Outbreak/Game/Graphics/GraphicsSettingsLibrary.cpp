@@ -39,7 +39,7 @@ void UGraphicsSettingsLibrary::ApplyCustom(const FScalabilityPreset& Custom, boo
 		Settings->SetAntiAliasingQuality(Clamp(Custom.AntiAliasing));
 		Settings->SetPostProcessingQuality(Clamp(Custom.PostProcess));
 		Settings->SetShadowQuality(Clamp(Custom.Shadows));
-		Settings->SetGlobalIlluminationQuality(Clamp(Custom.GlobalIllimination));
+		Settings->SetGlobalIlluminationQuality(Clamp(Custom.GlobalIllumination));
 		Settings->SetReflectionQuality(Clamp(Custom.Reflections));
 		Settings->SetTextureQuality(Clamp(Custom.Textures));
 		Settings->SetVisualEffectQuality(Clamp(Custom.Effects));
@@ -51,13 +51,23 @@ void UGraphicsSettingsLibrary::ApplyCustom(const FScalabilityPreset& Custom, boo
 	}
 }
 
-int32 UGraphicsSettingsLibrary::GetOverallLevel()
+FScalabilityPreset UGraphicsSettingsLibrary::GetCurrent()
 {
+	FScalabilityPreset R;
 	if (UGameUserSettings* Settings = GetSettings())
 	{
-		return Settings->GetOverallScalabilityLevel();
+		R.ViewDistance = Settings->GetViewDistanceQuality();
+		R.AntiAliasing       = Settings->GetAntiAliasingQuality();
+		R.PostProcess        = Settings->GetPostProcessingQuality();
+		R.Shadows            = Settings->GetShadowQuality();
+		R.GlobalIllumination = Settings->GetGlobalIlluminationQuality();
+		R.Reflections        = Settings->GetReflectionQuality();
+		R.Textures           = Settings->GetTextureQuality();
+		R.Effects            = Settings->GetVisualEffectQuality();
+		R.Foliage            = Settings->GetFoliageQuality();
+		R.Shading            = Settings->GetShadingQuality();
 	}
-	return -1;
+	return R;
 }
 
 void UGraphicsSettingsLibrary::ApplyDefaultGraphics()

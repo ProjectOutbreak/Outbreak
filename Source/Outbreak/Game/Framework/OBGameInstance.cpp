@@ -47,6 +47,7 @@ void UOBGameInstance::BeginLoading()
 void UOBGameInstance::OnAssetsLoaded()
 {
 	UE_LOG(LogTemp, Warning, TEXT("모든 에셋 로딩 완료!"));
+	// TODO : 레벨 -> 로딩창 -> 레벨 -> 로딩창... 구현
 	UGameplayStatics::OpenLevel(GetWorld(), "L_FirstPhase");
 }
 
