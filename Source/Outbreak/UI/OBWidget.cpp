@@ -3,14 +3,19 @@
 #include "OBWidget.h"
 #include "Components/TextBlock.h"
 #include "Components/Image.h"
+#include "Components/Button.h" 
 #include "Components/ProgressBar.h"
 #include "Engine/TextureRenderTarget2D.h"
 #include "Outbreak/Game/Framework/OutBreakGameState.h"
+#include "Outbreak/Game/Graphics/GraphicsSettingsLibrary.h"
 
 void UOBWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
+	if (BtnLow)    BtnLow->OnClicked.AddDynamic(this, &UOBWidget::OnLowClicked);
+	if (BtnMedium) BtnMedium->OnClicked.AddDynamic(this, &UOBWidget::OnMediumClicked);
+	if (BtnHigh)   BtnHigh->OnClicked.AddDynamic(this, &UOBWidget::OnHighClicked);
 	if (!GetWorld() || GetWorld()->GetNetMode() == NM_DedicatedServer)
 	{
 		return; 
@@ -155,5 +160,18 @@ void UOBWidget::SetCurrentHealth(int32 CurrentHealth, float HealthPercent)
 	}
 }
 
+void UOBWidget::OnLowClicked()
+{
+	UGraphicsSettingsLibrary::ApplyPreset(EOBGraphicsPreset::Low, true);
+}
 
+void UOBWidget::OnMediumClicked()
+{
+	UGraphicsSettingsLibrary::ApplyPreset(EOBGraphicsPreset::Medium, true);
+}
+
+void UOBWidget::OnHighClicked()
+{
+	UGraphicsSettingsLibrary::ApplyPreset(EOBGraphicsPreset::High, true);
+}
 

@@ -14,9 +14,6 @@ class OUTBREAK_API UOBGameInstance : public UGameInstance
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
-	int32 GraphicsQuality;
-
 	UPROPERTY()
 	TArray<TSoftObjectPtr<UObject>> AssetsToPreload;
 

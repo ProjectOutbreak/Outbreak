@@ -8,6 +8,7 @@
 
 class UTextBlock;
 class UImage;
+class UButton;
 
 UCLASS()
 class OUTBREAK_API UOBWidget : public UUserWidget
@@ -69,6 +70,18 @@ protected:
 
 	UPROPERTY(meta = (BindWidget))
 	class UProgressBar* HealthBar;
+
+	//-------------------------//
+	UPROPERTY(meta = (BindWidget))
+	UButton* BtnLow;
+	UPROPERTY(meta = (BindWidget))
+	UButton* BtnMedium;
+	UPROPERTY(meta = (BindWidget))
+	UButton* BtnHigh;
+
+	UFUNCTION() void OnLowClicked();
+	UFUNCTION() void OnMediumClicked();
+	UFUNCTION() void OnHighClicked();
 
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="MiniMap", meta=(AllowPrivateAccess = "true"))

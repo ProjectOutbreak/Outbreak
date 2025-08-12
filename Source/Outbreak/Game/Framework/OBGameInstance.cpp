@@ -1,5 +1,6 @@
 #include "OBGameInstance.h"
 #include "Kismet/GameplayStatics.h"
+#include "Outbreak/Game/Graphics/GraphicsSettingsLibrary.h"
 
 void UOBGameInstance::Init()
 {
@@ -7,8 +8,8 @@ void UOBGameInstance::Init()
 
 	const FSoftClassPath UIPath(TEXT("/Game/Blueprints/UI/WBP_OBWidget.WBP_OBWidget_C"));
 	OBWidgetClass = TSoftClassPtr<UUserWidget>(UIPath);
-	
-	GraphicsQuality = 2; 
+
+	UGraphicsSettingsLibrary::ApplyDefaultGraphics();
 	UE_LOG(LogTemp, Warning, TEXT("GameInstance 초기화 완료"));
 }
 
