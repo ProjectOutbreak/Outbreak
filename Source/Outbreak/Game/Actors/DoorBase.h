@@ -22,10 +22,8 @@ class OUTBREAK_API ADoorBase : public AActor
 public:	
 	// Sets default values for this actor's properties
 	ADoorBase();
-	
-	void DoorOpen();
-	
-	void DoorClose();
+
+	void DoorInteract();
 	
 	bool IsOpen() const;
 

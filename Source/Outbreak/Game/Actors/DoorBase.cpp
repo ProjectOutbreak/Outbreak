@@ -42,14 +42,19 @@ void ADoorBase::Tick(float DeltaTime)
 
 }
 
-void ADoorBase::DoorOpen()
-{
-	
-}
 
-void ADoorBase::DoorClose()
+void ADoorBase::DoorInteract()
 {
-	
+	if (bIsCanInteract && CurrentStatus == EDoorStatus::Open)
+	{
+		DoorTimelineComp->Reverse();
+		CurrentStatus = EDoorStatus::Close;
+	}
+	else if (bIsCanInteract && CurrentStatus == EDoorStatus::Close)
+	{
+		DoorTimelineComp->Play();
+		CurrentStatus = EDoorStatus::Open;
+	}
 }
 
 bool ADoorBase::IsOpen() const
@@ -65,12 +70,12 @@ void ADoorBase::UpdateTimelineComp(float Output)
 
 void ADoorBase::OnOverlapBegin(UPrimitiveComponent * OverlappedComp, AActor * OtherActor, UPrimitiveComponent * OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
 {
-	DoorTimelineComp->Play();
+	bIsCanInteract = true;
 }
  
 void ADoorBase::OnOverlapEnd(UPrimitiveComponent * OverlappedComp, AActor * OtherActor, UPrimitiveComponent * OtherComp, int32 OtherBodyIndex)
 {
-	DoorTimelineComp->Reverse();
+	bIsCanInteract = false;
 }
 
 
