@@ -3,6 +3,7 @@
 
 #include "DoorBase.h"
 #include "Components/BoxComponent.h"
+#include "Outbreak/Character/Player/CharacterPlayer.h"
 
 // Sets default values
 ADoorBase::ADoorBase()
@@ -44,7 +45,7 @@ void ADoorBase::Tick(float DeltaTime)
 
 void ADoorBase::Interact_Implementation(APawn* InstigatorPawn)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Door Interacted! Is Open: %s"), CurrentStatus);
+	//UE_LOG(LogTemp, Warning, TEXT("Door Interacted! Is Open: %s"), CurrentStatus);
 	if (bIsCanInteract && CurrentStatus == EDoorStatus::Open)
 	{
 		DoorTimelineComp->Reverse();
@@ -70,11 +71,22 @@ void ADoorBase::UpdateTimelineComp(float Output)
 
 void ADoorBase::OnOverlapBegin(UPrimitiveComponent * OverlappedComp, AActor * OtherActor, UPrimitiveComponent * OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
 {
+	ACharacterPlayer* PlayerCharacter = Cast<ACharacterPlayer>(OtherActor);
+	if (PlayerCharacter)
+	{
+		PlayerCharacter->SetCurrentInteractable(this);
+	}
 	bIsCanInteract = true;
 }
  
 void ADoorBase::OnOverlapEnd(UPrimitiveComponent * OverlappedComp, AActor * OtherActor, UPrimitiveComponent * OtherComp, int32 OtherBodyIndex)
 {
+	ACharacterPlayer* PlayerCharacter = Cast<ACharacterPlayer>(OtherActor);
+	if (PlayerCharacter)
+	{
+		// 플레이어에게 상호작용 대상을 초기화하라고 요청합니다.
+		PlayerCharacter->ClearCurrentInteractable(this);
+	}
 	bIsCanInteract = false;
 }
 

@@ -155,20 +155,3 @@ void AOBPlayerController::PerformInteract()
 	}
 }
 
-void AOBPlayerController::SetCurrentInteractable(AActor* NewInteractable)
-{
-	if (NewInteractable && NewInteractable->GetClass()->ImplementsInterface(UInteractInterface::StaticClass()))
-	{
-		CurrentInteractable = NewInteractable;
-		UE_LOG(LogTemp, Warning, TEXT("New Interactable Set: %s"), *NewInteractable->GetName());
-	}
-}
-
-void AOBPlayerController::ClearCurrentInteractable(AActor* OldInteractable)
-{
-	if (CurrentInteractable.GetObject() == OldInteractable)
-	{
-		CurrentInteractable = nullptr;
-		UE_LOG(LogTemp, Warning, TEXT("Interactable Cleared"));
-	}
-}
