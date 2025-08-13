@@ -42,9 +42,9 @@ void ADoorBase::Tick(float DeltaTime)
 
 }
 
-
-void ADoorBase::DoorInteract()
+void ADoorBase::Interact_Implementation(APawn* InstigatorPawn)
 {
+	UE_LOG(LogTemp, Warning, TEXT("Door Interacted! Is Open: %s"), CurrentStatus);
 	if (bIsCanInteract && CurrentStatus == EDoorStatus::Open)
 	{
 		DoorTimelineComp->Reverse();

@@ -4,6 +4,7 @@
 #include "EnhancedInputComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Outbreak/Character/Player/CharacterPlayer.h"
+#include "Outbreak/Game/Interface/InteractInterface.h"
 
 AOBPlayerController::AOBPlayerController()
 {
@@ -31,6 +32,11 @@ AOBPlayerController::AOBPlayerController()
 	if (InputActionCrouchRef.Object)
 	{
 		CrouchAction = InputActionCrouchRef.Object;
+	}
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionInteractRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Inputs/IA_DoorInteract.IA_DoorInteract'"));
+	if (InputActionInteractRef.Object)
+	{
+		InteractAction = InputActionInteractRef.Object;
 	}
 }
 
@@ -63,6 +69,7 @@ void AOBPlayerController::SetupInputComponent()
 	EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &AOBPlayerController::StopRun);
 	EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Started, this, &AOBPlayerController::Crouch);
 	EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Completed, this, &AOBPlayerController::StopCrouch);
+	EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Triggered, this, &AOBPlayerController::PerformInteract);
 }
 
 void AOBPlayerController::Move(const FInputActionValue& Value)
@@ -128,4 +135,30 @@ void AOBPlayerController::Crouch()
 void AOBPlayerController::StopCrouch()
 {
 	ControlledCharacter->GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+}
+
+void AOBPlayerController::PerformInteract()
+{
+	if (CurrentInteractable)
+	{
+		//IInteractInterface::Execute_Interact(CurrentInteractable.GetObject(), GetOwner());
+	}
+}
+
+void AOBPlayerController::SetCurrentInteractable(AActor* NewInteractable)
+{
+	if (NewInteractable && NewInteractable->GetClass()->ImplementsInterface(UInteractInterface::StaticClass()))
+	{
+		CurrentInteractable = NewInteractable;
+		UE_LOG(LogTemp, Warning, TEXT("New Interactable Set: %s"), *NewInteractable->GetName());
+	}
+}
+
+void AOBPlayerController::ClearCurrentInteractable(AActor* OldInteractable)
+{
+	if (CurrentInteractable.GetObject() == OldInteractable)
+	{
+		CurrentInteractable = nullptr;
+		UE_LOG(LogTemp, Warning, TEXT("Interactable Cleared"));
+	}
 }

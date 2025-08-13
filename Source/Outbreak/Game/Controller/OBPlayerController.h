@@ -16,11 +16,14 @@ class OUTBREAK_API AOBPlayerController : public APlayerController
 // --------------------
 public:
 	AOBPlayerController();
+	void SetCurrentInteractable(AActor* NewInteractable);
+	void ClearCurrentInteractable(AActor* OldInteractable);
 
 protected:
 	virtual void BeginPlay() override;
 	virtual void OnPossess(class APawn* PossessedPawn) override;
 	virtual void SetupInputComponent() override;
+	void PerformInteract();
 
 private:
 	void Move(const struct FInputActionValue& Value);
@@ -31,6 +34,8 @@ private:
 	void StopRun();
 	void Crouch();
 	void StopCrouch();
+	TScriptInterface<IInteractInterface> CurrentInteractable;
+
 
 // --------------------
 // Variables
@@ -52,6 +57,9 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<class UInputAction> CrouchAction;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<class UInputAction> InteractAction;
 	
 
 	UPROPERTY(EditAnywhere, Category = "Config|Movement")

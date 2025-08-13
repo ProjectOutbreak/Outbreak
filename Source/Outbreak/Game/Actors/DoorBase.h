@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Components/TimelineComponent.h"
+#include "Outbreak/Game/Interface/InteractInterface.h"
 #include "DoorBase.generated.h"
 
 UENUM(BlueprintType)
@@ -15,7 +16,7 @@ enum class EDoorStatus : uint8
 };
 
 UCLASS()
-class OUTBREAK_API ADoorBase : public AActor
+class OUTBREAK_API ADoorBase : public AActor, public IInteractInterface
 {
 	GENERATED_BODY()
 	
@@ -23,7 +24,7 @@ public:
 	// Sets default values for this actor's properties
 	ADoorBase();
 
-	void DoorInteract();
+	virtual void Interact_Implementation(APawn* InstigatorPawn) override;
 	
 	bool IsOpen() const;
 
