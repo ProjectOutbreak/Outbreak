@@ -139,26 +139,18 @@ void AOBPlayerController::StopCrouch()
 
 void AOBPlayerController::PerformInteract()
 {
-	if (CurrentInteractable)
-	{
-		//IInteractInterface::Execute_Interact(CurrentInteractable.GetObject(), GetOwner());
-	}
-}
+	// 1. 자신의 '몸'인 캐릭터를 가져옵니다.
+	ACharacterPlayer* MyCharacter = Cast<ACharacterPlayer>(GetPawn());
 
-void AOBPlayerController::SetCurrentInteractable(AActor* NewInteractable)
-{
-	if (NewInteractable && NewInteractable->GetClass()->ImplementsInterface(UInteractInterface::StaticClass()))
+	if (MyCharacter)
 	{
-		CurrentInteractable = NewInteractable;
-		UE_LOG(LogTemp, Warning, TEXT("New Interactable Set: %s"), *NewInteractable->GetName());
-	}
-}
-
-void AOBPlayerController::ClearCurrentInteractable(AActor* OldInteractable)
-{
-	if (CurrentInteractable.GetObject() == OldInteractable)
-	{
-		CurrentInteractable = nullptr;
-		UE_LOG(LogTemp, Warning, TEXT("Interactable Cleared"));
+		// 2. 캐릭터에게 현재 상호작용 가능한 대상이 있는지 물어봅니다.
+		TScriptInterface<IInteractInterface> Interactable = MyCharacter->GetCurrentInteractable();
+        
+		if (Interactable)
+		{
+			// 3. 대상이 있다면, 상호작용을 '명령'합니다.
+			Interactable->Execute_Interact(Interactable.GetObject(), MyCharacter);
+		}
 	}
 }

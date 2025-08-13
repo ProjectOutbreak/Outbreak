@@ -234,3 +234,19 @@ void ACharacterPlayer::SetupMovement()
 	MovementComp->SetWalkableFloorAngle(55.f);
 	MovementComp->bUseControllerDesiredRotation = true;
 }
+
+void ACharacterPlayer::SetCurrentInteractable(AActor* NewInteractable)
+{
+	if (NewInteractable && NewInteractable->GetClass()->ImplementsInterface(UInteractInterface::StaticClass()))
+	{
+		CurrentInteractable = NewInteractable;
+	}
+}
+
+void ACharacterPlayer::ClearCurrentInteractable(AActor* OldInteractable)
+{
+	if (CurrentInteractable.GetObject() == OldInteractable)
+	{
+		CurrentInteractable = nullptr;
+	}
+}
