@@ -16,6 +16,8 @@ class OUTBREAK_API AOBPlayerController : public APlayerController
 // --------------------
 public:
 	AOBPlayerController();
+	void SetCurrentInteractable(AActor* NewInteractable);
+	void ClearCurrentInteractable(AActor* OldInteractable);
 
 
 protected:
@@ -33,6 +35,8 @@ private:
 	void StopRun();
 	void Crouch();
 	void StopCrouch();
+	TScriptInterface<IInteractInterface> CurrentInteractable;
+
 
 
 
