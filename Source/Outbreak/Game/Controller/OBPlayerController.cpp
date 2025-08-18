@@ -76,6 +76,8 @@ void AOBPlayerController::SetupInputComponent()
 
 void AOBPlayerController::Move(const FInputActionValue& Value)
 {
+	if (bMenuOpen) return;
+
 	const FVector2D MovementVector = Value.Get<FVector2D>();
 	
 	// if (ControlledCharacter->CanMove())
@@ -95,6 +97,7 @@ void AOBPlayerController::Move(const FInputActionValue& Value)
 
 void AOBPlayerController::Look(const FInputActionValue& Value)
 {
+	if (bMenuOpen) return;
 	const FVector2D LookAxis = Value.Get<FVector2D>();
 	if (ControlledCharacter)
 	{
@@ -105,6 +108,7 @@ void AOBPlayerController::Look(const FInputActionValue& Value)
 
 void AOBPlayerController::Jump()
 {
+	if (bMenuOpen) return;
 	if (ControlledCharacter)
 	{
 		ControlledCharacter->Jump();
@@ -121,6 +125,7 @@ void AOBPlayerController::StopJumping()
 
 void AOBPlayerController::Run()
 {
+	if (bMenuOpen) return;
 	ControlledCharacter->GetCharacterMovement()->MaxWalkSpeed = SprintSpeed;
 }
 
@@ -141,23 +146,42 @@ void AOBPlayerController::StopCrouch()
 
 void AOBPlayerController::TogglePauseMenu()
 {
+	bMenuOpen = !bMenuOpen;
+	bShowMouseCursor = bMenuOpen;
+
 	if (AOBHUD* HUD = Cast<AOBHUD>(GetHUD()))
 	{
 		if (UOBWidget* W = HUD->GetOBWidget())
 		{
-			const bool bOpen = !IsPaused();
-			SetPause(bOpen);
-			bShowMouseCursor = bOpen;
-
-			if (bOpen)
+			if (bMenuOpen)
 			{
 				W->ShowPauseMenu(true);
-				UWidgetBlueprintLibrary::SetInputMode_UIOnlyEx(this, W);
+				FInputModeGameAndUI Mode;
+				Mode.SetWidgetToFocus(W->TakeWidget());
+				Mode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+				Mode.SetHideCursorDuringCapture(false);
+				SetInputMode(Mode);
 			}
 			else
 			{
 				W->ShowPauseMenu(false);
-				UWidgetBlueprintLibrary::SetInputMode_GameOnly(this);
+				SetInputMode(FInputModeGameOnly{});
+				UWidgetBlueprintLibrary::SetFocusToGameViewport();
+			}
+		}
+	}
+	if (APawn* P = GetPawn())
+	{
+		if (UCharacterMovementComponent* Move = Cast<UCharacterMovementComponent>(P->GetMovementComponent()))
+		{
+			if (bMenuOpen)
+			{
+				Move->StopMovementImmediately();
+			}
+			else
+			{
+				Move->SetMovementMode(MOVE_Walking);
+				Move->MaxWalkSpeed = WalkSpeed;
 			}
 		}
 	}

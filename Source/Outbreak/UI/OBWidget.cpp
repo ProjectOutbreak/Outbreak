@@ -7,6 +7,7 @@
 #include "Components/ProgressBar.h"
 #include "Components/ComboBoxString.h"
 #include "Engine/TextureRenderTarget2D.h"
+#include "Outbreak/Game/Controller/OBPlayerController.h"
 #include "Outbreak/Game/Framework/OutBreakGameState.h"
 #include "Outbreak/Game/Graphics/GraphicsSettingsLibrary.h"
 
@@ -205,6 +206,10 @@ void UOBWidget::OnResumeClicked()
 {
 	if (APlayerController* PC = GetOwningPlayer())
 	{
+		if (AOBPlayerController* OBPC = Cast<AOBPlayerController>(PC))
+		{
+			OBPC->TogglePauseMenu();
+		}
 		PC->SetPause(false);
 		PC->SetInputMode(FInputModeGameOnly{});
 		PC->bShowMouseCursor = false;

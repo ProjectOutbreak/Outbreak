@@ -16,6 +16,8 @@ class OUTBREAK_API AOBPlayerController : public APlayerController
 // --------------------
 public:
 	AOBPlayerController();
+	
+	void TogglePauseMenu();
 
 protected:
 	virtual void BeginPlay() override;
@@ -31,8 +33,6 @@ private:
 	void StopRun();
 	void Crouch();
 	void StopCrouch();
-	void TogglePauseMenu();
-
 // --------------------
 // Variables
 // --------------------
@@ -66,4 +66,6 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "Config|Movement")
 	float CrouchSpeed = 200.f;
+	
+	bool bMenuOpen = false;
 };
