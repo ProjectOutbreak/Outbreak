@@ -4,10 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Types/SlateEnums.h"
 #include "OBWidget.generated.h"
 
+class UComboBoxString;
 class UTextBlock;
 class UImage;
+class UButton;
 
 UCLASS()
 class OUTBREAK_API UOBWidget : public UUserWidget
@@ -69,6 +72,32 @@ protected:
 
 	UPROPERTY(meta = (BindWidget))
 	class UProgressBar* HealthBar;
+
+	//--------Graphics--------// 
+	UPROPERTY(meta = (BindWidget))
+	UButton* BtnLow;
+	UPROPERTY(meta = (BindWidget))
+	UButton* BtnMedium;
+	UPROPERTY(meta = (BindWidget))
+	UButton* BtnHigh;
+	
+	UPROPERTY(meta = (BindWidget))
+	UComboBoxString* CBShadows;
+
+	UPROPERTY(meta = (BindWidget))
+	UButton* BtnApply;
+
+	UPROPERTY(Transient)
+	int32 PendingShadow = 1;
+
+	UFUNCTION() void OnLowClicked();
+	UFUNCTION() void OnMediumClicked();
+	UFUNCTION() void OnHighClicked();
+	UFUNCTION() void OnApplyClicked();
+	
+	UFUNCTION() void OnShadowsChanged(FString SelectedItem, ESelectInfo::Type SelectionType);
+	
+	
 
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="MiniMap", meta=(AllowPrivateAccess = "true"))

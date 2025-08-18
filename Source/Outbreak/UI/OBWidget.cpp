@@ -3,14 +3,46 @@
 #include "OBWidget.h"
 #include "Components/TextBlock.h"
 #include "Components/Image.h"
+#include "Components/Button.h" 
 #include "Components/ProgressBar.h"
+#include "Components/ComboBoxString.h"
 #include "Engine/TextureRenderTarget2D.h"
 #include "Outbreak/Game/Framework/OutBreakGameState.h"
+#include "Outbreak/Game/Graphics/GraphicsSettingsLibrary.h"
+
+
+static void FillCombo(UComboBoxString* CB)
+{
+	if (!CB) return;
+	CB->ClearOptions();
+	CB->AddOption(TEXT("Low"));     
+	CB->AddOption(TEXT("Medium"));  
+	CB->AddOption(TEXT("High"));    
+	CB->AddOption(TEXT("Epic"));   
+	CB->AddOption(TEXT("Cinematic"));
+}
 
 void UOBWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
+	FillCombo(CBShadows);
+	
+	const FScalabilityPreset Cur = UGraphicsSettingsLibrary::GetCurrent();
+	if (CBShadows) CBShadows->SetSelectedIndex(FMath::Clamp(Cur.Shadows, 0, 4));
+	if (CBShadows) {
+		CBShadows->SetSelectedIndex(PendingShadow);
+		CBShadows->OnSelectionChanged.AddDynamic(this, &UOBWidget::OnShadowsChanged);
+	}
+
+	if (BtnApply) {
+		BtnApply->OnClicked.AddDynamic(this, &UOBWidget::OnApplyClicked);
+	}
+	
+	if (BtnLow)    BtnLow->OnClicked.AddDynamic(this, &UOBWidget::OnLowClicked);
+	if (BtnMedium) BtnMedium->OnClicked.AddDynamic(this, &UOBWidget::OnMediumClicked);
+	if (BtnHigh)   BtnHigh->OnClicked.AddDynamic(this, &UOBWidget::OnHighClicked);
+	
 	if (!GetWorld() || GetWorld()->GetNetMode() == NM_DedicatedServer)
 	{
 		return; 
@@ -155,5 +187,32 @@ void UOBWidget::SetCurrentHealth(int32 CurrentHealth, float HealthPercent)
 	}
 }
 
+void UOBWidget::OnLowClicked()
+{
+	UGraphicsSettingsLibrary::ApplyPreset(EOBGraphicsPreset::Low, true);
+}
 
+void UOBWidget::OnMediumClicked()
+{
+	UGraphicsSettingsLibrary::ApplyPreset(EOBGraphicsPreset::Medium, true);
+}
 
+void UOBWidget::OnHighClicked()
+{
+	UGraphicsSettingsLibrary::ApplyPreset(EOBGraphicsPreset::High, true);
+}
+
+void UOBWidget::OnShadowsChanged(FString SelectedItem, ESelectInfo::Type)
+{
+	if (CBShadows) {
+		const int32 Idx = CBShadows->GetSelectedIndex();
+		if (Idx >= 0) PendingShadow = FMath::Clamp(Idx, 0, 4);
+	}
+}
+
+void UOBWidget::OnApplyClicked()
+{
+	FScalabilityPreset P = UGraphicsSettingsLibrary::GetCurrent(); 
+	P.Shadows = PendingShadow;                                 
+	UGraphicsSettingsLibrary::ApplyCustom(P,true);
+}
