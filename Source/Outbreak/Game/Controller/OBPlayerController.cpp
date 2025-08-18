@@ -27,12 +27,12 @@ AOBPlayerController::AOBPlayerController()
 	{
 		JumpAction = InputActionJumpRef.Object;
 	}
-	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionSprintRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Inputs/IA_Sprint.IA_Sprint'"));
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionSprintRef(TEXT("/Game/Inputs/Actions/IA_Sprint.IA_Sprint"));
 	if (InputActionSprintRef.Object)
 	{
 		SprintAction = InputActionSprintRef.Object;
 	}
-	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionCrouchRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Inputs/IA_Crouch.IA_Crouch'"));
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionCrouchRef(TEXT("/Game/Inputs/Actions/IA_Crouch.IA_Crouch"));
 	if (InputActionCrouchRef.Object)
 	{
 		CrouchAction = InputActionCrouchRef.Object;
