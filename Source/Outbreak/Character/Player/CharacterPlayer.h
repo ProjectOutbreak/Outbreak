@@ -3,7 +3,6 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "GenericTeamAgentInterface.h"
-#include "InputMappingContext.h"
 #include "Camera/CameraComponent.h"
 #include "PaperSpriteComponent.h"
 #include "Components/TextRenderComponent.h"
@@ -23,6 +22,7 @@ class OUTBREAK_API ACharacterPlayer : public ACharacterBase, public IGenericTeam
 public:
 	ACharacterPlayer();
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	void ChangePlayerControl();
 	
 protected:
 	virtual void BeginPlay() override;
@@ -33,8 +33,11 @@ protected:
 	virtual void OnRep_Die() override;
 	
 	virtual FGenericTeamId GetGenericTeamId() const override { return TeamId; }
-	void SetCharacterControl(EPlayerControlType NewCharacterControlType);
-	void ToggleCameraMode();
+
+private:
+	void SetPlayerControl(EPlayerControlType InPlayerControlType);
+	void SetPlayerControlData(const class UPlayerControlData* InPlayerControlData);
+	
 
 // --------------------
 // Variables
@@ -44,6 +47,12 @@ public:
 	bool bIsCutscenePlaying = false;
 	
 protected:
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<class USpringArmComponent> CameraBoom;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<class UCameraComponent> FollowCamera;
+	
 	UPROPERTY(Replicated)
 	FPlayerData PlayerData;
 	
@@ -52,28 +61,12 @@ protected:
 	
 	FGenericTeamId TeamId = 0;
 
-	// Camera
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera")
-	TObjectPtr<UCameraComponent> FirstPersonCamera;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera")
-	TObjectPtr<UCameraComponent> TopViewCamera;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
-	ECameraMode CurrentCameraMode = ECameraMode::FPS;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	USceneCaptureComponent2D* SceneCapture;
 
 	// Input
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = InputMappingContext, Meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UInputMappingContext> InputMappingContext;
-	
-	UPROPERTY(EditAnywhere, Category = CharacterControl, Meta = (AllowPrivateAccess = "true"))
-	TMap<EPlayerControlType, class UPlayerControlData*> PlayerControlMap;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class UInputAction> ChangeCameraAction;
+	UPROPERTY()
+	TMap<EPlayerControlType, TObjectPtr<class UPlayerControlData>> PlayerControlMap;
 	
 	EPlayerControlType CurrentCharacterControlType;
 
