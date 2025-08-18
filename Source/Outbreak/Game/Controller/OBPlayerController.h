@@ -31,6 +31,7 @@ private:
 	void StopRun();
 	void Crouch();
 	void StopCrouch();
+	void TogglePauseMenu();
 
 // --------------------
 // Variables
@@ -52,6 +53,9 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<class UInputAction> CrouchAction;
+
+	UPROPERTY()
+	TObjectPtr<class UInputAction> ToggleMenuAction;
 	
 
 	UPROPERTY(EditAnywhere, Category = "Config|Movement")

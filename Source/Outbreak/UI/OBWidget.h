@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/WidgetSwitcher.h"
+#include "Components/ComboBoxString.h"
 #include "Types/SlateEnums.h"
 #include "OBWidget.generated.h"
 
@@ -73,31 +75,39 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	class UProgressBar* HealthBar;
 
-	//--------Graphics--------// 
+	// //--------Graphics--------//
 	UPROPERTY(meta = (BindWidget))
-	UButton* BtnLow;
-	UPROPERTY(meta = (BindWidget))
-	UButton* BtnMedium;
-	UPROPERTY(meta = (BindWidget))
-	UButton* BtnHigh;
+	UWidgetSwitcher* WSMain = nullptr;
+	// UPROPERTY(meta = (BindWidget))
+	// UButton* BtnLow;
+	// UPROPERTY(meta = (BindWidget))
+	// UButton* BtnMedium;
+	// UPROPERTY(meta = (BindWidget))
+	// UButton* BtnHigh;
 	
 	UPROPERTY(meta = (BindWidget))
 	UComboBoxString* CBShadows;
 
-	UPROPERTY(meta = (BindWidget))
-	UButton* BtnApply;
-
+	UPROPERTY(meta = (BindWidget)) UButton* BtnResume;
+	UPROPERTY(meta = (BindWidget)) UButton* BtnGraphics;
+	UPROPERTY(meta = (BindWidget)) UButton* BtnBack;
+	UPROPERTY(meta = (BindWidget)) UButton* BtnApply;
+	
 	UPROPERTY(Transient)
 	int32 PendingShadow = 1;
 
-	UFUNCTION() void OnLowClicked();
-	UFUNCTION() void OnMediumClicked();
-	UFUNCTION() void OnHighClicked();
+	
+public:	
+	UFUNCTION() void ShowPauseMenu(bool bShow);
+	UFUNCTION() void ShowGraphics(bool bShow);
+	// UFUNCTION() void OnLowClicked();
+	// UFUNCTION() void OnMediumClicked();
+	// UFUNCTION() void OnHighClicked();
 	UFUNCTION() void OnApplyClicked();
-	
+	UFUNCTION() void OnResumeClicked();
+	UFUNCTION() void OnOpenGraphicsClicked();
+    UFUNCTION() void OnBackFromGraphics();
 	UFUNCTION() void OnShadowsChanged(FString SelectedItem, ESelectInfo::Type SelectionType);
-	
-	
 
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="MiniMap", meta=(AllowPrivateAccess = "true"))

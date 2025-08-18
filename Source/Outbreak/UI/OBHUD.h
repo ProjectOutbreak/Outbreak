@@ -25,6 +25,9 @@ public:
 	void DisplayCurrentHealth(int32 CurrentHealth);
 	
 	void SetCutsceneMode(bool bEnable);
+
+	UFUNCTION()
+	UOBWidget* GetOBWidget() const { return OB_Widget;}
 protected:
 	UPROPERTY()
 	TSubclassOf<UUserWidget> WidgetClass;

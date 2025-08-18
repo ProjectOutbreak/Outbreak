@@ -2,8 +2,11 @@
 
 #include "OBPlayerController.h"
 #include "EnhancedInputComponent.h"
+#include "Blueprint/WidgetBlueprintLibrary.h"
+#include "Outbreak/UI/OBHUD.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Outbreak/Character/Player/CharacterPlayer.h"
+#include "Outbreak/UI/OBWidget.h"
 
 AOBPlayerController::AOBPlayerController()
 {
@@ -31,6 +34,11 @@ AOBPlayerController::AOBPlayerController()
 	if (InputActionCrouchRef.Object)
 	{
 		CrouchAction = InputActionCrouchRef.Object;
+	}
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionToggleMenuRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Inputs/IA_ToggleMenu.IA_ToggleMenu'"));
+	if (InputActionToggleMenuRef.Object)
+	{
+		ToggleMenuAction = InputActionToggleMenuRef.Object;
 	}
 }
 
@@ -63,6 +71,7 @@ void AOBPlayerController::SetupInputComponent()
 	EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &AOBPlayerController::StopRun);
 	EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Started, this, &AOBPlayerController::Crouch);
 	EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Completed, this, &AOBPlayerController::StopCrouch);
+	EnhancedInputComponent->BindAction(ToggleMenuAction, ETriggerEvent::Started, this, &AOBPlayerController::TogglePauseMenu);
 }
 
 void AOBPlayerController::Move(const FInputActionValue& Value)
@@ -128,4 +137,28 @@ void AOBPlayerController::Crouch()
 void AOBPlayerController::StopCrouch()
 {
 	ControlledCharacter->GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+}
+
+void AOBPlayerController::TogglePauseMenu()
+{
+	if (AOBHUD* HUD = Cast<AOBHUD>(GetHUD()))
+	{
+		if (UOBWidget* W = HUD->GetOBWidget())
+		{
+			const bool bOpen = !IsPaused();
+			SetPause(bOpen);
+			bShowMouseCursor = bOpen;
+
+			if (bOpen)
+			{
+				W->ShowPauseMenu(true);
+				UWidgetBlueprintLibrary::SetInputMode_UIOnlyEx(this, W);
+			}
+			else
+			{
+				W->ShowPauseMenu(false);
+				UWidgetBlueprintLibrary::SetInputMode_GameOnly(this);
+			}
+		}
+	}
 }

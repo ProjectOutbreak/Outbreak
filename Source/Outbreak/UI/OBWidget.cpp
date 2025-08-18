@@ -26,22 +26,24 @@ void UOBWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	FillCombo(CBShadows);
-	
-	const FScalabilityPreset Cur = UGraphicsSettingsLibrary::GetCurrent();
-	if (CBShadows) CBShadows->SetSelectedIndex(FMath::Clamp(Cur.Shadows, 0, 4));
-	if (CBShadows) {
-		CBShadows->SetSelectedIndex(PendingShadow);
+	if (BtnResume) BtnResume->OnClicked.AddDynamic(this, &UOBWidget::UOBWidget::OnResumeClicked);
+	if (BtnGraphics) BtnGraphics->OnClicked.AddDynamic(this, &UOBWidget::OnOpenGraphicsClicked);
+	if (CBShadows)
+	{
+		FillCombo(CBShadows);
+
+		const FScalabilityPreset Cur = UGraphicsSettingsLibrary::GetCurrent();
+		CBShadows->SetSelectedIndex(FMath::Clamp(Cur.Shadows, 0, 4));
 		CBShadows->OnSelectionChanged.AddDynamic(this, &UOBWidget::OnShadowsChanged);
 	}
-
-	if (BtnApply) {
-		BtnApply->OnClicked.AddDynamic(this, &UOBWidget::OnApplyClicked);
-	}
 	
-	if (BtnLow)    BtnLow->OnClicked.AddDynamic(this, &UOBWidget::OnLowClicked);
-	if (BtnMedium) BtnMedium->OnClicked.AddDynamic(this, &UOBWidget::OnMediumClicked);
-	if (BtnHigh)   BtnHigh->OnClicked.AddDynamic(this, &UOBWidget::OnHighClicked);
+	if (BtnApply) BtnApply->OnClicked.AddDynamic(this, &UOBWidget::OnApplyClicked);
+	if (BtnBack)  BtnBack->OnClicked.AddDynamic(this, &UOBWidget::OnBackFromGraphics);
+
+	if (WSMain) WSMain->SetActiveWidgetIndex(0);
+	// if (BtnLow)    BtnLow->OnClicked.AddDynamic(this, &UOBWidget::OnLowClicked);
+	// if (BtnMedium) BtnMedium->OnClicked.AddDynamic(this, &UOBWidget::OnMediumClicked);
+	// if (BtnHigh)   BtnHigh->OnClicked.AddDynamic(this, &UOBWidget::OnHighClicked);
 	
 	if (!GetWorld() || GetWorld()->GetNetMode() == NM_DedicatedServer)
 	{
@@ -187,19 +189,37 @@ void UOBWidget::SetCurrentHealth(int32 CurrentHealth, float HealthPercent)
 	}
 }
 
-void UOBWidget::OnLowClicked()
+void UOBWidget::ShowPauseMenu(bool bShow)
 {
-	UGraphicsSettingsLibrary::ApplyPreset(EOBGraphicsPreset::Low, true);
+	if (!WSMain) return;
+	WSMain->SetActiveWidgetIndex(bShow ? 1 : 0);
 }
 
-void UOBWidget::OnMediumClicked()
+void UOBWidget::ShowGraphics(bool bShow)
 {
-	UGraphicsSettingsLibrary::ApplyPreset(EOBGraphicsPreset::Medium, true);
+	if (!WSMain) return;
+	WSMain->SetActiveWidgetIndex(bShow ? 2 : 1);
 }
 
-void UOBWidget::OnHighClicked()
+void UOBWidget::OnResumeClicked()
 {
-	UGraphicsSettingsLibrary::ApplyPreset(EOBGraphicsPreset::High, true);
+	if (APlayerController* PC = GetOwningPlayer())
+	{
+		PC->SetPause(false);
+		PC->SetInputMode(FInputModeGameOnly{});
+		PC->bShowMouseCursor = false;
+	}
+	ShowPauseMenu(false);
+}
+
+void UOBWidget::OnOpenGraphicsClicked()
+{
+	ShowGraphics(true);
+}
+
+void UOBWidget::OnBackFromGraphics()
+{
+	ShowGraphics(false);
 }
 
 void UOBWidget::OnShadowsChanged(FString SelectedItem, ESelectInfo::Type)
@@ -216,3 +236,18 @@ void UOBWidget::OnApplyClicked()
 	P.Shadows = PendingShadow;                                 
 	UGraphicsSettingsLibrary::ApplyCustom(P,true);
 }
+
+// void UOBWidget::OnLowClicked()
+// {
+// 	UGraphicsSettingsLibrary::ApplyPreset(EOBGraphicsPreset::Low, true);
+// }
+//
+// void UOBWidget::OnMediumClicked()
+// {
+// 	UGraphicsSettingsLibrary::ApplyPreset(EOBGraphicsPreset::Medium, true);
+// }
+//
+// void UOBWidget::OnHighClicked()
+// {
+// 	UGraphicsSettingsLibrary::ApplyPreset(EOBGraphicsPreset::High, true);
+// }
