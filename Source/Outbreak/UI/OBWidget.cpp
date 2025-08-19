@@ -15,7 +15,7 @@ void UOBWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	if (BtnResume) BtnResume->OnClicked.AddDynamic(this, &UOBWidget::UOBWidget::OnResumeClicked);
+	if (BtnResume) BtnResume->OnClicked.AddDynamic(this, &UOBWidget::OnResumeClicked);
 	if (BtnGraphics) BtnGraphics->OnClicked.AddDynamic(this, &UOBWidget::OnOpenGraphicsClicked);
 	
 	const FScalabilityPreset Cur = UGraphicsSettingsLibrary::GetCurrent();
@@ -282,7 +282,6 @@ void UOBWidget::OnResumeClicked()
 	ShowPauseMenu(false);
 }
 
-
 //------Graphics Setting UI-------//
 void UOBWidget::OnOpenGraphicsClicked()
 {
@@ -405,14 +404,38 @@ void UOBWidget::OnShadingChanged(FString, ESelectInfo::Type)
 void UOBWidget::OnLowClicked()
 {
 	UGraphicsSettingsLibrary::ApplyPreset(EOBGraphicsPreset::Low, true);
+	RefreshGraphicsCombosFromCurrent();
 }
 
 void UOBWidget::OnMediumClicked()
 {
 	UGraphicsSettingsLibrary::ApplyPreset(EOBGraphicsPreset::Medium, true);
+	RefreshGraphicsCombosFromCurrent();
 }
 
 void UOBWidget::OnHighClicked()
 {
 	UGraphicsSettingsLibrary::ApplyPreset(EOBGraphicsPreset::High, true);
+	RefreshGraphicsCombosFromCurrent();
+}
+
+void UOBWidget::RefreshGraphicsCombosFromCurrent()
+{
+	const FScalabilityPreset Cur = UGraphicsSettingsLibrary::GetCurrent();
+	auto SetCombo = [](UComboBoxString* CB, int32& Pending, int CurVal)
+	{
+		if(!CB) return;
+		Pending = FMath::Clamp(CurVal, 0, 4);
+		CB->SetSelectedIndex(Pending);
+	};
+	SetCombo(CBViewDistance,       PendingViewDistance,       Cur.ViewDistance);
+	SetCombo(CBAntiAliasing,       PendingAntiAliasing,       Cur.AntiAliasing);
+	SetCombo(CBPostProcess,        PendingPostProcess,        Cur.PostProcess);
+	SetCombo(CBShadows,            PendingShadow,             Cur.Shadows);
+	SetCombo(CBGlobalIllumination, PendingGlobalIllumination, Cur.GlobalIllumination);
+	SetCombo(CBReflections,        PendingReflections,        Cur.Reflections);
+	SetCombo(CBTextures,           PendingTextures,           Cur.Textures);
+	SetCombo(CBEffects,            PendingEffects,            Cur.Effects);
+	SetCombo(CBFoliage,            PendingFoliage,            Cur.Foliage);
+	SetCombo(CBShading,            PendingShading,            Cur.Shading);
 }
