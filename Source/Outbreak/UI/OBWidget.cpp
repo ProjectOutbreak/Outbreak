@@ -19,6 +19,7 @@ void UOBWidget::NativeConstruct()
 	if (BtnGraphics) BtnGraphics->OnClicked.AddDynamic(this, &UOBWidget::OnOpenGraphicsClicked);
 	
 	const FScalabilityPreset Cur = UGraphicsSettingsLibrary::GetCurrent();
+
 	auto InitCombo = [](UComboBoxString* CB)
 	{
 		if (!CB) return;
@@ -29,78 +30,50 @@ void UOBWidget::NativeConstruct()
 		CB->AddOption(TEXT("Epic"));
 		CB->AddOption(TEXT("Cinematic"));
 	};
+	{
+		TArray<UComboBoxString*> AllCBs = {
+			CBViewDistance,
+			CBAntiAliasing,
+			CBPostProcess,
+			CBShadows,
+			CBGlobalIllumination,
+			CBReflections,
+			CBTextures,
+			CBEffects,
+			CBFoliage,
+			CBShading
+		};
+		for (UComboBoxString* CB : AllCBs) { InitCombo(CB); }
+	}
 
-	InitCombo(CBViewDistance);
-	InitCombo(CBAntiAliasing);
-	InitCombo(CBPostProcess);
-	InitCombo(CBShadows);
-	InitCombo(CBGlobalIllumination);
-	InitCombo(CBReflections);
-	InitCombo(CBTextures);
-	InitCombo(CBEffects);
-	InitCombo(CBFoliage);
-	InitCombo(CBShading);
+	auto SetupCombo = [this](UComboBoxString* CB, int32* PendingPtr, int CurVal)
+	{
+		if (!CB || !PendingPtr) return;
+		*PendingPtr = FMath::Clamp(CurVal, 0, 4);
+		CB->SetSelectedIndex(*PendingPtr);
+	};
 
-	if (CBViewDistance)
-	{
-		PendingViewDistance = FMath::Clamp(Cur.ViewDistance, 0, 4);
-		CBViewDistance->SetSelectedIndex(PendingViewDistance);
-		CBViewDistance->OnSelectionChanged.AddDynamic(this, &UOBWidget::OnViewDistanceChanged);
-	}
-	if (CBAntiAliasing)
-	{
-		PendingAntiAliasing = FMath::Clamp(Cur.AntiAliasing, 0, 4);
-		CBAntiAliasing->SetSelectedIndex(PendingAntiAliasing);
-		CBAntiAliasing->OnSelectionChanged.AddDynamic(this, &UOBWidget::OnAntiAliasingChanged);
-	}
-	if (CBPostProcess)
-	{
-		PendingPostProcess = FMath::Clamp(Cur.PostProcess, 0, 4);
-		CBPostProcess->SetSelectedIndex(PendingPostProcess);
-		CBPostProcess->OnSelectionChanged.AddDynamic(this, &UOBWidget::OnPostProcessChanged);
-	}
-	if (CBShadows)
-	{
-		PendingShadow = FMath::Clamp(Cur.Shadows, 0, 4);
-		CBShadows->SetSelectedIndex(PendingShadow);
-		CBShadows->OnSelectionChanged.AddDynamic(this, &UOBWidget::OnShadowsChanged);
-	}
-	if (CBGlobalIllumination)
-	{
-		PendingGlobalIllumination = FMath::Clamp(Cur.GlobalIllumination, 0, 4);
-		CBGlobalIllumination->SetSelectedIndex(PendingGlobalIllumination);
-		CBGlobalIllumination->OnSelectionChanged.AddDynamic(this, &UOBWidget::OnGlobalIlluminationChanged);
-	}
-	if (CBReflections)
-	{
-		PendingReflections = FMath::Clamp(Cur.Reflections, 0, 4);
-		CBReflections->SetSelectedIndex(PendingReflections);
-		CBReflections->OnSelectionChanged.AddDynamic(this, &UOBWidget::OnReflectionsChanged);
-	}
-	if (CBTextures)
-	{
-		PendingTextures = FMath::Clamp(Cur.Textures, 0, 4);
-		CBTextures->SetSelectedIndex(PendingTextures);
-		CBTextures->OnSelectionChanged.AddDynamic(this, &UOBWidget::OnTexturesChanged);
-	}
-	if (CBEffects)
-	{
-		PendingEffects = FMath::Clamp(Cur.Effects, 0, 4);
-		CBEffects->SetSelectedIndex(PendingEffects);
-		CBEffects->OnSelectionChanged.AddDynamic(this, &UOBWidget::OnEffectsChanged);
-	}
-	if (CBFoliage)
-	{
-		PendingFoliage = FMath::Clamp(Cur.Foliage, 0, 4);
-		CBFoliage->SetSelectedIndex(PendingFoliage);
-		CBFoliage->OnSelectionChanged.AddDynamic(this, &UOBWidget::OnFoliageChanged);
-	}
-	if (CBShading)
-	{
-		PendingShading = FMath::Clamp(Cur.Shading, 0, 4);
-		CBShading->SetSelectedIndex(PendingShading);
-		CBShading->OnSelectionChanged.AddDynamic(this, &UOBWidget::OnShadingChanged);
-	}
+	SetupCombo(CBViewDistance,       &PendingViewDistance,       Cur.ViewDistance);
+	SetupCombo(CBAntiAliasing,       &PendingAntiAliasing,       Cur.AntiAliasing);
+	SetupCombo(CBPostProcess,        &PendingPostProcess,        Cur.PostProcess);
+	SetupCombo(CBShadows,            &PendingShadow,             Cur.Shadows);
+	SetupCombo(CBGlobalIllumination, &PendingGlobalIllumination, Cur.GlobalIllumination);
+	SetupCombo(CBReflections,        &PendingReflections,        Cur.Reflections);
+	SetupCombo(CBTextures,           &PendingTextures,           Cur.Textures);
+	SetupCombo(CBEffects,            &PendingEffects,            Cur.Effects);
+	SetupCombo(CBFoliage,            &PendingFoliage,            Cur.Foliage);
+	SetupCombo(CBShading,            &PendingShading,            Cur.Shading);
+
+	if (CBViewDistance)       { CBViewDistance->OnSelectionChanged.AddDynamic(this, &UOBWidget::OnViewDistanceChanged); }
+	if (CBAntiAliasing)       { CBAntiAliasing->OnSelectionChanged.AddDynamic(this, &UOBWidget::OnAntiAliasingChanged); }
+	if (CBPostProcess)        { CBPostProcess->OnSelectionChanged.AddDynamic(this, &UOBWidget::OnPostProcessChanged); }
+	if (CBShadows)            { CBShadows->OnSelectionChanged.AddDynamic(this, &UOBWidget::OnShadowsChanged); }
+	if (CBGlobalIllumination) { CBGlobalIllumination->OnSelectionChanged.AddDynamic(this, &UOBWidget::OnGlobalIlluminationChanged); }
+	if (CBReflections)        { CBReflections->OnSelectionChanged.AddDynamic(this, &UOBWidget::OnReflectionsChanged); }
+	if (CBTextures)           { CBTextures->OnSelectionChanged.AddDynamic(this, &UOBWidget::OnTexturesChanged); }
+	if (CBEffects)            { CBEffects->OnSelectionChanged.AddDynamic(this, &UOBWidget::OnEffectsChanged); }
+	if (CBFoliage)            { CBFoliage->OnSelectionChanged.AddDynamic(this, &UOBWidget::OnFoliageChanged); }
+	if (CBShading)            { CBShading->OnSelectionChanged.AddDynamic(this, &UOBWidget::OnShadingChanged); }
 	
 	if (BtnApply) BtnApply->OnClicked.AddDynamic(this, &UOBWidget::OnApplyClicked);
 	if (BtnBack)  BtnBack->OnClicked.AddDynamic(this, &UOBWidget::OnBackFromGraphics);
@@ -136,7 +109,6 @@ void UOBWidget::SetCutsceneMode(bool bEnable)
 {
 	ESlateVisibility NewVisibility = bEnable ? ESlateVisibility::Hidden : ESlateVisibility::Visible;
 
-	// 컷씬 재생시 안보일 HUD & UI
 	TArray<UWidget*> WidgetsToToggle = {
 		MiniMapImage,
 		AimImage,
