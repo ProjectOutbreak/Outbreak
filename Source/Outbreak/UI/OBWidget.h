@@ -84,17 +84,33 @@ protected:
 	UButton* BtnMedium;
 	UPROPERTY(meta = (BindWidget))
 	UButton* BtnHigh;
-	
-	UPROPERTY(meta = (BindWidget))
-	UComboBoxString* CBShadows;
+
+	UPROPERTY(meta = (BindWidget)) UComboBoxString* CBViewDistance;
+	UPROPERTY(meta = (BindWidget)) UComboBoxString* CBAntiAliasing;
+	UPROPERTY(meta = (BindWidget)) UComboBoxString* CBPostProcess;
+	UPROPERTY(meta = (BindWidget)) UComboBoxString* CBShadows;
+	UPROPERTY(meta = (BindWidget)) UComboBoxString* CBGlobalIllumination;
+	UPROPERTY(meta = (BindWidget)) UComboBoxString* CBReflections;
+	UPROPERTY(meta = (BindWidget)) UComboBoxString* CBTextures;
+	UPROPERTY(meta = (BindWidget)) UComboBoxString* CBEffects;
+	UPROPERTY(meta = (BindWidget)) UComboBoxString* CBFoliage;
+	UPROPERTY(meta = (BindWidget)) UComboBoxString* CBShading;
 
 	UPROPERTY(meta = (BindWidget)) UButton* BtnResume;
 	UPROPERTY(meta = (BindWidget)) UButton* BtnGraphics;
 	UPROPERTY(meta = (BindWidget)) UButton* BtnBack;
 	UPROPERTY(meta = (BindWidget)) UButton* BtnApply;
 	
-	UPROPERTY(Transient)
-	int32 PendingShadow = 1;
+	UPROPERTY(Transient) int32 PendingViewDistance = 1;
+	UPROPERTY(Transient) int32 PendingAntiAliasing = 1;
+	UPROPERTY(Transient) int32 PendingPostProcess = 1;
+	UPROPERTY(Transient) int32 PendingShadow = 1;
+	UPROPERTY(Transient) int32 PendingGlobalIllumination = 1;
+	UPROPERTY(Transient) int32 PendingReflections = 1;
+	UPROPERTY(Transient) int32 PendingTextures = 1;
+	UPROPERTY(Transient) int32 PendingEffects = 1;
+	UPROPERTY(Transient) int32 PendingFoliage = 1;
+	UPROPERTY(Transient) int32 PendingShading = 1;
 
 	
 public:	
@@ -107,7 +123,18 @@ public:
 	UFUNCTION() void OnResumeClicked();
 	UFUNCTION() void OnOpenGraphicsClicked();
     UFUNCTION() void OnBackFromGraphics();
+
+
+	UFUNCTION() void OnViewDistanceChanged(FString SelectedItem, ESelectInfo::Type SelectionType);
+	UFUNCTION() void OnAntiAliasingChanged(FString SelectedItem, ESelectInfo::Type SelectionType);
+	UFUNCTION() void OnPostProcessChanged(FString SelectedItem, ESelectInfo::Type SelectionType);
 	UFUNCTION() void OnShadowsChanged(FString SelectedItem, ESelectInfo::Type SelectionType);
+	UFUNCTION() void OnGlobalIlluminationChanged(FString SelectedItem, ESelectInfo::Type SelectionType);
+	UFUNCTION() void OnReflectionsChanged(FString SelectedItem, ESelectInfo::Type SelectionType);
+	UFUNCTION() void OnTexturesChanged(FString SelectedItem, ESelectInfo::Type SelectionType);
+	UFUNCTION() void OnEffectsChanged(FString SelectedItem, ESelectInfo::Type SelectionType);
+	UFUNCTION() void OnFoliageChanged(FString SelectedItem, ESelectInfo::Type SelectionType);
+	UFUNCTION() void OnShadingChanged(FString SelectedItem, ESelectInfo::Type SelectionType);
 
 private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="MiniMap", meta=(AllowPrivateAccess = "true"))

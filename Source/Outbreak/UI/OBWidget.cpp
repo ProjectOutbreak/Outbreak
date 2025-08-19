@@ -11,31 +11,95 @@
 #include "Outbreak/Game/Framework/OutBreakGameState.h"
 #include "Outbreak/Game/Graphics/GraphicsSettingsLibrary.h"
 
-
-static void FillCombo(UComboBoxString* CB)
-{
-	if (!CB) return;
-	CB->ClearOptions();
-	CB->AddOption(TEXT("Low"));     
-	CB->AddOption(TEXT("Medium"));  
-	CB->AddOption(TEXT("High"));    
-	CB->AddOption(TEXT("Epic"));   
-	CB->AddOption(TEXT("Cinematic"));
-}
-
 void UOBWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
 	if (BtnResume) BtnResume->OnClicked.AddDynamic(this, &UOBWidget::UOBWidget::OnResumeClicked);
 	if (BtnGraphics) BtnGraphics->OnClicked.AddDynamic(this, &UOBWidget::OnOpenGraphicsClicked);
+	
+	const FScalabilityPreset Cur = UGraphicsSettingsLibrary::GetCurrent();
+	auto InitCombo = [](UComboBoxString* CB)
+	{
+		if (!CB) return;
+		CB->ClearOptions();
+		CB->AddOption(TEXT("Low"));
+		CB->AddOption(TEXT("Medium"));
+		CB->AddOption(TEXT("High"));
+		CB->AddOption(TEXT("Epic"));
+		CB->AddOption(TEXT("Cinematic"));
+	};
+
+	InitCombo(CBViewDistance);
+	InitCombo(CBAntiAliasing);
+	InitCombo(CBPostProcess);
+	InitCombo(CBShadows);
+	InitCombo(CBGlobalIllumination);
+	InitCombo(CBReflections);
+	InitCombo(CBTextures);
+	InitCombo(CBEffects);
+	InitCombo(CBFoliage);
+	InitCombo(CBShading);
+
+	if (CBViewDistance)
+	{
+		PendingViewDistance = FMath::Clamp(Cur.ViewDistance, 0, 4);
+		CBViewDistance->SetSelectedIndex(PendingViewDistance);
+		CBViewDistance->OnSelectionChanged.AddDynamic(this, &UOBWidget::OnViewDistanceChanged);
+	}
+	if (CBAntiAliasing)
+	{
+		PendingAntiAliasing = FMath::Clamp(Cur.AntiAliasing, 0, 4);
+		CBAntiAliasing->SetSelectedIndex(PendingAntiAliasing);
+		CBAntiAliasing->OnSelectionChanged.AddDynamic(this, &UOBWidget::OnAntiAliasingChanged);
+	}
+	if (CBPostProcess)
+	{
+		PendingPostProcess = FMath::Clamp(Cur.PostProcess, 0, 4);
+		CBPostProcess->SetSelectedIndex(PendingPostProcess);
+		CBPostProcess->OnSelectionChanged.AddDynamic(this, &UOBWidget::OnPostProcessChanged);
+	}
 	if (CBShadows)
 	{
-		FillCombo(CBShadows);
-
-		const FScalabilityPreset Cur = UGraphicsSettingsLibrary::GetCurrent();
-		CBShadows->SetSelectedIndex(FMath::Clamp(Cur.Shadows, 0, 4));
+		PendingShadow = FMath::Clamp(Cur.Shadows, 0, 4);
+		CBShadows->SetSelectedIndex(PendingShadow);
 		CBShadows->OnSelectionChanged.AddDynamic(this, &UOBWidget::OnShadowsChanged);
+	}
+	if (CBGlobalIllumination)
+	{
+		PendingGlobalIllumination = FMath::Clamp(Cur.GlobalIllumination, 0, 4);
+		CBGlobalIllumination->SetSelectedIndex(PendingGlobalIllumination);
+		CBGlobalIllumination->OnSelectionChanged.AddDynamic(this, &UOBWidget::OnGlobalIlluminationChanged);
+	}
+	if (CBReflections)
+	{
+		PendingReflections = FMath::Clamp(Cur.Reflections, 0, 4);
+		CBReflections->SetSelectedIndex(PendingReflections);
+		CBReflections->OnSelectionChanged.AddDynamic(this, &UOBWidget::OnReflectionsChanged);
+	}
+	if (CBTextures)
+	{
+		PendingTextures = FMath::Clamp(Cur.Textures, 0, 4);
+		CBTextures->SetSelectedIndex(PendingTextures);
+		CBTextures->OnSelectionChanged.AddDynamic(this, &UOBWidget::OnTexturesChanged);
+	}
+	if (CBEffects)
+	{
+		PendingEffects = FMath::Clamp(Cur.Effects, 0, 4);
+		CBEffects->SetSelectedIndex(PendingEffects);
+		CBEffects->OnSelectionChanged.AddDynamic(this, &UOBWidget::OnEffectsChanged);
+	}
+	if (CBFoliage)
+	{
+		PendingFoliage = FMath::Clamp(Cur.Foliage, 0, 4);
+		CBFoliage->SetSelectedIndex(PendingFoliage);
+		CBFoliage->OnSelectionChanged.AddDynamic(this, &UOBWidget::OnFoliageChanged);
+	}
+	if (CBShading)
+	{
+		PendingShading = FMath::Clamp(Cur.Shading, 0, 4);
+		CBShading->SetSelectedIndex(PendingShading);
+		CBShading->OnSelectionChanged.AddDynamic(this, &UOBWidget::OnShadingChanged);
 	}
 	
 	if (BtnApply) BtnApply->OnClicked.AddDynamic(this, &UOBWidget::OnApplyClicked);
@@ -96,7 +160,7 @@ void UOBWidget::SetCutsceneMode(bool bEnable)
 	}
 }
 
-
+//------InGame UI------//
 
 void UOBWidget::SetMatchTimeText(float Time)
 {
@@ -190,6 +254,7 @@ void UOBWidget::SetCurrentHealth(int32 CurrentHealth, float HealthPercent)
 	}
 }
 
+//------Menu UI------//
 void UOBWidget::ShowPauseMenu(bool bShow)
 {
 	if (!WSMain) return;
@@ -217,6 +282,8 @@ void UOBWidget::OnResumeClicked()
 	ShowPauseMenu(false);
 }
 
+
+//------Graphics Setting UI-------//
 void UOBWidget::OnOpenGraphicsClicked()
 {
 	ShowGraphics(true);
@@ -227,6 +294,52 @@ void UOBWidget::OnBackFromGraphics()
 	ShowGraphics(false);
 }
 
+void UOBWidget::OnApplyClicked()
+{
+	FScalabilityPreset P = UGraphicsSettingsLibrary::GetCurrent();
+
+	if (CBViewDistance)        P.ViewDistance = PendingViewDistance;
+	if (CBAntiAliasing)        P.AntiAliasing = PendingAntiAliasing;
+	if (CBPostProcess)         P.PostProcess  = PendingPostProcess;
+	if (CBShadows)             P.Shadows = PendingShadow;
+	if (CBGlobalIllumination)  P.GlobalIllumination = PendingGlobalIllumination;
+	if (CBReflections)         P.Reflections = PendingReflections;
+	if (CBTextures)            P.Textures = PendingTextures;
+	if (CBEffects)             P.Effects = PendingEffects;
+	if (CBFoliage)             P.Foliage = PendingFoliage;
+	if (CBShading)             P.Shading = PendingShading;
+
+	UGraphicsSettingsLibrary::ApplyCustom(P, true);
+}
+
+
+void UOBWidget::OnViewDistanceChanged(FString, ESelectInfo::Type)
+{
+	if (CBViewDistance)
+	{
+		const int32 Idx = CBViewDistance->GetSelectedIndex();
+		if (Idx >= 0) PendingViewDistance = FMath::Clamp(Idx, 0, 4);
+	}
+}
+
+void UOBWidget::OnAntiAliasingChanged(FString, ESelectInfo::Type)
+{
+	if (CBAntiAliasing)
+	{
+		const int32 Idx = CBAntiAliasing->GetSelectedIndex();
+		if (Idx >= 0) PendingAntiAliasing = FMath::Clamp(Idx, 0, 4);
+	}
+}
+
+void UOBWidget::OnPostProcessChanged(FString, ESelectInfo::Type)
+{
+	if (CBPostProcess)
+	{
+		const int32 Idx = CBPostProcess->GetSelectedIndex();
+		if (Idx >= 0) PendingPostProcess = FMath::Clamp(Idx, 0, 4);
+	}
+}
+
 void UOBWidget::OnShadowsChanged(FString SelectedItem, ESelectInfo::Type)
 {
 	if (CBShadows) {
@@ -235,11 +348,58 @@ void UOBWidget::OnShadowsChanged(FString SelectedItem, ESelectInfo::Type)
 	}
 }
 
-void UOBWidget::OnApplyClicked()
+void UOBWidget::OnGlobalIlluminationChanged(FString, ESelectInfo::Type)
 {
-	FScalabilityPreset P = UGraphicsSettingsLibrary::GetCurrent(); 
-	P.Shadows = PendingShadow;                                 
-	UGraphicsSettingsLibrary::ApplyCustom(P,true);
+	if (CBGlobalIllumination)
+	{
+		const int32 Idx = CBGlobalIllumination->GetSelectedIndex();
+		if (Idx >= 0) PendingGlobalIllumination = FMath::Clamp(Idx, 0, 4);
+	}
+}
+
+void UOBWidget::OnReflectionsChanged(FString, ESelectInfo::Type)
+{
+	if (CBReflections)
+	{
+		const int32 Idx = CBReflections->GetSelectedIndex();
+		if (Idx >= 0) PendingReflections = FMath::Clamp(Idx, 0, 4);
+	}
+}
+
+void UOBWidget::OnTexturesChanged(FString, ESelectInfo::Type)
+{
+	if (CBTextures)
+	{
+		const int32 Idx = CBTextures->GetSelectedIndex();
+		if (Idx >= 0) PendingTextures = FMath::Clamp(Idx, 0, 4);
+	}
+}
+
+void UOBWidget::OnEffectsChanged(FString, ESelectInfo::Type)
+{
+	if (CBEffects)
+	{
+		const int32 Idx = CBEffects->GetSelectedIndex();
+		if (Idx >= 0) PendingEffects = FMath::Clamp(Idx, 0, 4);
+	}
+}
+
+void UOBWidget::OnFoliageChanged(FString, ESelectInfo::Type)
+{
+	if (CBFoliage)
+	{
+		const int32 Idx = CBFoliage->GetSelectedIndex();
+		if (Idx >= 0) PendingFoliage = FMath::Clamp(Idx, 0, 4);
+	}
+}
+
+void UOBWidget::OnShadingChanged(FString, ESelectInfo::Type)
+{
+	if (CBShading)
+	{
+		const int32 Idx = CBShading->GetSelectedIndex();
+		if (Idx >= 0) PendingShading = FMath::Clamp(Idx, 0, 4);
+	}
 }
 
 void UOBWidget::OnLowClicked()
