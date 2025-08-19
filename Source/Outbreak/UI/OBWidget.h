@@ -78,12 +78,12 @@ protected:
 	// //--------Graphics--------//
 	UPROPERTY(meta = (BindWidget))
 	UWidgetSwitcher* WSMain = nullptr;
-	// UPROPERTY(meta = (BindWidget))
-	// UButton* BtnLow;
-	// UPROPERTY(meta = (BindWidget))
-	// UButton* BtnMedium;
-	// UPROPERTY(meta = (BindWidget))
-	// UButton* BtnHigh;
+	UPROPERTY(meta = (BindWidget))
+	UButton* BtnLow;
+	UPROPERTY(meta = (BindWidget))
+	UButton* BtnMedium;
+	UPROPERTY(meta = (BindWidget))
+	UButton* BtnHigh;
 	
 	UPROPERTY(meta = (BindWidget))
 	UComboBoxString* CBShadows;
@@ -100,9 +100,9 @@ protected:
 public:	
 	UFUNCTION() void ShowPauseMenu(bool bShow);
 	UFUNCTION() void ShowGraphics(bool bShow);
-	// UFUNCTION() void OnLowClicked();
-	// UFUNCTION() void OnMediumClicked();
-	// UFUNCTION() void OnHighClicked();
+	UFUNCTION() void OnLowClicked();
+	UFUNCTION() void OnMediumClicked();
+	UFUNCTION() void OnHighClicked();
 	UFUNCTION() void OnApplyClicked();
 	UFUNCTION() void OnResumeClicked();
 	UFUNCTION() void OnOpenGraphicsClicked();

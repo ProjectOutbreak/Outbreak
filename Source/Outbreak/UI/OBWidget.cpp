@@ -42,9 +42,9 @@ void UOBWidget::NativeConstruct()
 	if (BtnBack)  BtnBack->OnClicked.AddDynamic(this, &UOBWidget::OnBackFromGraphics);
 
 	if (WSMain) WSMain->SetActiveWidgetIndex(0);
-	// if (BtnLow)    BtnLow->OnClicked.AddDynamic(this, &UOBWidget::OnLowClicked);
-	// if (BtnMedium) BtnMedium->OnClicked.AddDynamic(this, &UOBWidget::OnMediumClicked);
-	// if (BtnHigh)   BtnHigh->OnClicked.AddDynamic(this, &UOBWidget::OnHighClicked);
+	if (BtnLow)    BtnLow->OnClicked.AddDynamic(this, &UOBWidget::OnLowClicked);
+	if (BtnMedium) BtnMedium->OnClicked.AddDynamic(this, &UOBWidget::OnMediumClicked);
+	if (BtnHigh)   BtnHigh->OnClicked.AddDynamic(this, &UOBWidget::OnHighClicked);
 	
 	if (!GetWorld() || GetWorld()->GetNetMode() == NM_DedicatedServer)
 	{
@@ -242,17 +242,17 @@ void UOBWidget::OnApplyClicked()
 	UGraphicsSettingsLibrary::ApplyCustom(P,true);
 }
 
-// void UOBWidget::OnLowClicked()
-// {
-// 	UGraphicsSettingsLibrary::ApplyPreset(EOBGraphicsPreset::Low, true);
-// }
-//
-// void UOBWidget::OnMediumClicked()
-// {
-// 	UGraphicsSettingsLibrary::ApplyPreset(EOBGraphicsPreset::Medium, true);
-// }
-//
-// void UOBWidget::OnHighClicked()
-// {
-// 	UGraphicsSettingsLibrary::ApplyPreset(EOBGraphicsPreset::High, true);
-// }
+void UOBWidget::OnLowClicked()
+{
+	UGraphicsSettingsLibrary::ApplyPreset(EOBGraphicsPreset::Low, true);
+}
+
+void UOBWidget::OnMediumClicked()
+{
+	UGraphicsSettingsLibrary::ApplyPreset(EOBGraphicsPreset::Medium, true);
+}
+
+void UOBWidget::OnHighClicked()
+{
+	UGraphicsSettingsLibrary::ApplyPreset(EOBGraphicsPreset::High, true);
+}
