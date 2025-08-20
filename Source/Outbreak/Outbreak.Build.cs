@@ -17,6 +17,8 @@ public class Outbreak : ModuleRules
 			"LevelSequence", 
 			"MovieSceneTracks", 
 			"UMG", 
+			"Slate",      
+			"SlateCore",
 			"EnhancedInput", 
 			"NavigationSystem", 
 			"AIModule",

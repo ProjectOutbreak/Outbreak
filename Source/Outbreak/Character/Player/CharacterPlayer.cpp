@@ -1,7 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "CharacterPlayer.h"
-#include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "Camera/CameraComponent.h"
 #include "PaperSprite.h"
@@ -10,8 +9,10 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/TextRenderComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
+#include "Outbreak/Data/PlayerControlData.h"
 #include "Outbreak/Game/Framework/OBGameMode.h"
 #include "Outbreak/Game/Framework/OutBreakGameState.h"
 #include "Outbreak/Manager/CharacterSpawnManager.h"
@@ -21,18 +22,12 @@ ACharacterPlayer::ACharacterPlayer()
 	CharacterType = ECharacterType::Player;
 	PlayerType = EPlayerType::Player1;
 
-	// ----- Camara Component
-	FirstPersonCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
-	FirstPersonCamera -> SetupAttachment(RootComponent);
-	FirstPersonCamera -> SetRelativeLocation(FVector(0, 0, BaseEyeHeight));
-	FirstPersonCamera -> SetWorldRotation(FRotator(0, 90.0f, 0));
-	FirstPersonCamera -> bUsePawnControlRotation = true;
+	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
+	CameraBoom->SetupAttachment(RootComponent);
 
-	TopViewCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("TopViewCamera"));
-	TopViewCamera->SetupAttachment(RootComponent);
-	TopViewCamera->SetRelativeLocation(FVector(0.f, 0.f, 800.f));
-	TopViewCamera->SetRelativeRotation(FRotator(-90.f, 0.f, 0.f));
-	TopViewCamera->bUsePawnControlRotation = false;
+	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
+	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
+	FollowCamera->bUsePawnControlRotation = false;
 
 	// ----- MiniMap
 	SceneCapture = CreateDefaultSubobject<USceneCaptureComponent2D>(TEXT("SceneCapture2D"));
@@ -75,31 +70,32 @@ ACharacterPlayer::ACharacterPlayer()
 	PlayerNameText->bVisibleInSceneCaptureOnly = true;
 	
 	// ----- Mesh
-	static ConstructorHelpers::FObjectFinder<USkeletalMesh> DefaultMesh(TEXT("/Game/FPSAnimationPack/Demo/Characters/Mannequins/Meshes/SKM_Manny.SKM_Manny"));
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> DefaultMesh(TEXT("/Script/Engine.SkeletalMesh'/Game/Art/Characters/SciFiWarrior/Meshes/SKM_Player.SKM_Player'"));
 	if (DefaultMesh.Succeeded())
 	{
 		GetMesh()->SetSkeletalMesh(DefaultMesh.Object);
 	}
-	GetMesh()->SetOwnerNoSee(true);
-	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceClassRef(TEXT("/Script/Engine.AnimBlueprint'/Game/Characters/Mannequins/Animations/ABP_Manny.ABP_Manny_C'"));
+	
+	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceClassRef(TEXT("/Script/Engine.AnimBlueprint'/Game/Blueprints/ABP_Player.ABP_Player_C'"));
 	if (AnimInstanceClassRef.Class)
 	{
 		GetMesh()->SetAnimInstanceClass(AnimInstanceClassRef.Class);
 	}
 	
 	// ----- Input
-	static ConstructorHelpers::FObjectFinder<UInputMappingContext> InputMappingContextRef(TEXT("/Script/EnhancedInput.InputMappingContext'/Game/Inputs/IMC_Player.IMC_Player'"));
-	if (InputMappingContextRef.Object)
+	static ConstructorHelpers::FObjectFinder<UPlayerControlData> FirstPersonDataRef(TEXT("/Script/Outbreak.PlayerControlData'/Game/Data/DA_FirstPersonView.DA_FirstPersonView'"));
+	if (FirstPersonDataRef.Object)
 	{
-		InputMappingContext = InputMappingContextRef.Object;
+		PlayerControlMap.Add(EPlayerControlType::FirstPersonView, FirstPersonDataRef.Object);
 	}
-	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionChangeCamRef(TEXT("/Script/EnhancedInputComponent.InputAction'/Game/Inputs/IA_ChangePerspective.IA_ChangePerspective'"));
-	if (InputActionChangeCamRef.Object)
+
+	static ConstructorHelpers::FObjectFinder<UPlayerControlData> TopViewDataRef(TEXT("/Script/Outbreak.PlayerControlData'/Game/Data/DA_TopView.DA_TopView'"));
+	if (TopViewDataRef.Object)
 	{
-		ChangeCameraAction = InputActionChangeCamRef.Object;
+		PlayerControlMap.Add(EPlayerControlType::TopView, TopViewDataRef.Object);
 	}
 	
-	CurrentCharacterControlType = EPlayerControlType::Top;
+	CurrentCharacterControlType = EPlayerControlType::FirstPersonView;
 }
 
 void ACharacterPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -142,19 +138,9 @@ void ACharacterPlayer::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	GetMesh()->SetOwnerNoSee(true);
-
 	if (IsLocallyControlled())
 	{
-		SetCharacterControl(CurrentCharacterControlType);
-		if (FirstPersonCamera)
-		{
-			FirstPersonCamera->SetActive(true);
-		}
-		if (TopViewCamera)
-		{
-			TopViewCamera->SetActive(false);
-		}
+		SetPlayerControl(CurrentCharacterControlType);
 	}
 }
 
@@ -162,9 +148,6 @@ void ACharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent);
-	
-	EnhancedInputComponent->BindAction(ChangeCameraAction, ETriggerEvent::Triggered, this, &ACharacterPlayer::ToggleCameraMode);
 }
 
 void ACharacterPlayer::OnRep_Die()
@@ -180,35 +163,61 @@ void ACharacterPlayer::OnRep_Die()
 	DetachFromControllerPendingDestroy();
 }
 
-void ACharacterPlayer::ToggleCameraMode()
+void ACharacterPlayer::ChangePlayerControl()
 {
-	if (CurrentCameraMode == ECameraMode::FPS)
+	if (CurrentCharacterControlType == EPlayerControlType::FirstPersonView)
 	{
-		CurrentCameraMode = ECameraMode::TopView;
-		FirstPersonCamera->SetActive(false);
-		FirstPersonCamera -> SetRelativeRotation(FRotator(-10.f,0.f,0.f));
-		GetMesh()->SetOwnerNoSee(false);
-		TopViewCamera->SetActive(true);
+		SetPlayerControl(EPlayerControlType::TopView);
 	}
-	else
+	else if (CurrentCharacterControlType == EPlayerControlType::TopView)
 	{
-		CurrentCameraMode = ECameraMode::FPS;
-		TopViewCamera->SetActive(false);
-		GetMesh()->SetOwnerNoSee(true);
-		FirstPersonCamera->SetActive(true);
+		SetPlayerControl(EPlayerControlType::FirstPersonView);
 	}
 }
 
-void ACharacterPlayer::SetCharacterControl(EPlayerControlType NewCharacterControlType)
+void ACharacterPlayer::SetPlayerControl(EPlayerControlType InPlayerControlType)
 {
-	APlayerController* PlayerController = CastChecked<APlayerController>(GetController());
+	const UPlayerControlData* NewCharacterControl = PlayerControlMap[InPlayerControlType];
+	if (!NewCharacterControl)
+	{
+		UE_LOG(LogTemp, Error, TEXT("[%s] PlayerControlData not found for type: %d"), CURRENT_CONTEXT, static_cast<int32>(InPlayerControlType));
+		return;
+	}
+
+	SetPlayerControlData(NewCharacterControl);
+
+	const APlayerController* PlayerController = CastChecked<APlayerController>(GetController());
 	UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer());
 	if (Subsystem)
 	{
 		Subsystem->ClearAllMappings();
-		Subsystem->AddMappingContext(InputMappingContext, 0);
+		const UInputMappingContext* NewMappingContext = NewCharacterControl->InputMappingContext;
+		if (NewMappingContext)
+		{
+			Subsystem->AddMappingContext(NewMappingContext, 0);
+		}
 	}
-	CurrentCharacterControlType = NewCharacterControlType;
+
+	CurrentCharacterControlType = InPlayerControlType;
+}
+
+void ACharacterPlayer::SetPlayerControlData(const UPlayerControlData* InPlayerControlData)
+{
+	bUseControllerRotationYaw = InPlayerControlData->bUseControllerRotationYaw;
+
+	UCharacterMovementComponent* MovementComp = GetCharacterMovement();
+	MovementComp->bOrientRotationToMovement = InPlayerControlData->bOrientRotationToMovement;
+	MovementComp->bUseControllerDesiredRotation = InPlayerControlData->bUseControllerDesiredRotation;
+	MovementComp->RotationRate = InPlayerControlData->RotationRate;
+
+	CameraBoom->TargetArmLength = InPlayerControlData->TargetArmLength;
+	CameraBoom->SetRelativeRotation(InPlayerControlData->RelativeRotation);
+	CameraBoom->SetRelativeLocation(InPlayerControlData->RelativeLocation);
+	CameraBoom->bUsePawnControlRotation = InPlayerControlData->bUsePawnControlRotation;
+	CameraBoom->bInheritPitch = InPlayerControlData->bInheritPitch;
+	CameraBoom->bInheritYaw = InPlayerControlData->bInheritYaw;
+	CameraBoom->bInheritRoll = InPlayerControlData->bInheritRoll;
+	CameraBoom->bDoCollisionTest = InPlayerControlData->bDoCollisionTest;
 }
 
 void ACharacterPlayer::SetupCollision()

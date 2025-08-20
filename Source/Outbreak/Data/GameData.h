@@ -4,7 +4,7 @@
 #include "StructUtils/InstancedStruct.h"
 #include "GameData.generated.h"
 
-USTRUCT(BlueprintType)
+USTRUCT()
 struct FSingleEnemyData
 {
 	GENERATED_BODY()
@@ -16,10 +16,10 @@ struct FSingleEnemyData
 	int32 SpawnMin = 1;
 
 	UPROPERTY(EditAnywhere)
-	int32 SpawnMax = 1;
+	int32 SpawnMax = 2;
 
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<AActor> Class;
+	TSubclassOf<AActor> Class = nullptr;
 
 	UPROPERTY(EditAnywhere)
 	FInstancedStruct ExtraData;
@@ -28,228 +28,238 @@ struct FSingleEnemyData
 	float CapsuleHalfHeight = 0.0f;
 };
 
-USTRUCT(BlueprintType)
+USTRUCT()
 struct FWaveData
 {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere)
 	TArray<FSingleEnemyData> Enemies;
-
-	FWaveData()
-	{
-		Enemies.Empty();
-	}
 };
 
-USTRUCT(BlueprintType)
+USTRUCT()
 struct FWavesData : public FTableRowBase
 {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere)
 	TArray<FWaveData> Waves;
-	
-	FWavesData()
-	{
-		Waves.Empty();
-	}
 };
 
-USTRUCT(BlueprintType)
+USTRUCT()
 struct FSpawnerSettingData : public FTableRowBase
 {
 	GENERATED_BODY()
 
     UPROPERTY(EditAnywhere)
-    float SpawnDistanceMin;
+    float SpawnDistanceMin = 2000.0f;
 
     UPROPERTY(EditAnywhere)
-    float SpawnDistanceMax;
+    float SpawnDistanceMax = 2500.0f;
 
     UPROPERTY(EditAnywhere)
-    int32 MaxEnemies;
+    int32 MaxEnemies = 100;
 
     UPROPERTY(EditAnywhere)
-    float SpawnInterval;
+    float SpawnInterval = 5.0f;
 
     UPROPERTY(EditAnywhere)
-    bool bUseTagSystem;
+    bool bUseTagSystem = true;
 
     UPROPERTY(EditAnywhere)
-    FName Tag;
+    FName Tag = "Spawn";
 
     UPROPERTY(EditAnywhere)
-    float SpawnHeightLimit;
+    float SpawnHeightLimit = 2500.0f;
 
     UPROPERTY(EditAnywhere)
-    bool bOptimalHeightSpawn;
+    bool bOptimalHeightSpawn = true;
 
     UPROPERTY(EditAnywhere)
-    bool bCentralSpawn;
+    bool bCentralSpawn = false;
 
     UPROPERTY(EditAnywhere)
-    float CentralSpawnHeightDistance;
+    float CentralSpawnHeightDistance = 1000.0f;
 
     UPROPERTY(EditAnywhere)
-    bool bDebug;
-
-    FSpawnerSettingData()
-    {
-        SpawnDistanceMin = 2000.0f;
-        SpawnDistanceMax = 2500.0f;
-        MaxEnemies = 200;
-        SpawnInterval = 5.0f;
-        bUseTagSystem = true;
-        Tag = NAME_None;
-        SpawnHeightLimit = 2500.0f;
-        bOptimalHeightSpawn = true;
-        bCentralSpawn = false;
-        CentralSpawnHeightDistance = 1000.0f;
-        bDebug = false;
-    }
+    bool bDebug = false;
 };
 
-USTRUCT(BlueprintType)
+USTRUCT()
 struct FCharacterBaseData : public FTableRowBase
 {
 	GENERATED_BODY()
 	
-	UPROPERTY(VisibleAnywhere)
-	float MaxWalkSpeed;
+	UPROPERTY(EditAnywhere)
+	float MaxWalkSpeed = 500.0f;
 	
-	UPROPERTY(VisibleAnywhere)
-	float MaxRunSpeed;
+	UPROPERTY(EditAnywhere)
+	float MaxRunSpeed = 1000.0f;
 
-	UPROPERTY(VisibleAnywhere)
-	uint8 bIsCanRun;
+	UPROPERTY(EditAnywhere)
+	uint8 bIsCanRun = 0;
 
-	UPROPERTY(VisibleAnywhere)
-	float AttackRate;
+	UPROPERTY(EditAnywhere)
+	float AttackRate = 1.0f;
 
-	UPROPERTY(VisibleAnywhere)
-	int32 RegenRate;
+	UPROPERTY(EditAnywhere)
+	int32 RegenRate = 0;
 
-	UPROPERTY(VisibleAnywhere)
-	int32 MaxHealth;
+	UPROPERTY(EditAnywhere)
+	int32 MaxHealth = 100;
 
-	UPROPERTY(VisibleAnywhere)
-	int32 MaxExtraHealth;
-	
-	FCharacterBaseData()
-	{
-		MaxWalkSpeed = 500.0f;
-		MaxRunSpeed = 1000.0f;
-		bIsCanRun = false;
-		AttackRate = 1.0f;
-		RegenRate = 0;
-		MaxHealth = 100;
-		MaxExtraHealth = 0;
-	}
+	UPROPERTY(EditAnywhere)
+	int32 MaxExtraHealth = 0;
 };
 
-USTRUCT(BlueprintType)
+USTRUCT()
 struct FPlayerData : public FCharacterBaseData
 {
 	GENERATED_BODY()
 
-	UPROPERTY(VisibleAnywhere)
-	EPlayerType PlayerType;
+	UPROPERTY(EditAnywhere)
+	EPlayerType PlayerType = EPlayerType::None;
 	
-	UPROPERTY(VisibleAnywhere)
-	int32 BottomHealth;
+	UPROPERTY(EditAnywhere)
+	int32 BottomHealth = 0;
 	
-	UPROPERTY(VisibleAnywhere)
-	float MaxCrouchSpeed;
-	
-	FPlayerData()
-	{
-		PlayerType = EPlayerType::None;
-		BottomHealth = 0;
-		MaxCrouchSpeed = 200.0f;
-	}
+	UPROPERTY(EditAnywhere)
+	float MaxCrouchSpeed = 200.0f;
 };
 
-USTRUCT(BlueprintType)
+USTRUCT()
 struct FZombieData : public FCharacterBaseData
 {
 	GENERATED_BODY()
 
-	UPROPERTY(VisibleAnywhere)
-	EZombieType ZombieType;
-	
-	UPROPERTY(VisibleAnywhere)
-	EZombieSubType ZombieSubType;
-	
-	UPROPERTY(VisibleAnywhere)
-	float MaxWanderSpeed;
-	
-	UPROPERTY(VisibleAnywhere)
-	int32 AttackDamage;
-	
-	UPROPERTY(VisibleAnywhere)
-	float AttackRange;
-	
-	UPROPERTY(VisibleAnywhere)
-	float SightRadius;
-	
-	UPROPERTY(VisibleAnywhere)
-	float LoseSightRadius;
-	
-	UPROPERTY(VisibleAnywhere)
-	float PeripheralVisionAngleDegrees;
-	
-	UPROPERTY(VisibleAnywhere)
-	float TurnRate;
-	
-	FZombieData()
-	{
-		ZombieType = EZombieType::None;
-		ZombieSubType = EZombieSubType::None;
-		MaxWanderSpeed = 300.0f;
-		AttackDamage = 10;
-		AttackRange = 100.0f;
-		SightRadius = 2000.0f;
-		LoseSightRadius = 2500.0f;
-		PeripheralVisionAngleDegrees = 90.0f;
-		TurnRate = 5.0f;
-	}
+	UPROPERTY(EditAnywhere)
+	EZombieType ZombieType = EZombieType::None;
+    
+	UPROPERTY(EditAnywhere)
+	EZombieSubType ZombieSubType = EZombieSubType::None;
+    
+	UPROPERTY(EditAnywhere)
+	float MaxWanderSpeed = 300.0f;
+    
+	UPROPERTY(EditAnywhere)
+	int32 AttackDamage = 10;
+    
+	UPROPERTY(EditAnywhere)
+	float AttackRange = 100.0f;
+    
+	UPROPERTY(EditAnywhere)
+	float SightRadius = 2000.0f;
+    
+	UPROPERTY(EditAnywhere)
+	float LoseSightRadius = 2500.0f;
+    
+	UPROPERTY(EditAnywhere)
+	float PeripheralVisionAngleDegrees = 90.0f;
+    
+	UPROPERTY(EditAnywhere)
+	float TurnRate = 5.0f;
 };
 
-USTRUCT(BlueprintType)
+USTRUCT()
+struct FMedicineData : public FTableRowBase
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(EditAnywhere)
+	float HealAmount = 0.0f;
+	
+	UPROPERTY(EditAnywhere)
+	float UseTime = 0.0f;
+
+	UPROPERTY(EditAnywhere)
+	bool bCanUseSelf = true;
+
+	UPROPERTY(EditAnywhere)
+	bool bCanUseOthers = true;
+};
+
+USTRUCT()
 struct FWeaponData : public FTableRowBase
 {
 	GENERATED_BODY()
 	
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	UPROPERTY(EditAnywhere)
+	float Damage = 0.0f;
+};
+
+USTRUCT()
+struct FFirableData : public FWeaponData
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere)
+	float FireRate = 0.0f;
+	
+	UPROPERTY(EditAnywhere)
+	float VerticalRecoil = 0.0f;
+
+	UPROPERTY(EditAnywhere)
+	float HorizontalRecoil = 0.0f;
+
+	UPROPERTY(EditAnywhere)
+	float Ergonomics = 0.0f;
+	
+	UPROPERTY(EditAnywhere)
+	float Accuracy = 0.0f;
+	
+	UPROPERTY(EditAnywhere)
+	float MuzzleVelocity = 0.0f;
+
+	UPROPERTY(EditAnywhere)
+	TArray<EFireType> FireTypes;
+	
+	UPROPERTY(EditAnywhere)
 	float TraceMaxDistance = 0.0f;
 	
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Recoil")
-	float BulletSpread = 0.0f;
-	
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Sound")
-	USoundBase* ShotSound = nullptr;
+	UPROPERTY(EditAnywhere)
+	int32 MagazineSize = 0;
 
-	UPROPERTY(VisibleAnywhere, Category="Weapon")
-	float FireFrequency = 0.0f;
-
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Ammo")
-	int32 MagazineCapacity = 0;
-
-	UPROPERTY(EditAnywhere, Category="Weapon|Ammo")
-	int32 TotalAmmo = 0;
-
-	UPROPERTY(VisibleAnywhere, Category="Weapon|Ammo")
-	int32 CurrentAmmo = 0;
-
-	UPROPERTY(VisibleAnywhere, Category="Weapon|Ammo")
+	UPROPERTY(EditAnywhere)
 	int32 MaxAmmo = 0;
 	
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Ammo")
-	float ReloadDuration = 0.0f;
+	UPROPERTY(EditAnywhere)
+	float ReloadTime = 0.0f;
+};
+
+USTRUCT()
+struct FThrowableData : public FWeaponData
+{
+	GENERATED_BODY()
 	
-	UPROPERTY(EditDefaultsOnly, Category="Weapon|Ammo")
-	bool bIsReloading = false;
+	UPROPERTY(EditAnywhere)
+	int32 MaxCount = 0;
+
+	UPROPERTY(EditAnywhere)
+	float ThrowForce = 0.0f;
+
+	UPROPERTY(EditAnywhere)
+	float ExplosionRadius = 0.0f;
+
+	UPROPERTY(EditAnywhere)
+	float FuseTime = 0.0f;
+};
+
+USTRUCT()
+struct FEquipmentSounds
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<USoundCue> EquipSound = nullptr;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<USoundCue> UnequipSound = nullptr;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<USoundCue> UseSound = nullptr;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<USoundCue> ReloadSound = nullptr;
 };
 
 class OUTBREAK_API GameData { };

@@ -1,14 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
-
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
 #include "PlayerControlData.generated.h"
 
-/**
- * 
- */
 UCLASS()
 class OUTBREAK_API UPlayerControlData : public UPrimaryDataAsset
 {
@@ -26,16 +22,19 @@ public:
 	uint32 bUseControllerDesiredRotation : 1;
 
 	UPROPERTY(EditAnywhere, Category = CharacterMovement)
-	FRotator RotationRate;
+	FRotator RotationRate = FRotator::ZeroRotator;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
-	TObjectPtr<class UInputMappingContext> InputMappingContext;
+	TObjectPtr<class UInputMappingContext> InputMappingContext = nullptr;
 
 	UPROPERTY(EditAnywhere, Category = SpringArm)
-	float TargetArmLength;
+	float TargetArmLength = 400.0f;
 
 	UPROPERTY(EditAnywhere, Category = SpringArm)
-	FRotator RelativeRotation;
+	FRotator RelativeRotation = FRotator::ZeroRotator;
+
+	UPROPERTY(EditAnywhere, Category = SpringArm)
+	FVector RelativeLocation = FVector::ZeroVector;
 
 	UPROPERTY(EditAnywhere, Category = SpringArm)
 	uint32 bUsePawnControlRotation : 1;

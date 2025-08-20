@@ -3,31 +3,43 @@
 
 #include "OBHUD.h"
 #include "OBWidget.h"
+#include "Outbreak/Game/Framework/OBGameInstance.h"
+#include "Kismet/GameplayStatics.h"
 #include "Blueprint/UserWidget.h"
-
-AOBHUD::AOBHUD()
-{
-	static ConstructorHelpers::FClassFinder<UUserWidget> WidgetBPClass(TEXT("/Script/UMGEditor.WidgetBlueprint'/Game/Blueprints/UI/WBP_OBWidget.WBP_OBWidget_C'"));
-	if (WidgetBPClass.Succeeded())
-	{
-		WidgetClass = WidgetBPClass.Class;
-	}
-}
-
 
 
 void AOBHUD::BeginPlay()
 {
-	Super::BeginPlay();
+    Super::BeginPlay();
 
-	if (WidgetClass)
-		OB_Widget = CreateWidget<UOBWidget>(GetWorld(), WidgetClass);
-		if (OB_Widget)
-		{
-			OB_Widget->AddToViewport();
-			OB_Widget->SetVisibility(ESlateVisibility::Visible);
-			OB_Widget->SetAnnouncementText(""); 
-		}
+    if (UOBGameInstance* GI = GetGameInstance<UOBGameInstance>())
+    {
+        if (TSubclassOf<UUserWidget> Cached = GI->GetCachedWidgetClass())
+        {
+            WidgetClass = Cached;
+        }
+    }
+	
+	APlayerController* PC = GetOwningPlayerController();
+    if (!PC)
+    {
+        PC = UGameplayStatics::GetPlayerController(this, 0);
+    }
+
+    if (WidgetClass && PC)
+    {
+        if (!OB_Widget)
+        {
+            OB_Widget = CreateWidget<UOBWidget>(PC, WidgetClass);
+        }
+
+        if (OB_Widget)
+        {
+            OB_Widget->AddToViewport();
+            OB_Widget->SetVisibility(ESlateVisibility::Visible);
+            OB_Widget->SetAnnouncementText("");
+        }
+    }
 }
 
 void AOBHUD::SetCutsceneMode(bool bEnable)
