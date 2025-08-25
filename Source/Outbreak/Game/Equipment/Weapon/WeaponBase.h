@@ -19,7 +19,7 @@ public:
 	AWeaponBase();
 	virtual void OnUse() override PURE_VIRTUAL(AWeaponBase::OnUse, );
 	virtual void OnEndUse() override PURE_VIRTUAL(AWeaponBase::OnEndUse, );
-	virtual bool CanUse() const override { return !bIsAttacking; }
+	virtual bool CanUse() const override PURE_VIRTUAL(AWeaponBase::CanUse, return true;);
 
 	EWeaponType GetWeaponType() const { return WeaponType; }
 	float GetBaseDamage() const { return WeaponData.Damage; }

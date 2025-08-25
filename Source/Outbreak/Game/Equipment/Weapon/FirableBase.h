@@ -18,6 +18,7 @@ public:
 	AFirableBase();
 	virtual void OnUse() override { StartFire(); }
 	virtual void OnEndUse() override { StopFire(); }
+	virtual bool CanUse() const override { return !bIsInUse && !bIsReloading && CurrentAmmoInMag > 0; }
 
 	void StartFire();
 	void StopFire();
