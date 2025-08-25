@@ -25,12 +25,3 @@ void AEquipmentBase::Tick(float DeltaTime)
 	Super::Tick(DeltaTime); 
 
 }
-
-void AEquipmentBase::PlaySound(TObjectPtr<USoundCue> Sound)
-{
-}
-
-void AEquipmentBase::SetMeshVisibility(bool bVisible)
-{
-}
-

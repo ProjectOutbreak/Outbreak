@@ -41,15 +41,6 @@ void AFirableBase::Reload()
 	UE_LOG(LogTemp, Log, TEXT("[%s] Reload"), CURRENT_CONTEXT);
 }
 
-bool AFirableBase::NeedsReload() const
-{
-	return false;
-}
-
-void AFirableBase::AddAmmo(int32 Amount)
-{
-}
-
 void AFirableBase::ProcessFire()
 {
 	UE_LOG(LogTemp, Log, TEXT("[%s] ProcessFire"), CURRENT_CONTEXT);
@@ -64,9 +55,5 @@ void AFirableBase::StartReload()
 }
 
 void AFirableBase::FinishReload()
-{
-}
-
-void AFirableBase::OnReloadComplete()
 {
 }

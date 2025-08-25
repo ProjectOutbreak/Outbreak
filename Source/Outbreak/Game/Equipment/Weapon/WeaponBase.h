@@ -25,7 +25,6 @@ public:
 	float GetBaseDamage() const { return WeaponData.Damage; }
 
 protected:
-	virtual void PlayAttackEffects();
 	virtual void DealDamage(AActor* Target, float Damage);
 
 // --------------------
@@ -34,11 +33,4 @@ protected:
 protected:
 	EWeaponType WeaponType;
 	FWeaponData WeaponData;
-	bool bIsAttacking = false;
-
-	UPROPERTY()
-	TObjectPtr<class UNiagaraSystem> AttackEffect;
-	
-	UPROPERTY()
-	TObjectPtr<class USoundCue> AttackSound;
 };

@@ -27,8 +27,6 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
-	void PlaySound(TObjectPtr<USoundCue> Sound);
-	void SetMeshVisibility(bool bVisible);
 
 // --------------------
 // Variables
@@ -37,9 +35,9 @@ protected:
 	UPROPERTY(EditAnywhere)
 	EEquipmentType EquipmentType = EEquipmentType::PrimaryWeapon;
 	
-	FString EquipmentName;
-	int32 SlotIndex;
-	bool bIsInUse;
+	FString EquipmentName = "Equipment";
+	int32 SlotIndex = 1;
+	bool bIsInUse = false;
 
 	UPROPERTY()
 	TObjectPtr<UTexture2D> EquipmentIcon;

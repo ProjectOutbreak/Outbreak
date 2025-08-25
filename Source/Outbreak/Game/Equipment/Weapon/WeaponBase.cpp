@@ -7,10 +7,6 @@ AWeaponBase::AWeaponBase()
 {
 }
 
-void AWeaponBase::PlayAttackEffects()
-{
-}
-
 void AWeaponBase::DealDamage(AActor* Target, float Damage)
 {
 }

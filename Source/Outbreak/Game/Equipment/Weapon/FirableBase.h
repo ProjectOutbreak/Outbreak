@@ -23,13 +23,10 @@ public:
 	void StopFire();
 	void Reload();
 
-	bool NeedsReload() const;
 	bool IsReloading() const { return bIsReloading; }
-
 	int32 GetCurrentAmmoInMag() const { return CurrentAmmoInMag; }
 	int32 GetCurrentTotalAmmo() const { return CurrentTotalAmmo; }
 	FFirableData GetFirableData() const { return FirableData; }
-	void AddAmmo(int32 Amount);
 	void SetFireType(const EFireType NewFireType) { CurrentFireType = NewFireType; }
 
 protected:
@@ -38,10 +35,7 @@ protected:
 
 	virtual void StartReload();
 	virtual void FinishReload();
-
-	UFUNCTION()
-	void OnReloadComplete();
-
+	
 // --------------------
 // Variables
 // --------------------
@@ -52,14 +46,5 @@ protected:
 	int32 CurrentTotalAmmo = 0;
 	EFireType CurrentFireType = EFireType::Auto;
 	bool bIsReloading = false;
-	bool bCanFire = true;
 	FTimerHandle FireTimerHandle;
-	FTimerHandle ReloadTimerHandle;
-	FTimerHandle ReloadTimer;
-	
-	UPROPERTY()
-	TObjectPtr<class UNiagaraSystem> MuzzleFlash;
-
-	UPROPERTY()
-	TObjectPtr<class USoundCue> FireSound;
 };
