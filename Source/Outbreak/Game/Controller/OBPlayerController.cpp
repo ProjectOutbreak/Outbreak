@@ -141,7 +141,7 @@ void AOBPlayerController::TopMove(const FInputActionValue& Value)
 
 void AOBPlayerController::Jump()
 {
-	if (!ControlledCharacter) return;
+	if (!ControlledCharacter || bMenuOpen) return;
 	
 	ControlledCharacter->Jump();
 }
@@ -183,7 +183,7 @@ void AOBPlayerController::StopCrouch()
 
 void AOBPlayerController::ChangePlayerControl()
 {
-	if (!ControlledCharacter) return;
+	if (!ControlledCharacter || bMenuOpen) return;
 	
 	ControlledCharacter->ChangePlayerControl();
 }

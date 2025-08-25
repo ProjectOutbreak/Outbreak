@@ -37,7 +37,6 @@ protected:
 private:
 	void SetPlayerControl(EPlayerControlType InPlayerControlType);
 	void SetPlayerControlData(const class UPlayerControlData* InPlayerControlData);
-	
 
 // --------------------
 // Variables
