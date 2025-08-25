@@ -10,17 +10,22 @@
 
 AOBPlayerController::AOBPlayerController()
 {
-	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionMoveRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Inputs/IA_Move.IA_Move'"));
-	if (InputActionMoveRef.Object)
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionFirstPersonMoveRef(TEXT("/Game/Inputs/Actions/IA_FirstPersonMove.IA_FirstPersonMove"));
+	if (InputActionFirstPersonMoveRef.Object)
 	{
-		MoveAction = InputActionMoveRef.Object;
+		FirstPersonMoveAction = InputActionFirstPersonMoveRef.Object;
 	}
-	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionLookRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Inputs/IA_Look.IA_Look'"));
-	if (InputActionLookRef.Object)
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionFirstPersonLookRef(TEXT("/Game/Inputs/Actions/IA_FirstPersonLook.IA_FirstPersonLook"));
+	if (InputActionFirstPersonLookRef.Object)
 	{
-		LookAction = InputActionLookRef.Object;
+		FirstPersonLookAction = InputActionFirstPersonLookRef.Object;
 	}
-	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionJumpRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Inputs/IA_Jump.IA_Jump'"));
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionTopMoveRef(TEXT("/Game/Inputs/Actions/IA_TopMove.IA_TopMove"));
+	if (InputActionTopMoveRef.Object)
+	{
+		TopMoveAction = InputActionTopMoveRef.Object;
+	}
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionJumpRef(TEXT("/Game/Inputs/Actions/IA_Jump.IA_Jump"));
 	if (InputActionJumpRef.Object)
 	{
 		JumpAction = InputActionJumpRef.Object;
@@ -34,6 +39,11 @@ AOBPlayerController::AOBPlayerController()
 	if (InputActionCrouchRef.Object)
 	{
 		CrouchAction = InputActionCrouchRef.Object;
+	}
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionChangeCamRef(TEXT("/Game/Inputs/Actions/IA_ChangeControl.IA_ChangeControl"));
+	if (InputActionChangeCamRef.Object)
+	{
+		ChangePlayerControlAction = InputActionChangeCamRef.Object;
 	}
 	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionToggleMenuRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Inputs/IA_ToggleMenu.IA_ToggleMenu'"));
 	if (InputActionToggleMenuRef.Object)
@@ -63,18 +73,20 @@ void AOBPlayerController::SetupInputComponent()
 	Super::SetupInputComponent();
 	
 	UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(InputComponent);
-	EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AOBPlayerController::Move);
-	EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AOBPlayerController::Look);
+	EnhancedInputComponent->BindAction(FirstPersonMoveAction, ETriggerEvent::Triggered, this, &AOBPlayerController::FirstPersonMove);
+	EnhancedInputComponent->BindAction(FirstPersonLookAction, ETriggerEvent::Triggered, this, &AOBPlayerController::FirstPersonLook);
+	EnhancedInputComponent->BindAction(TopMoveAction, ETriggerEvent::Triggered, this, &AOBPlayerController::TopMove);
 	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &AOBPlayerController::Jump);
 	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &AOBPlayerController::StopJumping);
 	EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Started, this, &AOBPlayerController::Run);
 	EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &AOBPlayerController::StopRun);
 	EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Started, this, &AOBPlayerController::Crouch);
 	EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Completed, this, &AOBPlayerController::StopCrouch);
+	EnhancedInputComponent->BindAction(ChangePlayerControlAction, ETriggerEvent::Triggered, this, &AOBPlayerController::ChangePlayerControl);
 	EnhancedInputComponent->BindAction(ToggleMenuAction, ETriggerEvent::Started, this, &AOBPlayerController::TogglePauseMenu);
 }
 
-void AOBPlayerController::Move(const FInputActionValue& Value)
+void AOBPlayerController::FirstPersonMove(const FInputActionValue& Value)
 {
 	if (bMenuOpen) return;
 
@@ -95,54 +107,87 @@ void AOBPlayerController::Move(const FInputActionValue& Value)
 	}
 }
 
-void AOBPlayerController::Look(const FInputActionValue& Value)
+void AOBPlayerController::FirstPersonLook(const FInputActionValue& Value)
 {
+	if (!ControlledCharacter) return;
+	
 	if (bMenuOpen) return;
 	const FVector2D LookAxis = Value.Get<FVector2D>();
-	if (ControlledCharacter)
+	ControlledCharacter->AddControllerYawInput(LookAxis.X);
+	ControlledCharacter->AddControllerPitchInput(LookAxis.Y);
+}
+
+void AOBPlayerController::TopMove(const FInputActionValue& Value)
+{
+	if (!ControlledCharacter) return;
+	
+	FVector2D MovementVector = Value.Get<FVector2D>();
+
+	float MovementVectorSize = 1.0f;
+	const float MovementVectorSizeSquared = MovementVector.SquaredLength();
+	if (MovementVectorSizeSquared > 1.0f)
 	{
-		ControlledCharacter->AddControllerYawInput(LookAxis.X);
-		ControlledCharacter->AddControllerPitchInput(LookAxis.Y);
+		MovementVector.Normalize();
 	}
+	else
+	{
+		MovementVectorSize = FMath::Sqrt(MovementVectorSizeSquared);
+	}
+
+	const FVector MoveDirection = FVector(MovementVector.X, MovementVector.Y, 0.0f);
+	ControlledCharacter->GetController()->SetControlRotation(FRotationMatrix::MakeFromX(MoveDirection).Rotator());
+	ControlledCharacter->AddMovementInput(MoveDirection, MovementVectorSize);
 }
 
 void AOBPlayerController::Jump()
 {
-	if (bMenuOpen) return;
-	if (ControlledCharacter)
-	{
-		ControlledCharacter->Jump();
-	}
+	if (!ControlledCharacter) return;
+	
+	ControlledCharacter->Jump();
 }
 
 void AOBPlayerController::StopJumping()
 {
-	if (ControlledCharacter)
-	{
-		ControlledCharacter->StopJumping();
-	}
+	if (!ControlledCharacter) return;
+	
+	ControlledCharacter->StopJumping();
 }
 
 void AOBPlayerController::Run()
 {
-	if (bMenuOpen) return;
+	if (!ControlledCharacter) return;
+	
 	ControlledCharacter->GetCharacterMovement()->MaxWalkSpeed = SprintSpeed;
 }
 
 void AOBPlayerController::StopRun()
 {
+	if (!ControlledCharacter) return;
+	
 	ControlledCharacter->GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 }
 
 void AOBPlayerController::Crouch()
 {
+	if (!ControlledCharacter) return;
+	
 	ControlledCharacter->GetCharacterMovement()->MaxWalkSpeed = CrouchSpeed;
 }
 
 void AOBPlayerController::StopCrouch()
 {
+	if (!ControlledCharacter) return;
+	
 	ControlledCharacter->GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 }
+
+void AOBPlayerController::ChangePlayerControl()
+{
+	if (!ControlledCharacter) return;
+	
+	ControlledCharacter->ChangePlayerControl();
+}
+
 
 void AOBPlayerController::TogglePauseMenu()
 {

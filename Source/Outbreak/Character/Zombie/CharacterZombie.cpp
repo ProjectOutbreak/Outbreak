@@ -26,7 +26,7 @@ ACharacterZombie::ACharacterZombie()
 		GetMesh()->SetSkeletalMesh(DefaultMesh.Object);
 	}
 	
-	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceClassRef(TEXT("/Game/Characters/Mannequins/Animations/ABP_Quinn.ABP_Quinn_C"));
+	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceClassRef(TEXT("/Script/Engine.AnimBlueprint'/Game/Art/Characters/Mannequins/Animations/ABP_Manny.ABP_Manny_C'"));
 	if (AnimInstanceClassRef.Class)
 	{
 		GetMesh()->SetAnimInstanceClass(AnimInstanceClassRef.Class);

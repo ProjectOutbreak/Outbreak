@@ -25,25 +25,31 @@ protected:
 	virtual void SetupInputComponent() override;
 
 private:
-	void Move(const struct FInputActionValue& Value);
-	void Look(const struct FInputActionValue& Value);
+	void FirstPersonMove(const struct FInputActionValue& Value);
+	void FirstPersonLook(const struct FInputActionValue& Value);
+	void TopMove(const struct FInputActionValue& Value);
 	void Jump();
 	void StopJumping();
 	void Run();
 	void StopRun();
 	void Crouch();
 	void StopCrouch();
+	void ChangePlayerControl();
+
 // --------------------
 // Variables
 // --------------------
 	UPROPERTY()
 	TObjectPtr<class ACharacterPlayer> ControlledCharacter;
+	
+	UPROPERTY()
+	TObjectPtr<class UInputAction> TopMoveAction;
+	
+	UPROPERTY()
+	TObjectPtr<class UInputAction> FirstPersonMoveAction;
 
 	UPROPERTY()
-	TObjectPtr<class UInputAction> MoveAction;
-
-	UPROPERTY()
-	TObjectPtr<class UInputAction> LookAction;
+	TObjectPtr<class UInputAction> FirstPersonLookAction;
 
 	UPROPERTY()
 	TObjectPtr<class UInputAction> JumpAction;
@@ -51,8 +57,12 @@ private:
 	UPROPERTY()
 	TObjectPtr<class UInputAction> SprintAction;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY()
 	TObjectPtr<class UInputAction> CrouchAction;
+
+	UPROPERTY()
+	TObjectPtr<class UInputAction> ChangePlayerControlAction;
+	
 
 	UPROPERTY()
 	TObjectPtr<class UInputAction> ToggleMenuAction;
