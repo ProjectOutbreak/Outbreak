@@ -21,49 +21,25 @@ void UOBWidget::NativeConstruct()
 	
 	const FScalabilityPreset Cur = UGraphicsSettingsLibrary::GetCurrent();
 
-	auto InitCombo = [](UComboBoxString* CB)
-	{
-		if (!CB) return;
-		CB->ClearOptions();
-		CB->AddOption(TEXT("Low"));
-		CB->AddOption(TEXT("Medium"));
-		CB->AddOption(TEXT("High"));
-		CB->AddOption(TEXT("Epic"));
-		CB->AddOption(TEXT("Cinematic"));
-	};
 	{
 		TArray<UComboBoxString*> AllCBs = {
-			CBViewDistance,
-			CBAntiAliasing,
-			CBPostProcess,
-			CBShadows,
-			CBGlobalIllumination,
-			CBReflections,
-			CBTextures,
-			CBEffects,
-			CBFoliage,
-			CBShading
+			CBViewDistance, CBAntiAliasing, CBPostProcess, CBShadows,
+			CBGlobalIllumination, CBReflections, CBTextures, CBEffects,
+			CBFoliage, CBShading
 		};
-		for (UComboBoxString* CB : AllCBs) { InitCombo(CB); }
+		GraphicOptionHelper::BulkInitQualityOptions(AllCBs);
 	}
 
-	auto SetupCombo = [this](UComboBoxString* CB, int32* PendingPtr, int CurVal)
-	{
-		if (!CB || !PendingPtr) return;
-		*PendingPtr = FMath::Clamp(CurVal, 0, 4);
-		CB->SetSelectedIndex(*PendingPtr);
-	};
-
-	SetupCombo(CBViewDistance,       &PendingViewDistance,       Cur.ViewDistance);
-	SetupCombo(CBAntiAliasing,       &PendingAntiAliasing,       Cur.AntiAliasing);
-	SetupCombo(CBPostProcess,        &PendingPostProcess,        Cur.PostProcess);
-	SetupCombo(CBShadows,            &PendingShadow,             Cur.Shadows);
-	SetupCombo(CBGlobalIllumination, &PendingGlobalIllumination, Cur.GlobalIllumination);
-	SetupCombo(CBReflections,        &PendingReflections,        Cur.Reflections);
-	SetupCombo(CBTextures,           &PendingTextures,           Cur.Textures);
-	SetupCombo(CBEffects,            &PendingEffects,            Cur.Effects);
-	SetupCombo(CBFoliage,            &PendingFoliage,            Cur.Foliage);
-	SetupCombo(CBShading,            &PendingShading,            Cur.Shading);
+	GraphicOptionHelper::SetupComboAndPending(CBViewDistance,       PendingViewDistance,       Cur.ViewDistance);
+	GraphicOptionHelper::SetupComboAndPending(CBAntiAliasing,       PendingAntiAliasing,       Cur.AntiAliasing);
+	GraphicOptionHelper::SetupComboAndPending(CBPostProcess,        PendingPostProcess,        Cur.PostProcess);
+	GraphicOptionHelper::SetupComboAndPending(CBShadows,            PendingShadow,             Cur.Shadows);
+	GraphicOptionHelper::SetupComboAndPending(CBGlobalIllumination, PendingGlobalIllumination, Cur.GlobalIllumination);
+	GraphicOptionHelper::SetupComboAndPending(CBReflections,        PendingReflections,        Cur.Reflections);
+	GraphicOptionHelper::SetupComboAndPending(CBTextures,           PendingTextures,           Cur.Textures);
+	GraphicOptionHelper::SetupComboAndPending(CBEffects,            PendingEffects,            Cur.Effects);
+	GraphicOptionHelper::SetupComboAndPending(CBFoliage,            PendingFoliage,            Cur.Foliage);
+	GraphicOptionHelper::SetupComboAndPending(CBShading,            PendingShading,            Cur.Shading);
 
 	if (CBViewDistance)       { CBViewDistance->OnSelectionChanged.AddDynamic(this, &UOBWidget::OnViewDistanceChanged); }
 	if (CBAntiAliasing)       { CBAntiAliasing->OnSelectionChanged.AddDynamic(this, &UOBWidget::OnAntiAliasingChanged); }
@@ -268,110 +244,66 @@ void UOBWidget::OnBackFromGraphics()
 
 void UOBWidget::OnApplyClicked()
 {
-	FScalabilityPreset P = UGraphicsSettingsLibrary::GetCurrent();
-
-	if (CBViewDistance)        P.ViewDistance = PendingViewDistance;
-	if (CBAntiAliasing)        P.AntiAliasing = PendingAntiAliasing;
-	if (CBPostProcess)         P.PostProcess  = PendingPostProcess;
-	if (CBShadows)             P.Shadows = PendingShadow;
-	if (CBGlobalIllumination)  P.GlobalIllumination = PendingGlobalIllumination;
-	if (CBReflections)         P.Reflections = PendingReflections;
-	if (CBTextures)            P.Textures = PendingTextures;
-	if (CBEffects)             P.Effects = PendingEffects;
-	if (CBFoliage)             P.Foliage = PendingFoliage;
-	if (CBShading)             P.Shading = PendingShading;
-
+	const FScalabilityPreset Cur = UGraphicsSettingsLibrary::GetCurrent();
+	const FScalabilityPreset P = GraphicOptionHelper::BuildPresetFromPending(
+		Cur,
+		PendingViewDistance, PendingAntiAliasing, PendingPostProcess, PendingShadow,
+		PendingGlobalIllumination, PendingReflections, PendingTextures, PendingEffects,
+		PendingFoliage, PendingShading,
+		CBViewDistance, CBAntiAliasing, CBPostProcess, CBShadows,
+		CBGlobalIllumination, CBReflections, CBTextures, CBEffects, CBFoliage, CBShading
+	);
 	UGraphicsSettingsLibrary::ApplyCustom(P, true);
 }
 
-
 void UOBWidget::OnViewDistanceChanged(FString, ESelectInfo::Type)
 {
-	if (CBViewDistance)
-	{
-		const int32 Idx = CBViewDistance->GetSelectedIndex();
-		if (Idx >= 0) PendingViewDistance = FMath::Clamp(Idx, 0, 4);
-	}
+	GraphicOptionHelper::SetPendingFromCombo(CBViewDistance, PendingViewDistance);
 }
 
 void UOBWidget::OnAntiAliasingChanged(FString, ESelectInfo::Type)
 {
-	if (CBAntiAliasing)
-	{
-		const int32 Idx = CBAntiAliasing->GetSelectedIndex();
-		if (Idx >= 0) PendingAntiAliasing = FMath::Clamp(Idx, 0, 4);
-	}
+	GraphicOptionHelper::SetPendingFromCombo(CBAntiAliasing, PendingAntiAliasing);
 }
 
 void UOBWidget::OnPostProcessChanged(FString, ESelectInfo::Type)
 {
-	if (CBPostProcess)
-	{
-		const int32 Idx = CBPostProcess->GetSelectedIndex();
-		if (Idx >= 0) PendingPostProcess = FMath::Clamp(Idx, 0, 4);
-	}
+	GraphicOptionHelper::SetPendingFromCombo(CBPostProcess, PendingPostProcess);
 }
 
-void UOBWidget::OnShadowsChanged(FString SelectedItem, ESelectInfo::Type)
+void UOBWidget::OnShadowsChanged(FString, ESelectInfo::Type)
 {
-	if (CBShadows) {
-		const int32 Idx = CBShadows->GetSelectedIndex();
-		if (Idx >= 0) PendingShadow = FMath::Clamp(Idx, 0, 4);
-	}
+	GraphicOptionHelper::SetPendingFromCombo(CBShadows, PendingShadow);
 }
 
 void UOBWidget::OnGlobalIlluminationChanged(FString, ESelectInfo::Type)
 {
-	if (CBGlobalIllumination)
-	{
-		const int32 Idx = CBGlobalIllumination->GetSelectedIndex();
-		if (Idx >= 0) PendingGlobalIllumination = FMath::Clamp(Idx, 0, 4);
-	}
+	GraphicOptionHelper::SetPendingFromCombo(CBGlobalIllumination, PendingGlobalIllumination);
 }
 
 void UOBWidget::OnReflectionsChanged(FString, ESelectInfo::Type)
 {
-	if (CBReflections)
-	{
-		const int32 Idx = CBReflections->GetSelectedIndex();
-		if (Idx >= 0) PendingReflections = FMath::Clamp(Idx, 0, 4);
-	}
+	GraphicOptionHelper::SetPendingFromCombo(CBReflections, PendingReflections);
 }
 
 void UOBWidget::OnTexturesChanged(FString, ESelectInfo::Type)
 {
-	if (CBTextures)
-	{
-		const int32 Idx = CBTextures->GetSelectedIndex();
-		if (Idx >= 0) PendingTextures = FMath::Clamp(Idx, 0, 4);
-	}
+	GraphicOptionHelper::SetPendingFromCombo(CBTextures, PendingTextures);
 }
 
 void UOBWidget::OnEffectsChanged(FString, ESelectInfo::Type)
 {
-	if (CBEffects)
-	{
-		const int32 Idx = CBEffects->GetSelectedIndex();
-		if (Idx >= 0) PendingEffects = FMath::Clamp(Idx, 0, 4);
-	}
+	GraphicOptionHelper::SetPendingFromCombo(CBEffects, PendingEffects);
 }
 
 void UOBWidget::OnFoliageChanged(FString, ESelectInfo::Type)
 {
-	if (CBFoliage)
-	{
-		const int32 Idx = CBFoliage->GetSelectedIndex();
-		if (Idx >= 0) PendingFoliage = FMath::Clamp(Idx, 0, 4);
-	}
+	GraphicOptionHelper::SetPendingFromCombo(CBFoliage, PendingFoliage);
 }
 
 void UOBWidget::OnShadingChanged(FString, ESelectInfo::Type)
 {
-	if (CBShading)
-	{
-		const int32 Idx = CBShading->GetSelectedIndex();
-		if (Idx >= 0) PendingShading = FMath::Clamp(Idx, 0, 4);
-	}
+	GraphicOptionHelper::SetPendingFromCombo(CBShading, PendingShading);
 }
 
 void UOBWidget::OnLowClicked()
@@ -406,24 +338,4 @@ void UOBWidget::OnHighClicked()
 		CBViewDistance, CBAntiAliasing, CBPostProcess, CBShadows,
 		CBGlobalIllumination, CBReflections, CBTextures, CBEffects, CBFoliage, CBShading
 	);
-}
-void UOBWidget::RefreshGraphicsCombosFromCurrent()
-{
-	const FScalabilityPreset Cur = UGraphicsSettingsLibrary::GetCurrent();
-	auto SetCombo = [](UComboBoxString* CB, int32& Pending, int CurVal)
-	{
-		if(!CB) return;
-		Pending = FMath::Clamp(CurVal, 0, 4);
-		CB->SetSelectedIndex(Pending);
-	};
-	SetCombo(CBViewDistance,       PendingViewDistance,       Cur.ViewDistance);
-	SetCombo(CBAntiAliasing,       PendingAntiAliasing,       Cur.AntiAliasing);
-	SetCombo(CBPostProcess,        PendingPostProcess,        Cur.PostProcess);
-	SetCombo(CBShadows,            PendingShadow,             Cur.Shadows);
-	SetCombo(CBGlobalIllumination, PendingGlobalIllumination, Cur.GlobalIllumination);
-	SetCombo(CBReflections,        PendingReflections,        Cur.Reflections);
-	SetCombo(CBTextures,           PendingTextures,           Cur.Textures);
-	SetCombo(CBEffects,            PendingEffects,            Cur.Effects);
-	SetCombo(CBFoliage,            PendingFoliage,            Cur.Foliage);
-	SetCombo(CBShading,            PendingShading,            Cur.Shading);
 }

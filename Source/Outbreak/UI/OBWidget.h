@@ -123,8 +123,6 @@ public:
 	UFUNCTION() void OnResumeClicked();
 	UFUNCTION() void OnOpenGraphicsClicked();
     UFUNCTION() void OnBackFromGraphics();
-	UFUNCTION() void RefreshGraphicsCombosFromCurrent();
-
 
 	UFUNCTION() void OnViewDistanceChanged(FString SelectedItem, ESelectInfo::Type SelectionType);
 	UFUNCTION() void OnAntiAliasingChanged(FString SelectedItem, ESelectInfo::Type SelectionType);
