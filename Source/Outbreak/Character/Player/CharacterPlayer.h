@@ -7,6 +7,7 @@
 #include "PaperSpriteComponent.h"
 #include "Components/TextRenderComponent.h"
 #include "Outbreak/Character/CharacterBase.h"
+#include "Outbreak/Component/EquipmentController.h"
 #include "Outbreak/Data/GameData.h"
 #include "Outbreak/Util/Define.h"
 #include "CharacterPlayer.generated.h"
@@ -23,6 +24,11 @@ public:
 	ACharacterPlayer();
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	void ChangePlayerControl();
+	void HandleUse() const { EquipmentController->HandleUse(); }
+	void HandleEndUse() const { EquipmentController->HandleEndUse(); }
+	void HandleReload() const { EquipmentController->HandleReload(); }
+	void HandleEquipBySlot(const int32 SlotNumber) const { EquipmentController->EquipBySlot(SlotNumber); }
+	void HandleToggleFireMode() const { EquipmentController->HandleToggleFireMode(); }
 	
 protected:
 	virtual void BeginPlay() override;
@@ -52,6 +58,9 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<class UCameraComponent> FollowCamera;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TObjectPtr<class UEquipmentController> EquipmentController;
 	
 	UPROPERTY(Replicated)
 	FPlayerData PlayerData;

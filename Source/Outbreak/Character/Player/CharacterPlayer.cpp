@@ -12,7 +12,10 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
+#include "Outbreak/Component/EquipmentController.h"
 #include "Outbreak/Data/PlayerControlData.h"
+#include "Outbreak/Game/Equipment/Weapon/Ak47.h"
+#include "Outbreak/Game/Equipment/Weapon/WeaponBase.h"
 #include "Outbreak/Game/Framework/OBGameMode.h"
 #include "Outbreak/Game/Framework/OutBreakGameState.h"
 #include "Outbreak/Manager/CharacterSpawnManager.h"
@@ -28,6 +31,8 @@ ACharacterPlayer::ACharacterPlayer()
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
+
+	EquipmentController = CreateDefaultSubobject<UEquipmentController>(TEXT("EquipmentController"));
 
 	// ----- MiniMap
 	SceneCapture = CreateDefaultSubobject<USceneCaptureComponent2D>(TEXT("SceneCapture2D"));

@@ -17,15 +17,9 @@ class OUTBREAK_API AWeaponBase : public AEquipmentBase
 // --------------------	
 public:
 	AWeaponBase();
-	virtual void OnEquip(TObjectPtr<class ACharacterPlayer> Character) override;
-	virtual void OnUnequip() override;
-	virtual void OnUse() override { StartAttack(); }
-	virtual bool CanUse() const override { return CanAttack(); }
-
-	virtual void Attack() PURE_VIRTUAL(AWeaponBase::Attack, );
-	virtual void StartAttack() { Attack(); }
-	virtual void StopAttack() { bIsAttacking = false; }
-	virtual bool CanAttack() const { return !bIsAttacking; }
+	virtual void OnUse() override PURE_VIRTUAL(AWeaponBase::OnUse, );
+	virtual void OnEndUse() override PURE_VIRTUAL(AWeaponBase::OnEndUse, );
+	virtual bool CanUse() const override { return !bIsAttacking; }
 
 	EWeaponType GetWeaponType() const { return WeaponType; }
 	float GetBaseDamage() const { return WeaponData.Damage; }

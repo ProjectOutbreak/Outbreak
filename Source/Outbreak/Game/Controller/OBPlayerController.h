@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+#include "Outbreak/Util/Define.h"
 #include "OBPlayerController.generated.h"
 
 UCLASS()
@@ -33,6 +34,11 @@ private:
 	void Crouch();
 	void StopCrouch();
 	void ChangePlayerControl();
+	void Use();
+	void EndUse();
+	void Reload();
+	void SelectEquipment(const struct FInputActionValue& Value);
+	void ToggleFireMode();
 
 // --------------------
 // Variables
@@ -60,6 +66,21 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<class UInputAction> ChangePlayerControlAction;
+
+	UPROPERTY()
+	TObjectPtr<class UInputAction> UseAction;
+	
+	UPROPERTY()
+	TObjectPtr<class UInputAction> EndUseAction;
+
+	UPROPERTY()
+	TObjectPtr<class UInputAction> ReloadAction;
+
+	UPROPERTY()
+	TObjectPtr<class UInputAction> SelectEquipmentAction;
+	
+	UPROPERTY()
+	TObjectPtr<class UInputAction> ToggleFireModeAction;
 	
 	UPROPERTY(EditAnywhere, Category = "Config|Movement")
 	float WalkSpeed = 600.f;

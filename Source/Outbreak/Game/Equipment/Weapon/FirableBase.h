@@ -16,20 +16,21 @@ class OUTBREAK_API AFirableBase : public AWeaponBase
 // --------------------	
 public:
 	AFirableBase();
-	virtual void Attack() override;
-	virtual void StartAttack() override;
-	virtual void StopAttack() override;
-	virtual bool CanAttack() const override;
+	virtual void OnUse() override { StartFire(); }
+	virtual void OnEndUse() override { StopFire(); }
 
-	virtual void Fire();
-	virtual void Reload();
+	void StartFire();
+	void StopFire();
+	void Reload();
 
 	bool NeedsReload() const;
 	bool IsReloading() const { return bIsReloading; }
 
 	int32 GetCurrentAmmoInMag() const { return CurrentAmmoInMag; }
 	int32 GetCurrentTotalAmmo() const { return CurrentTotalAmmo; }
+	FFirableData GetFirableData() const { return FirableData; }
 	void AddAmmo(int32 Amount);
+	void SetFireType(const EFireType NewFireType) { CurrentFireType = NewFireType; }
 
 protected:
 	virtual void ProcessFire();
@@ -37,9 +38,6 @@ protected:
 
 	virtual void StartReload();
 	virtual void FinishReload();
-
-	UFUNCTION()
-	void OnFireRateTimer();
 
 	UFUNCTION()
 	void OnReloadComplete();
@@ -52,8 +50,10 @@ protected:
 	EFirableType FirableType;
 	int32 CurrentAmmoInMag = 0;
 	int32 CurrentTotalAmmo = 0;
+	EFireType CurrentFireType = EFireType::Auto;
 	bool bIsReloading = false;
 	bool bCanFire = true;
+	FTimerHandle FireTimerHandle;
 	FTimerHandle ReloadTimerHandle;
 	FTimerHandle ReloadTimer;
 	

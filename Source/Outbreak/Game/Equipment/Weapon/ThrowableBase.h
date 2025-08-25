@@ -17,9 +17,6 @@ class OUTBREAK_API AThrowableBase : public AWeaponBase
 public:
 	AThrowableBase();
 
-	virtual void Attack() override;
-	virtual bool CanAttack() const override;
-
 	virtual void Throw();
 
 	bool CanThrow() const;

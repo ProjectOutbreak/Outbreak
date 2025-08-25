@@ -7,16 +7,6 @@ AWeaponBase::AWeaponBase()
 {
 }
 
-void AWeaponBase::OnEquip(TObjectPtr<class ACharacterPlayer> Character)
-{
-	Super::OnEquip(Character);
-}
-
-void AWeaponBase::OnUnequip()
-{
-	Super::OnUnequip();
-}
-
 void AWeaponBase::PlayAttackEffects()
 {
 }
