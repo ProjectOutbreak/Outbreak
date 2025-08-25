@@ -22,9 +22,9 @@ void UGraphicsSettingsLibrary::ApplyPreset(EOBGraphicsPreset Preset, bool bSave)
 	{
 		const int32 Level = static_cast<int32>(Preset);
 		Settings->SetOverallScalabilityLevel(Level);
-		Settings->ApplySettings(false);
 		if (bSave)
 		{
+			Settings->ApplySettings(false);
 			Settings->SaveSettings();
 		}
 	}

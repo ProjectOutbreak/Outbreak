@@ -7,6 +7,7 @@
 #include "Components/ProgressBar.h"
 #include "Components/ComboBoxString.h"
 #include "Engine/TextureRenderTarget2D.h"
+#include "Outbreak/Util/GraphicOptionHelper.h"
 #include "Outbreak/Game/Controller/OBPlayerController.h"
 #include "Outbreak/Game/Framework/OutBreakGameState.h"
 #include "Outbreak/Game/Graphics/GraphicsSettingsLibrary.h"
@@ -375,22 +376,37 @@ void UOBWidget::OnShadingChanged(FString, ESelectInfo::Type)
 
 void UOBWidget::OnLowClicked()
 {
-	UGraphicsSettingsLibrary::ApplyPreset(EOBGraphicsPreset::Low, true);
-	RefreshGraphicsCombosFromCurrent();
+	GraphicOptionHelper::StagePresetLevel(
+		0,
+		PendingViewDistance, PendingAntiAliasing, PendingPostProcess, PendingShadow,
+		PendingGlobalIllumination, PendingReflections, PendingTextures, PendingEffects,
+		PendingFoliage, PendingShading,
+		CBViewDistance, CBAntiAliasing, CBPostProcess, CBShadows,
+		CBGlobalIllumination, CBReflections, CBTextures, CBEffects, CBFoliage, CBShading
+	);
 }
 
 void UOBWidget::OnMediumClicked()
 {
-	UGraphicsSettingsLibrary::ApplyPreset(EOBGraphicsPreset::Medium, true);
-	RefreshGraphicsCombosFromCurrent();
+	GraphicOptionHelper::StagePresetLevel(1,
+		PendingViewDistance, PendingAntiAliasing, PendingPostProcess, PendingShadow,
+		PendingGlobalIllumination, PendingReflections, PendingTextures, PendingEffects,
+		PendingFoliage, PendingShading,
+		CBViewDistance, CBAntiAliasing, CBPostProcess, CBShadows,
+		CBGlobalIllumination, CBReflections, CBTextures, CBEffects, CBFoliage, CBShading
+	);
 }
 
 void UOBWidget::OnHighClicked()
 {
-	UGraphicsSettingsLibrary::ApplyPreset(EOBGraphicsPreset::High, true);
-	RefreshGraphicsCombosFromCurrent();
+	GraphicOptionHelper::StagePresetLevel(2,
+		PendingViewDistance, PendingAntiAliasing, PendingPostProcess, PendingShadow,
+		PendingGlobalIllumination, PendingReflections, PendingTextures, PendingEffects,
+		PendingFoliage, PendingShading,
+		CBViewDistance, CBAntiAliasing, CBPostProcess, CBShadows,
+		CBGlobalIllumination, CBReflections, CBTextures, CBEffects, CBFoliage, CBShading
+	);
 }
-
 void UOBWidget::RefreshGraphicsCombosFromCurrent()
 {
 	const FScalabilityPreset Cur = UGraphicsSettingsLibrary::GetCurrent();
