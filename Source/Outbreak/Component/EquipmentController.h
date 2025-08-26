@@ -1,9 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
-
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Outbreak/Game/Equipment/EquipmentBase.h"
 #include "Outbreak/Util/Define.h"
 #include "EquipmentController.generated.h"
 
@@ -19,6 +19,7 @@ public:
 	UEquipmentController();
 	void EquipBySlot(int32 SlotNumber);
 	void AddEquipment(const TObjectPtr<class AEquipmentBase>& Equipment);
+	
 	void HandleUse();
 	void HandleEndUse();
 	void HandleReload();
@@ -37,28 +38,31 @@ public:
 	bool GetIsSwapIn() const { return bIsSwapIn; }
 	
 	UFUNCTION(BlueprintCallable)
-	EFireType GetCurrentFireType() const;
+	EFireType GetCurrentFireType() const { return CurrentFireType; }
 	
 	UFUNCTION(BlueprintCallable)
-	int32 GetCurrentAmmoInMag() const;
+	int32 GetCurrentAmmoInMag() const { return CurrentAmmoInMag; }
 
 protected:
 	virtual void BeginPlay() override;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	UFUNCTION()
-	void OnReloadFinished() { bIsReload = false; }
-
 private:
 	void Equip(const TObjectPtr<class AEquipmentBase>& Equipment);
 	void UnEquipCurrentEquipment();
+	
+	UFUNCTION()
+	void OnReloadFinished() { bIsReload = false; }
+	
+	UFUNCTION()
+	void OnAmmoChangedHandler(const int32 InCurrentAmmoInMag, int32 InCurrentTotalAmmo) { CurrentAmmoInMag = InCurrentAmmoInMag; }
 	
 // --------------------
 // Variables
 // --------------------
 protected:
 	UPROPERTY(EditAnywhere)
-	TObjectPtr<class AEquipmentBase> CurrentEquippedItem;
+	TObjectPtr<class AEquipmentBase> CurrentEquippedItem = nullptr;
 	
 	UPROPERTY(EditAnywhere, meta = (ToolTip = "1"))
 	TObjectPtr<class AFirableBase> FirstPrimaryWeapon = nullptr;
@@ -83,4 +87,6 @@ private:
 	bool bIsReload = false;
 	bool bIsSwapOut = false;
 	bool bIsSwapIn = false;
+	EFireType CurrentFireType = EFireType::None;
+	int32 CurrentAmmoInMag = 0;
 };

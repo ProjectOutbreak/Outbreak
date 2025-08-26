@@ -3,6 +3,7 @@
 
 #include "FirableBase.h"
 
+#include "Outbreak/Util/EnumHelper.h"
 #include "Outbreak/Util/FloatHelper.h"
 
 AFirableBase::AFirableBase()
@@ -39,15 +40,6 @@ void AFirableBase::StopFire()
 	GetWorld()->GetTimerManager().ClearTimer(FireTimerHandle);
 }
 
-void AFirableBase::OnReload(const FOnReloadFinished& DoneCallback)
-{
-	if (!CanReload())
-		return;
-
-	OnReloadFinishedCallback = DoneCallback;
-	StartReload();
-	UE_LOG(LogTemp, Log, TEXT("[%s] OnReload"), CURRENT_CONTEXT);
-}
 
 void AFirableBase::ProcessFire()
 {
@@ -58,15 +50,29 @@ void AFirableBase::ProcessFire()
 		CurrentAmmoInMag = 0;
 		StopFire();
 	}
+	
+	OnAmmoChanged.Broadcast(CurrentAmmoInMag, CurrentTotalAmmo);
 }
 
 void AFirableBase::SpawnProjectile()
 {
 }
 
+void AFirableBase::OnReload(const FOnReloadFinished& DoneCallback)
+{
+	if (!CanReload())
+		return;
+
+	OnReloadFinishedCallback = DoneCallback;
+	StartReload();
+	UE_LOG(LogTemp, Log, TEXT("[%s] OnReload"), CURRENT_CONTEXT);
+}
+
 void AFirableBase::StartReload()
 {
 	UE_LOG(LogTemp, Log, TEXT("[%s] StartReload"), CURRENT_CONTEXT);
+	bIsReloading = true;
+	
 	// TODO : Manage Reload Duration
 	const float ReloadDuration = 2.5f;
 	FTimerHandle ReloadTimerHandle;
@@ -84,4 +90,21 @@ void AFirableBase::FinishReload()
 	
 	bIsReloading = false;
 	OnReloadFinishedCallback.ExecuteIfBound();
+	OnAmmoChanged.Broadcast(CurrentAmmoInMag, CurrentTotalAmmo);
+}
+
+EFireType AFirableBase::ToggleFireMode()
+{
+	// TODO : Single, Burst, Auto 세 가지 타입 가능하게 수정
+	for (int32 i = 0; i < FirableData.FireTypes.Num(); i++)
+	{
+		if (FirableData.FireTypes[i] == CurrentFireType)
+			continue;
+
+		CurrentFireType = FirableData.FireTypes[i];
+		UE_LOG(LogTemp, Log, TEXT("[%s] Toggled Fire Mode to: %s"), CURRENT_CONTEXT, *EnumHelper::EnumToString(CurrentFireType));
+		break;
+	}
+	
+	return CurrentFireType;
 }

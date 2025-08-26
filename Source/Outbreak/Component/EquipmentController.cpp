@@ -1,10 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "EquipmentController.h"
-
-#include "Kismet/GameplayStatics.h"
 #include "Outbreak/Character/Player/CharacterPlayer.h"
-#include "Outbreak/Game/Controller/OBPlayerController.h"
 #include "Outbreak/Game/Equipment/EquipmentBase.h"
 #include "Outbreak/Game/Equipment/Weapon/FirableBase.h"
 #include "Outbreak/Game/Equipment/Weapon/WeaponBase.h"
@@ -16,34 +13,12 @@
 UEquipmentController::UEquipmentController()
 {
 	PrimaryComponentTick.bCanEverTick = true;
-
-
-}
-
-EFireType UEquipmentController::GetCurrentFireType() const
-{
-	if (const TObjectPtr<AFirableBase> CurrentFirable = Cast<AFirableBase>(CurrentEquippedItem))
-	{
-		return CurrentFirable->GetCurrentFireType();
-	}
-	return EFireType::None;
-}
-
-int32 UEquipmentController::GetCurrentAmmoInMag() const
-{
-	if (const TObjectPtr<AFirableBase> CurrentFirable = Cast<AFirableBase>(CurrentEquippedItem))
-	{
-		return CurrentFirable->GetCurrentAmmoInMag();
-	}
-	return 0;
 }
 
 void UEquipmentController::BeginPlay()
 {
 	Super::BeginPlay();
-
 }
-
 
 void UEquipmentController::TickComponent(const float DeltaTime, const ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
@@ -235,29 +210,14 @@ void UEquipmentController::HandleReload()
 
 void UEquipmentController::HandleToggleFireMode()
 {
-	// TODO : Refactor Toggle Fire Mode Logic
 	if (!IsValid(CurrentEquippedItem))
 	{
 		UE_LOG(LogTemp, Log, TEXT("[%s] Not Valid Current Equipped Item"), CURRENT_CONTEXT);
 		return;
 	}
-	
+
 	AFirableBase* CurrentFirable = Cast<AFirableBase>(CurrentEquippedItem);
-	const EFireType CurrentFireType = GetCurrentFireType();
-	if (CurrentFirable)
-	{
-		const FFirableData Data = CurrentFirable->GetFirableData();
-		for (int32 i = 0; i < Data.FireTypes.Num(); i++)
-		{
-			// TODO : Single, Burst, Auto 세 가지 타입 가능하게 수정
-			if (Data.FireTypes[i] == CurrentFireType)
-				continue;
-			
-			CurrentFirable->SetFireType(CurrentFireType);
-			UE_LOG(LogTemp, Log, TEXT("[%s] Toggled Fire Mode to: %s"), CURRENT_CONTEXT, *EnumHelper::EnumToString(CurrentFireType));
-			return;
-		}
-	}
+	CurrentFireType = CurrentFirable->ToggleFireMode();
 }
 
 void UEquipmentController::Equip(const TObjectPtr<AEquipmentBase>& Equipment)
@@ -274,6 +234,14 @@ void UEquipmentController::Equip(const TObjectPtr<AEquipmentBase>& Equipment)
 			CurrentEquippedItem->SetActorHiddenInGame(false);
 			CurrentEquippedItem->AttachToComponent(PlayerCharacter->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("weapon_r"));
 		}
+
+		if (AFirableBase* NewFirableWeapon = Cast<AFirableBase>(CurrentEquippedItem))
+		{
+			CurrentFireType = NewFirableWeapon->GetCurrentFireType();
+			CurrentAmmoInMag = NewFirableWeapon->GetCurrentAmmoInMag();
+			NewFirableWeapon->OnAmmoChanged.AddDynamic(this, &UEquipmentController::OnAmmoChangedHandler);
+		}
+		
 		UE_LOG(LogTemp, Log, TEXT("[%s] Equipped: %s"), CURRENT_CONTEXT, *CurrentEquippedItem->GetName());
 	}
 }
@@ -283,6 +251,12 @@ void UEquipmentController::UnEquipCurrentEquipment()
 	if (IsValid(CurrentEquippedItem))
 	{
 		CurrentEquippedItem->SetActorHiddenInGame(true);
+		
+		if (AFirableBase* OldFirableWeapon = Cast<AFirableBase>(CurrentEquippedItem))
+		{
+			OldFirableWeapon->OnAmmoChanged.RemoveDynamic(this, &UEquipmentController::OnAmmoChangedHandler);
+		}
 	}
+	
 	CurrentEquippedItem = nullptr;
 }

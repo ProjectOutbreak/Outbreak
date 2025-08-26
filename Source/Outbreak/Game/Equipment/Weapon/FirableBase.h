@@ -1,13 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
-
-DECLARE_DELEGATE(FOnReloadFinished);
-
 #include "CoreMinimal.h"
 #include "WeaponBase.h"
 #include "FirableBase.generated.h"
 
+DECLARE_DELEGATE(FOnReloadFinished);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnAmmoChanged, int32, CurrentAmmoInMag, int32, CurrentTotalAmmo);
 
 UCLASS(Abstract)
 class OUTBREAK_API AFirableBase : public AWeaponBase
@@ -26,11 +25,13 @@ public:
 
 	bool CanReload() const { return !bIsReloading && CurrentAmmoInMag < FirableData.MagazineSize && CurrentTotalAmmo > 0; }
 	bool IsReloading() const { return bIsReloading; }
+	void SetIsReloading(const bool bInIsReloading) { bIsReloading = bInIsReloading; }
 	int32 GetCurrentAmmoInMag() const { return CurrentAmmoInMag; }
 	int32 GetCurrentTotalAmmo() const { return CurrentTotalAmmo; }
 	FFirableData GetFirableData() const { return FirableData; }
 	EFireType GetCurrentFireType() const { return CurrentFireType; }
 	void SetFireType(const EFireType NewFireType) { CurrentFireType = NewFireType; }
+	EFireType ToggleFireMode();
 
 protected:
 	void StartFire();
@@ -45,6 +46,10 @@ protected:
 // --------------------
 // Variables
 // --------------------
+public:
+	UPROPERTY()
+	FOnAmmoChanged OnAmmoChanged;
+	
 protected:
 	FFirableData FirableData;
 	EFirableType FirableType;
