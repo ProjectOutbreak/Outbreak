@@ -10,7 +10,7 @@ AAk47::AAk47()
 		EquipmentMesh->SetSkeletalMesh(MeshRef.Object);
 	}
 
-	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceClassRef(TEXT("/Game/Animations/Equipments/ABP_Ak47.ABP_Ak47_C"));
+	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceClassRef(TEXT("/Game/Blueprints/ABP_Ak47.ABP_Ak47_C"));
 	if (AnimInstanceClassRef.Class)
 	{
 		EquipmentMesh->SetAnimInstanceClass(AnimInstanceClassRef.Class);
