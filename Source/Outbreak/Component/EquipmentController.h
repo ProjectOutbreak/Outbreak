@@ -25,7 +25,7 @@ public:
 	void HandleToggleFireMode();
 	
 	UFUNCTION(BlueprintCallable)
-	bool GetIsFire() const { return bIsFire; }
+	bool GetIsOnUse() const { return bIsOnUse; }
 	
 	UFUNCTION(BlueprintCallable)
 	bool GetIsReload() const { return bIsReload; }
@@ -76,7 +76,7 @@ protected:
 	TObjectPtr<class AMedicineBase> SecondMedicine = nullptr;
 
 private:
-	bool bIsFire = false;
+	bool bIsOnUse = false;
 	bool bIsReload = false;
 	bool bIsSwapOut = false;
 	bool bIsSwapIn = false;

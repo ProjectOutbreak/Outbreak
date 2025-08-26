@@ -173,7 +173,7 @@ void UEquipmentController::HandleUse()
 	}
 	
 	CurrentEquippedItem->OnUse();
-	bIsFire = true;
+	bIsOnUse = true;
 }
 
 void UEquipmentController::HandleEndUse()
@@ -184,7 +184,7 @@ void UEquipmentController::HandleEndUse()
 		return;
 	}
 	CurrentEquippedItem->OnEndUse();
-	bIsFire = false;
+	bIsOnUse = false;
 }
 
 void UEquipmentController::HandleReload()
