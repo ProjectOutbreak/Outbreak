@@ -20,6 +20,24 @@ UEquipmentController::UEquipmentController()
 
 }
 
+EFireType UEquipmentController::GetCurrentFireType() const
+{
+	if (const TObjectPtr<AFirableBase> CurrentFirable = Cast<AFirableBase>(CurrentEquippedItem))
+	{
+		return CurrentFirable->GetCurrentFireType();
+	}
+	return EFireType::None;
+}
+
+int32 UEquipmentController::GetCurrentAmmoInMag() const
+{
+	if (const TObjectPtr<AFirableBase> CurrentFirable = Cast<AFirableBase>(CurrentEquippedItem))
+	{
+		return CurrentFirable->GetCurrentAmmoInMag();
+	}
+	return 0;
+}
+
 void UEquipmentController::BeginPlay()
 {
 	Super::BeginPlay();
@@ -171,6 +189,9 @@ void UEquipmentController::HandleUse()
 		UE_LOG(LogTemp, Log, TEXT("[%s] Not Valid Current Equipped Item"), CURRENT_CONTEXT);
 		return;
 	}
+
+	if (!CurrentEquippedItem->CanUse())
+		return;
 	
 	CurrentEquippedItem->OnUse();
 	bIsOnUse = true;
@@ -189,7 +210,7 @@ void UEquipmentController::HandleEndUse()
 
 void UEquipmentController::HandleReload()
 {
-	if (!IsValid(CurrentEquippedItem) && bIsReload)
+	if (!IsValid(CurrentEquippedItem))
 	{
 		UE_LOG(LogTemp, Log, TEXT("[%s] Not Valid Current Equipped Item"), CURRENT_CONTEXT);
 		return;
@@ -201,8 +222,14 @@ void UEquipmentController::HandleReload()
 		UE_LOG(LogTemp, Log, TEXT("[%s] Current Equipped Item is not a FirableBase"), CURRENT_CONTEXT);
 		return;
 	}
-	
-	CurrentFirable->Reload();
+
+	if (!CurrentFirable->CanReload())
+		return;
+
+	FOnReloadFinished DoneCallback;
+	DoneCallback.BindUObject(this, &UEquipmentController::OnReloadFinished);
+
+	CurrentFirable->OnReload(DoneCallback);
 	bIsReload = true;
 }
 
@@ -216,15 +243,16 @@ void UEquipmentController::HandleToggleFireMode()
 	}
 	
 	AFirableBase* CurrentFirable = Cast<AFirableBase>(CurrentEquippedItem);
+	const EFireType CurrentFireType = GetCurrentFireType();
 	if (CurrentFirable)
 	{
 		const FFirableData Data = CurrentFirable->GetFirableData();
 		for (int32 i = 0; i < Data.FireTypes.Num(); i++)
 		{
+			// TODO : Single, Burst, Auto 세 가지 타입 가능하게 수정
 			if (Data.FireTypes[i] == CurrentFireType)
 				continue;
 			
-			CurrentFireType = Data.FireTypes[i];
 			CurrentFirable->SetFireType(CurrentFireType);
 			UE_LOG(LogTemp, Log, TEXT("[%s] Toggled Fire Mode to: %s"), CURRENT_CONTEXT, *EnumHelper::EnumToString(CurrentFireType));
 			return;

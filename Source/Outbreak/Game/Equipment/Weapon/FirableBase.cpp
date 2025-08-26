@@ -11,8 +11,11 @@ AFirableBase::AFirableBase()
 
 void AFirableBase::StartFire()
 {
+	if (!CanUse())
+		return;
+	
 	UE_LOG(LogTemp, Log, TEXT("[%s] StartFire"), CURRENT_CONTEXT);
-	float Interval = FloatHelper::RpmToInterval(FirableData.FireRate);
+	const float Interval = FloatHelper::RpmToInterval(FirableData.FireRate);
 	switch (CurrentFireType)
 	{
 	case EFireType::Single:
@@ -36,14 +39,25 @@ void AFirableBase::StopFire()
 	GetWorld()->GetTimerManager().ClearTimer(FireTimerHandle);
 }
 
-void AFirableBase::Reload()
+void AFirableBase::OnReload(const FOnReloadFinished& DoneCallback)
 {
-	UE_LOG(LogTemp, Log, TEXT("[%s] Reload"), CURRENT_CONTEXT);
+	if (!CanReload())
+		return;
+
+	OnReloadFinishedCallback = DoneCallback;
+	StartReload();
+	UE_LOG(LogTemp, Log, TEXT("[%s] OnReload"), CURRENT_CONTEXT);
 }
 
 void AFirableBase::ProcessFire()
 {
-	UE_LOG(LogTemp, Log, TEXT("[%s] ProcessFire"), CURRENT_CONTEXT);
+	CurrentAmmoInMag--;
+	UE_LOG(LogTemp, Log, TEXT("[%s] ProcessFire : %d"), CURRENT_CONTEXT, CurrentAmmoInMag);
+	if (CurrentAmmoInMag < 0)
+	{
+		CurrentAmmoInMag = 0;
+		StopFire();
+	}
 }
 
 void AFirableBase::SpawnProjectile()
@@ -52,8 +66,22 @@ void AFirableBase::SpawnProjectile()
 
 void AFirableBase::StartReload()
 {
+	UE_LOG(LogTemp, Log, TEXT("[%s] StartReload"), CURRENT_CONTEXT);
+	// TODO : Manage Reload Duration
+	const float ReloadDuration = 2.5f;
+	FTimerHandle ReloadTimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(ReloadTimerHandle, this, &AFirableBase::FinishReload, ReloadDuration, false);
 }
 
 void AFirableBase::FinishReload()
 {
+	UE_LOG(LogTemp, Log, TEXT("[%s] FinishReload"), CURRENT_CONTEXT);
+	const int32 NeededAmmo = FirableData.MagazineSize - CurrentAmmoInMag;
+	const int32 AmmoToFill = FMath::Min(NeededAmmo, CurrentTotalAmmo);
+
+	CurrentAmmoInMag += AmmoToFill;
+	CurrentTotalAmmo -= AmmoToFill;
+	
+	bIsReloading = false;
+	OnReloadFinishedCallback.ExecuteIfBound();
 }

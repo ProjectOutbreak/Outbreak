@@ -37,14 +37,17 @@ public:
 	bool GetIsSwapIn() const { return bIsSwapIn; }
 	
 	UFUNCTION(BlueprintCallable)
-	EFireType GetCurrentFireType() const { return CurrentFireType; }
+	EFireType GetCurrentFireType() const;
 	
 	UFUNCTION(BlueprintCallable)
-	int32 GetCurrentAmmoInMag() const { return CurrentAmmoInMag; }
+	int32 GetCurrentAmmoInMag() const;
 
 protected:
 	virtual void BeginPlay() override;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
+	UFUNCTION()
+	void OnReloadFinished() { bIsReload = false; }
 
 private:
 	void Equip(const TObjectPtr<class AEquipmentBase>& Equipment);
@@ -80,6 +83,4 @@ private:
 	bool bIsReload = false;
 	bool bIsSwapOut = false;
 	bool bIsSwapIn = false;
-	EFireType CurrentFireType = EFireType::Auto;
-	int32 CurrentAmmoInMag = 0;
 };
