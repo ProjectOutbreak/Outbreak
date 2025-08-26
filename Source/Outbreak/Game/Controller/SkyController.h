@@ -23,10 +23,16 @@ protected:
 public:	
 	virtual void Tick(float DeltaTime) override;
 
-	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category="Sky Controller")
+	UPROPERTY(EditInstanceOnly, Category="Sky Controller")
 	ADirectionalLight* SunLight;
 
+	UPROPERTY(EditInstanceOnly, Category="Sky Controller")
+	ADirectionalLight* MoonLight;
+	
 private:
 	UPROPERTY()
 	ATimeManager* TimeManagerRef;
+
+	float SunMaxIntensity;
+	float MoonMaxIntensity;
 };
