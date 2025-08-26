@@ -17,6 +17,8 @@ class OUTBREAK_API AOBPlayerController : public APlayerController
 // --------------------
 public:
 	AOBPlayerController();
+	
+	void TogglePauseMenu();
 
 protected:
 	virtual void BeginPlay() override;
@@ -82,6 +84,11 @@ private:
 	UPROPERTY()
 	TObjectPtr<class UInputAction> ToggleFireModeAction;
 	
+
+	UPROPERTY()
+	TObjectPtr<class UInputAction> ToggleMenuAction;
+	
+
 	UPROPERTY(EditAnywhere, Category = "Config|Movement")
 	float WalkSpeed = 600.f;
 
@@ -90,4 +97,6 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "Config|Movement")
 	float CrouchSpeed = 200.f;
+	
+	bool bMenuOpen = false;
 };

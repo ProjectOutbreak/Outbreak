@@ -2,8 +2,11 @@
 
 #include "OBPlayerController.h"
 #include "EnhancedInputComponent.h"
+#include "Blueprint/WidgetBlueprintLibrary.h"
+#include "Outbreak/UI/OBHUD.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Outbreak/Character/Player/CharacterPlayer.h"
+#include "Outbreak/UI/OBWidget.h"
 #include "Outbreak/Util/EnumHelper.h"
 
 AOBPlayerController::AOBPlayerController()
@@ -42,6 +45,11 @@ AOBPlayerController::AOBPlayerController()
 	if (InputActionChangeCamRef.Object)
 	{
 		ChangePlayerControlAction = InputActionChangeCamRef.Object;
+	}
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionToggleMenuRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Inputs/IA_ToggleMenu.IA_ToggleMenu'"));
+	if (InputActionToggleMenuRef.Object)
+	{
+		ToggleMenuAction = InputActionToggleMenuRef.Object;
 	}
 	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionFireRef(TEXT("/Game/Inputs/Actions/IA_Use.IA_Use"));
 	if (InputActionFireRef.Object)
@@ -101,6 +109,7 @@ void AOBPlayerController::SetupInputComponent()
 	EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Started, this, &AOBPlayerController::Crouch);
 	EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Completed, this, &AOBPlayerController::StopCrouch);
 	EnhancedInputComponent->BindAction(ChangePlayerControlAction, ETriggerEvent::Triggered, this, &AOBPlayerController::ChangePlayerControl);
+	EnhancedInputComponent->BindAction(ToggleMenuAction, ETriggerEvent::Started, this, &AOBPlayerController::TogglePauseMenu);
 	EnhancedInputComponent->BindAction(UseAction, ETriggerEvent::Started, this, &AOBPlayerController::Use);
 	EnhancedInputComponent->BindAction(EndUseAction, ETriggerEvent::Completed, this, &AOBPlayerController::EndUse);
 	EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Started, this, &AOBPlayerController::Reload);
@@ -110,6 +119,8 @@ void AOBPlayerController::SetupInputComponent()
 
 void AOBPlayerController::FirstPersonMove(const FInputActionValue& Value)
 {
+	if (bMenuOpen) return;
+
 	const FVector2D MovementVector = Value.Get<FVector2D>();
 	
 	// if (ControlledCharacter->CanMove())
@@ -131,6 +142,7 @@ void AOBPlayerController::FirstPersonLook(const FInputActionValue& Value)
 {
 	if (!ControlledCharacter) return;
 	
+	if (bMenuOpen) return;
 	const FVector2D LookAxis = Value.Get<FVector2D>();
 	ControlledCharacter->AddControllerYawInput(LookAxis.X);
 	ControlledCharacter->AddControllerPitchInput(LookAxis.Y);
@@ -160,7 +172,7 @@ void AOBPlayerController::TopMove(const FInputActionValue& Value)
 
 void AOBPlayerController::Jump()
 {
-	if (!ControlledCharacter) return;
+	if (!ControlledCharacter || bMenuOpen) return;
 	
 	ControlledCharacter->Jump();
 }
@@ -202,9 +214,53 @@ void AOBPlayerController::StopCrouch()
 
 void AOBPlayerController::ChangePlayerControl()
 {
-	if (!ControlledCharacter) return;
+	if (!ControlledCharacter || bMenuOpen) return;
 	
 	ControlledCharacter->ChangePlayerControl();
+}
+
+
+void AOBPlayerController::TogglePauseMenu()
+{
+	bMenuOpen = !bMenuOpen;
+	bShowMouseCursor = bMenuOpen;
+
+	if (AOBHUD* HUD = Cast<AOBHUD>(GetHUD()))
+	{
+		if (UOBWidget* W = HUD->GetOBWidget())
+		{
+			if (bMenuOpen)
+			{
+				W->ShowPauseMenu(true);
+				FInputModeGameAndUI Mode;
+				Mode.SetWidgetToFocus(W->TakeWidget());
+				Mode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+				Mode.SetHideCursorDuringCapture(false);
+				SetInputMode(Mode);
+			}
+			else
+			{
+				W->ShowPauseMenu(false);
+				SetInputMode(FInputModeGameOnly{});
+				UWidgetBlueprintLibrary::SetFocusToGameViewport();
+			}
+		}
+	}
+	if (APawn* P = GetPawn())
+	{
+		if (UCharacterMovementComponent* Move = Cast<UCharacterMovementComponent>(P->GetMovementComponent()))
+		{
+			if (bMenuOpen)
+			{
+				Move->StopMovementImmediately();
+			}
+			else
+			{
+				Move->SetMovementMode(MOVE_Walking);
+				Move->MaxWalkSpeed = WalkSpeed;
+			}
+		}
+	}
 }
 
 void AOBPlayerController::Use()
