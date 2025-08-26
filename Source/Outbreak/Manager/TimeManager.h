@@ -22,11 +22,17 @@ public:
 
 	//-----Variables-----//
 
-	UPROPERTY(EditAnywhere, Category="Time Of Day")
+	UPROPERTY(EditAnywhere, Category= "Time Of Day")
 	float GameTimeSpeed = 60.f; // 1.0 = 실제 시간
 
+	UPROPERTY(EditAnywhere, Category= "Time Of Day")
+	bool bUseRealWorldTime = false;
+	
 	UPROPERTY()
 	float CurrentTimeInSeconds;
+
+	UPROPERTY()
+	float TimezoneOffset = 9.0f;
 
 
 	//-----Function-----//

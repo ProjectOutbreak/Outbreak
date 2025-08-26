@@ -12,14 +12,25 @@ ATimeManager::ATimeManager()
 void ATimeManager::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (bUseRealWorldTime)
+	{
+		FDateTime Now = FDateTime::UtcNow();
+		float RealTimeHour = Now.GetHour() + TimezoneOffset;
+		CurrentTimeInSeconds = RealTimeHour * 3600 + Now.GetMinute() * 60 + Now.GetSecond();
+
+		if (CurrentTimeInSeconds >= SecondsInDay)
+		{
+			CurrentTimeInSeconds = FMath::Fmod(CurrentTimeInSeconds, SecondsInDay);
+		}
+	}
 }
 
 void ATimeManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	
 	CurrentTimeInSeconds += DeltaTime * GameTimeSpeed;
-
 	if (CurrentTimeInSeconds >= SecondsInDay)
 	{
 		CurrentTimeInSeconds = FMath::Fmod(CurrentTimeInSeconds, SecondsInDay);
