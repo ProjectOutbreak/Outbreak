@@ -1,0 +1,43 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "GameFramework/Actor.h"
+#include "TimeManager.generated.h"
+
+UCLASS()
+class OUTBREAK_API ATimeManager : public AActor
+{
+	GENERATED_BODY()
+	
+public:	
+	ATimeManager();
+
+protected:
+	virtual void BeginPlay() override;
+
+public:	
+	virtual void Tick(float DeltaTime) override;
+
+	//-----Variables-----//
+
+	UPROPERTY(EditAnywhere, Category="Time Of Day")
+	float GameTimeSpeed = 60.f; // 1.0 = 실제 시간
+
+	UPROPERTY()
+	float CurrentTimeInSeconds;
+
+
+	//-----Function-----//
+	
+	UFUNCTION()
+	float GetTimeOfDayInHours() const;
+
+	UFUNCTION()
+	FRotator GetSunRotation() const;
+
+
+public:
+	const float SecondsInDay = 86400.f;
+};
