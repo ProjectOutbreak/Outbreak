@@ -67,11 +67,15 @@ private:
 	FOnTimelineFloat UpdateFunctionFloat;
 
 	UFUNCTION()
-	void UpdateTimelineComp(float Output);
-
-	UFUNCTION()
 	void OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	UFUNCTION()
 	void OnOverlapEnd(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	UFUNCTION()
+	void UpdateTimeline(float Output);
+	
+	FRotator InitialRotation;
+
+	FRotator TargetRotation;
 };

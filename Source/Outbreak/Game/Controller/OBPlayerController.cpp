@@ -8,6 +8,8 @@
 #include "Outbreak/Character/Player/CharacterPlayer.h"
 #include "Outbreak/Game/Interface/InteractInterface.h"
 #include "Outbreak/UI/OBWidget.h"
+#include "DrawDebugHelpers.h"
+
 
 AOBPlayerController::AOBPlayerController()
 {
@@ -190,19 +192,40 @@ void AOBPlayerController::StopCrouch()
 
 void AOBPlayerController::PerformInteract()
 {
-	// 1. 자신의 '몸'인 캐릭터를 가져옵니다.
 	ACharacterPlayer* MyCharacter = Cast<ACharacterPlayer>(GetPawn());
-
-	if (MyCharacter)
+	if (!MyCharacter)
 	{
-		// 2. 캐릭터에게 현재 상호작용 가능한 대상이 있는지 물어봅니다.
-		TScriptInterface<IInteractInterface> Interactable = MyCharacter->GetCurrentInteractable();
-        
-		if (Interactable)
-		{
-			// 3. 대상이 있다면, 상호작용을 '명령'합니다.
-			Interactable->Execute_Interact(Interactable.GetObject(), MyCharacter);
-		}
+		return;
+	}
+	
+	TScriptInterface<IInteractInterface> InteractableObject = MyCharacter->GetCurrentInteractable();
+	if (!InteractableObject)
+	{
+		return; 
+	}
+	
+	
+	FVector CameraLocation;
+	FRotator CameraRotation;
+	GetPlayerViewPoint(CameraLocation, CameraRotation);
+	
+	float InteractionDistance = 2000.0f;
+	FVector TraceEnd = CameraLocation + (CameraRotation.Vector() * InteractionDistance);
+    
+	FHitResult HitResult;
+	FCollisionQueryParams CollisionParams;
+	CollisionParams.AddIgnoredActor(MyCharacter);
+	
+	bool bHit = GetWorld()->LineTraceSingleByChannel(
+		HitResult,
+		CameraLocation,
+		TraceEnd,
+		ECC_Visibility,
+		CollisionParams
+	);
+	if (bHit && HitResult.GetActor() == Cast<AActor>(InteractableObject.GetObject()))
+	{
+		InteractableObject->Execute_Interact(InteractableObject.GetObject(), MyCharacter);
 	}
 }
 
