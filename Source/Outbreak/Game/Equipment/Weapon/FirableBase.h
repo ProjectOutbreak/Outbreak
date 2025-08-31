@@ -51,6 +51,15 @@ public:
 	FOnAmmoChanged OnAmmoChanged;
 	
 protected:
+	UPROPERTY()
+	TObjectPtr<UAnimSequence> FireAnim;
+
+	UPROPERTY()
+	TObjectPtr<UAnimSequence> ReloadAnim;
+	
+	UPROPERTY()
+	TObjectPtr<UAnimSequence> ReloadEmptyAnim;
+	
 	FFirableData FirableData;
 	EFirableType FirableType;
 	int32 CurrentAmmoInMag = 30;

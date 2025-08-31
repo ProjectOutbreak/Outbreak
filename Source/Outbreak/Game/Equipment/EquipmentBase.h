@@ -42,7 +42,7 @@ protected:
 	UPROPERTY()
 	TObjectPtr<UTexture2D> EquipmentIcon;
 	
-	UPROPERTY()
+	UPROPERTY(EditAnywhere)
 	TObjectPtr<USkeletalMeshComponent> EquipmentMesh;
 
 	UPROPERTY()

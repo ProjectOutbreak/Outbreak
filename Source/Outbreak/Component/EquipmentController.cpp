@@ -231,9 +231,7 @@ void UEquipmentController::Equip(const TObjectPtr<AEquipmentBase>& Equipment)
 		const ACharacterPlayer* PlayerCharacter = Cast<ACharacterPlayer>(GetOwner());
 		if (PlayerCharacter)
 		{
-			const FTransform SocketTransform = PlayerCharacter->GetMesh()->GetSocketTransform(FName("weapon_r"));
-			CurrentEquippedItem->AttachToComponent(PlayerCharacter->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-			CurrentEquippedItem->SetActorTransform(SocketTransform);
+			CurrentEquippedItem->AttachToComponent(PlayerCharacter->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("weapon_r"));
 			CurrentEquippedItem->SetActorHiddenInGame(false);
 		}
 
