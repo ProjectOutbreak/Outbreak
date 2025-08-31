@@ -3,6 +3,7 @@
 
 #include "FirableBase.h"
 
+#include "Kismet/GameplayStatics.h"
 #include "Outbreak/Util/EnumHelper.h"
 #include "Outbreak/Util/FloatHelper.h"
 
@@ -15,7 +16,6 @@ void AFirableBase::StartFire()
 	if (!CanUse())
 		return;
 	
-	UE_LOG(LogTemp, Log, TEXT("[%s] StartFire"), CURRENT_CONTEXT);
 	const float Interval = FloatHelper::RpmToInterval(FirableData.FireRate);
 	switch (CurrentFireType)
 	{
@@ -36,15 +36,13 @@ void AFirableBase::StartFire()
 
 void AFirableBase::StopFire()
 {
-	UE_LOG(LogTemp, Log, TEXT("[%s] StopFire"), CURRENT_CONTEXT);
 	GetWorld()->GetTimerManager().ClearTimer(FireTimerHandle);
 }
 
-
+ 
 void AFirableBase::ProcessFire()
 {
 	CurrentAmmoInMag--;
-	UE_LOG(LogTemp, Log, TEXT("[%s] ProcessFire : %d"), CURRENT_CONTEXT, CurrentAmmoInMag);
 	if (CurrentAmmoInMag < 0)
 	{
 		CurrentAmmoInMag = 0;
@@ -52,6 +50,34 @@ void AFirableBase::ProcessFire()
 	}
 	
 	OnAmmoChanged.Broadcast(CurrentAmmoInMag, CurrentTotalAmmo);
+
+	AController* OwnerController = GetInstigatorController();
+	if (!OwnerController) return;
+
+	FVector PlayerViewPointLocation;
+	FRotator PlayerViewPointRotation;
+	OwnerController->GetPlayerViewPoint(PlayerViewPointLocation, PlayerViewPointRotation);
+
+	const FVector Start = PlayerViewPointLocation;
+	const FVector End = Start + PlayerViewPointRotation.Vector() * 10000.0f;
+
+	FHitResult HitResult;
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(this);
+	QueryParams.AddIgnoredActor(GetOwner());
+	QueryParams.bReturnPhysicalMaterial = true;
+
+	const bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility, QueryParams);
+
+	DrawDebugLine(GetWorld(), Start, End, bHit ? FColor::Green : FColor::Red, false, 2.0f, 0, 0.5f);
+
+	if (bHit)
+	{
+		if (AActor* HitActor = HitResult.GetActor())
+		{
+			UGameplayStatics::ApplyPointDamage(HitActor, FirableData.Damage, PlayerViewPointRotation.Vector(), HitResult, OwnerController, this, nullptr);
+		}
+	}
 }
 
 void AFirableBase::SpawnProjectile()
@@ -65,12 +91,10 @@ void AFirableBase::OnReload(const FOnReloadFinished& DoneCallback)
 
 	OnReloadFinishedCallback = DoneCallback;
 	StartReload();
-	UE_LOG(LogTemp, Log, TEXT("[%s] OnReload"), CURRENT_CONTEXT);
 }
 
 void AFirableBase::StartReload()
 {
-	UE_LOG(LogTemp, Log, TEXT("[%s] StartReload"), CURRENT_CONTEXT);
 	bIsReloading = true;
 	
 	// TODO : Manage Reload Duration
@@ -81,7 +105,6 @@ void AFirableBase::StartReload()
 
 void AFirableBase::FinishReload()
 {
-	UE_LOG(LogTemp, Log, TEXT("[%s] FinishReload"), CURRENT_CONTEXT);
 	const int32 NeededAmmo = FirableData.MagazineSize - CurrentAmmoInMag;
 	const int32 AmmoToFill = FMath::Min(NeededAmmo, CurrentTotalAmmo);
 
