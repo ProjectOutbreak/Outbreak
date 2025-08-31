@@ -59,14 +59,12 @@ float ACharacterBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, 
 			const float DamageMultiplier = GetDamageMultiplier(PhysMat->SurfaceType);
 			const int32 FinalDamage = FMath::RoundToInt(DamageAmount * DamageMultiplier);
 			ApplyDamage(FinalDamage);
-			ApplyHitEffects(FinalDamage, PhysMat->SurfaceType);
 
 			return FinalDamage;
 		}
 	}
 	
 	ApplyDamage(DamageAmount);
-	ApplyHitEffects(DamageAmount);
 		
 	return DamageAmount;
 }
@@ -188,25 +186,6 @@ void ACharacterBase::ApplyDamage(int32 DamageAmount)
 	else
 	{
 		// TODO : Implement hit reaction logic (maybe animation)
-	}
-}
-
-void ACharacterBase::ApplyHitEffects(const int32 DamageAmount, const EPhysicalSurface SurfaceType)
-{
-	// TODO : Implement hit effects based on surface type and damage amount
-	switch (SurfaceType)
-	{
-		case SurfaceType1: // Head
-			break;
-
-		case SurfaceType2: // Body
-			break;
-
-		case SurfaceType3: // Limbs
-			break;
-		
-		default:
-			break;
 	}
 }
 
