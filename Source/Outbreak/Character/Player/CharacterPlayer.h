@@ -29,6 +29,7 @@ public:
 	void HandleReload() const { EquipmentController->HandleReload(); }
 	void HandleEquipBySlot(const int32 SlotNumber) const { EquipmentController->EquipBySlot(SlotNumber); }
 	void HandleToggleFireMode() const { EquipmentController->HandleToggleFireMode(); }
+	TObjectPtr<class AOBHUD> GetHud() const { return CachedHUD; }
 	
 protected:
 	virtual void BeginPlay() override;
@@ -52,6 +53,12 @@ public:
 	bool bIsCutscenePlaying = false;
 	
 protected:
+	UPROPERTY()
+	TObjectPtr<class AOBPlayerController> CachedPC;
+	
+	UPROPERTY()
+	TObjectPtr<class AOBHUD> CachedHUD;
+	
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<class USpringArmComponent> CameraBoom;
 

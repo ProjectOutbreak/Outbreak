@@ -9,6 +9,7 @@
 #include "PhysicsEngine/PhysicsAsset.h"
 
 #include "Net/UnrealNetwork.h"
+#include "Outbreak/Game/Controller/OBPlayerController.h"
 #include "Outbreak/UI/OBHUD.h"
 
 // Sets default values

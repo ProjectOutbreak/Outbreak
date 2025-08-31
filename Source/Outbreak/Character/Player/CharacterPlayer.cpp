@@ -15,10 +15,12 @@
 #include "Outbreak/Component/EquipmentController.h"
 #include "Outbreak/Data/PlayerControlData.h"
 #include "Outbreak/Game/Equipment/Weapon/Ak47.h"
+#include "Outbreak/Game/Controller/OBPlayerController.h"
 #include "Outbreak/Game/Equipment/Weapon/WeaponBase.h"
 #include "Outbreak/Game/Framework/OBGameMode.h"
 #include "Outbreak/Game/Framework/OutBreakGameState.h"
 #include "Outbreak/Manager/CharacterSpawnManager.h"
+#include "Outbreak/UI/OBHUD.h"
 
 ACharacterPlayer::ACharacterPlayer()
 {
@@ -142,6 +144,18 @@ void ACharacterPlayer::InitCharacterData()
 void ACharacterPlayer::BeginPlay()
 {
 	Super::BeginPlay();
+	CachedPC = Cast<AOBPlayerController>(GetController());
+	if (!CachedPC)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[%s] Failed to cast AOBPlayerController"), CURRENT_CONTEXT);
+		return; 
+	}
+
+	CachedHUD = Cast<AOBHUD>(CachedPC->GetHUD());
+	if (!CachedHUD)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[%s] Failed to cast AOBHUD"), CURRENT_CONTEXT);
+	}
 	
 	if (IsLocallyControlled())
 	{

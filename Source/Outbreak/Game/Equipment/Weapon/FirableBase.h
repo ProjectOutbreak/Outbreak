@@ -18,6 +18,7 @@ class OUTBREAK_API AFirableBase : public AWeaponBase
 // --------------------	
 public:
 	AFirableBase();
+	virtual void OnEquip() override { OnAmmoChanged.Broadcast(CurrentAmmoInMag, CurrentTotalAmmo); }
 	virtual void OnUse() override { StartFire(); }
 	virtual void OnEndUse() override { StopFire(); }
 	virtual bool CanUse() const override { return !bIsInUse && !bIsReloading && CurrentAmmoInMag > 0; }

@@ -7,6 +7,7 @@
 #include "Outbreak/Game/Equipment/Weapon/WeaponBase.h"
 #include "Outbreak/Game/Equipment/Weapon/ThrowableBase.h"
 #include "Outbreak/Game/Equipment/Medicine/MedicineBase.h"
+#include "Outbreak/UI/OBHUD.h"
 #include "Outbreak/Util/Define.h"
 #include "Outbreak/Util/EnumHelper.h"
 
@@ -18,6 +19,11 @@ UEquipmentController::UEquipmentController()
 void UEquipmentController::BeginPlay()
 {
 	Super::BeginPlay();
+	CachedOwner = Cast<ACharacterPlayer>(GetOwner());
+	if (!CachedOwner)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[%s] Failed to cast ACharacterPlayer"), CURRENT_CONTEXT);
+	}
 }
 
 void UEquipmentController::TickComponent(const float DeltaTime, const ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -226,15 +232,12 @@ void UEquipmentController::Equip(const TObjectPtr<AEquipmentBase>& Equipment)
 
 	CurrentEquippedItem = Equipment;
 
-	if (IsValid(CurrentEquippedItem))
+	if (IsValid(CurrentEquippedItem) && IsValid(CachedOwner))
 	{
-		const ACharacterPlayer* PlayerCharacter = Cast<ACharacterPlayer>(GetOwner());
-		if (PlayerCharacter)
-		{
-			CurrentEquippedItem->AttachToComponent(PlayerCharacter->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("weapon_r"));
-			CurrentEquippedItem->SetActorHiddenInGame(false);
-		}
+		CurrentEquippedItem->AttachToComponent(CachedOwner->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("weapon_r"));
+		CurrentEquippedItem->SetActorHiddenInGame(false);
 
+		// TODO : below if statement should be removed
 		if (AFirableBase* NewFirableWeapon = Cast<AFirableBase>(CurrentEquippedItem))
 		{
 			CurrentFireType = NewFirableWeapon->GetCurrentFireType();
@@ -242,6 +245,7 @@ void UEquipmentController::Equip(const TObjectPtr<AEquipmentBase>& Equipment)
 			NewFirableWeapon->OnAmmoChanged.AddDynamic(this, &UEquipmentController::OnAmmoChangedHandler);
 		}
 		
+		CurrentEquippedItem->OnEquip();
 		UE_LOG(LogTemp, Log, TEXT("[%s] Equipped: %s"), CURRENT_CONTEXT, *CurrentEquippedItem->GetName());
 	}
 }
@@ -259,4 +263,13 @@ void UEquipmentController::UnEquipCurrentEquipment()
 	}
 	
 	CurrentEquippedItem = nullptr;
+}
+
+void UEquipmentController::OnAmmoChangedHandler(const int32 InCurrentAmmoInMag, const int32 InCurrentTotalAmmo)
+{
+	CurrentAmmoInMag = InCurrentAmmoInMag;
+	if (AOBHUD* Hud = CachedOwner->GetHud())
+	{
+		Hud->DisplayAmmo(InCurrentAmmoInMag, InCurrentTotalAmmo);
+	}
 }

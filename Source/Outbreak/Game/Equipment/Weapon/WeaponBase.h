@@ -17,6 +17,7 @@ class OUTBREAK_API AWeaponBase : public AEquipmentBase
 // --------------------	
 public:
 	AWeaponBase();
+	virtual void OnEquip() override PURE_VIRTUAL(AWeaponBase::OnEquip, );
 	virtual void OnUse() override PURE_VIRTUAL(AWeaponBase::OnUse, );
 	virtual void OnEndUse() override PURE_VIRTUAL(AWeaponBase::OnEndUse, );
 	virtual bool CanUse() const override PURE_VIRTUAL(AWeaponBase::CanUse, return true;);

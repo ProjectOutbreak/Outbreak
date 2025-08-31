@@ -16,6 +16,7 @@ class OUTBREAK_API AEquipmentBase : public AActor
 // --------------------
 public:	
 	AEquipmentBase();
+	virtual void OnEquip() PURE_VIRTUAL(AEquipmentBase::OnEquip, );
 	virtual void OnUse() PURE_VIRTUAL(AEquipmentBase::OnUse, );
 	virtual void OnEndUse() PURE_VIRTUAL(AEquipmentBase::OnEndUse, );
 	virtual bool CanUse() const PURE_VIRTUAL(AEquipmentBase::CanUse, return true;);

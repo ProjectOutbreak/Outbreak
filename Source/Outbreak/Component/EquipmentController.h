@@ -55,12 +55,15 @@ private:
 	void OnReloadFinished() { bIsReload = false; }
 	
 	UFUNCTION()
-	void OnAmmoChangedHandler(const int32 InCurrentAmmoInMag, int32 InCurrentTotalAmmo) { CurrentAmmoInMag = InCurrentAmmoInMag; }
+	void OnAmmoChangedHandler(const int32 InCurrentAmmoInMag, int32 InCurrentTotalAmmo);
 	
 // --------------------
 // Variables
 // --------------------
 protected:
+	UPROPERTY()
+	TObjectPtr<class ACharacterPlayer> CachedOwner = nullptr;
+	
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<class AEquipmentBase> CurrentEquippedItem = nullptr;
 	

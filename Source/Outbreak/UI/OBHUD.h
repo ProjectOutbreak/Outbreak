@@ -27,7 +27,7 @@ public:
 	void SetCutsceneMode(bool bEnable);
 
 	UFUNCTION()
-	UOBWidget* GetOBWidget() const { return OB_Widget;}
+	class UOBWidget* GetOBWidget() const { return OB_Widget;}
 protected:
 	UPROPERTY()
 	TSubclassOf<UUserWidget> WidgetClass;
