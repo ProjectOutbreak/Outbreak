@@ -4,7 +4,9 @@
 #include "SkyController.h"
 
 #include "Components/LightComponent.h"
+#include "Components/SkyLightComponent.h"
 #include "Engine/DirectionalLight.h"
+#include "Engine/SkyLight.h"
 #include "Kismet/GameplayStatics.h"
 #include "Outbreak/Manager/TimeManager.h"
 
@@ -14,6 +16,7 @@ ASkyController::ASkyController()
 
 	SunMaxIntensity = 0.0f;
 	MoonMaxIntensity = 0.0f;
+	SkylightMaxIntensity = 0.0f;
 }
 
 void ASkyController::BeginPlay()
@@ -29,34 +32,64 @@ void ASkyController::BeginPlay()
 	{
 		MoonMaxIntensity = MoonLight->GetLightComponent()->Intensity;
 	}
+	if (SkylightRef && SkylightRef->GetLightComponent())
+	{
+		SkylightMaxIntensity = SkylightRef->GetLightComponent()->Intensity;
+	}
 }
 
 void ASkyController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	
+	if (SunLight && MoonLight && SkylightRef && TimeManagerRef)
+    {
+       FRotator SunRotation = TimeManagerRef->GetSunRotation();
+       SunLight->SetActorRotation(SunRotation);
+       FRotator MoonRotation = SunRotation;
+       MoonRotation.Yaw += 180.0f;
+       MoonRotation.Pitch *= -1.0f;
+       MoonLight->SetActorRotation(MoonRotation);
 
-	if (SunLight && MoonLight &&TimeManagerRef)
-	{
-		FRotator SunRotation = TimeManagerRef->GetSunRotation();
-		SunLight->SetActorRotation(SunRotation);
+       ULightComponent* SunLightComponent = SunLight->GetLightComponent();
+       ULightComponent* MoonLightComponent = MoonLight->GetLightComponent();
+       USkyLightComponent* SkylightComponent = SkylightRef->GetLightComponent();
+       
+       if (SunLightComponent && MoonLightComponent && SkylightComponent)
+       {
+          const float CurrentHour = TimeManagerRef->GetTimeOfDayInHours();
 
-		FRotator MoonRotation = SunRotation;
-		MoonRotation.Yaw += 180.0f;
-		MoonRotation.Pitch *= -1.0f;
-		MoonLight->SetActorRotation(MoonRotation);
+          float SunAlpha = 0.0f;
+          if (CurrentHour >= 4.f && CurrentHour <= 20.f)
+          {
+              if (CurrentHour < 7.f) { SunAlpha = FMath::GetMappedRangeValueClamped(FVector2D(4.f, 7.f), FVector2D(0.f, 1.f), CurrentHour); }
+              else if (CurrentHour > 17.f) { SunAlpha = FMath::GetMappedRangeValueClamped(FVector2D(17.f, 20.f), FVector2D(1.f, 0.f), CurrentHour); }
+              else { SunAlpha = 1.0f; }
+          }
+          
+          float MoonAlpha = 0.0f;
+          if (CurrentHour > 17.f || CurrentHour < 8.f)
+          {
+              if (CurrentHour > 17.f && CurrentHour < 20.f) { MoonAlpha = FMath::GetMappedRangeValueClamped(FVector2D(17.f, 20.f), FVector2D(0.f, 1.f), CurrentHour); }
+              else if (CurrentHour > 5.f && CurrentHour < 8.f) { MoonAlpha = FMath::GetMappedRangeValueClamped(FVector2D(5.f, 8.f), FVector2D(1.f, 0.f), CurrentHour); }
+              else { MoonAlpha = 1.0f; }
+          }
 
-		ULightComponent* SunLightComponent = SunLight->GetLightComponent();
-		ULightComponent* MoonLightComponent = MoonLight->GetLightComponent();
-		if (SunLightComponent && MoonLightComponent)
-		{
-			const float SunDirectionZ = SunLight->GetActorForwardVector().Z;
-			const float TransitionAlpha = FMath::Clamp(-SunDirectionZ, 0.0f, 1.0f);
-			
-			SunLightComponent->SetIntensity(SunMaxIntensity * TransitionAlpha);
-			MoonLightComponent->SetIntensity(MoonMaxIntensity * (1.0f - TransitionAlpha));
+          SunLightComponent->SetIntensity(SunMaxIntensity * SunAlpha);
+          MoonLightComponent->SetIntensity(MoonMaxIntensity * MoonAlpha);
+          SunLightComponent->SetVisibility(SunAlpha > 0.001f);
+          MoonLightComponent->SetVisibility(MoonAlpha > 0.001f);
+       	
+          const float MinNightLightLevel = 0.15f;
 
-			SunLightComponent->SetVisibility(SunMaxIntensity > 0.001f);
-			MoonLightComponent->SetVisibility(MoonMaxIntensity < 0.999f);
-		}		
-	}
+          float SunSkylightAlpha = SunAlpha;
+       	  const float MoonSkylightContribution = 0.4f;
+          float MoonSkylightAlpha = MoonAlpha * MoonSkylightContribution;
+          float CombinedLightAlpha = FMath::Clamp(SunSkylightAlpha + MoonSkylightAlpha, 0.0f, 1.0f);
+          float FinalSkylightAlpha = FMath::Max(CombinedLightAlpha, MinNightLightLevel);
+          
+          float NewSkylightIntensity = SkylightMaxIntensity * FinalSkylightAlpha;
+          SkylightComponent->SetIntensity(NewSkylightIntensity);
+       }     
+    }
 }

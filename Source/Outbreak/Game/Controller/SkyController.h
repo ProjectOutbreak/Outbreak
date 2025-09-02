@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "SkyController.generated.h"
 
+class ASkyLight;
 class ADirectionalLight;
 class ATimeManager;
 
@@ -28,6 +29,9 @@ public:
 
 	UPROPERTY(EditInstanceOnly, Category="Sky Controller")
 	ADirectionalLight* MoonLight;
+
+	UPROPERTY(EditInstanceOnly, Category="Sky Controller")
+	ASkyLight* SkylightRef;
 	
 private:
 	UPROPERTY()
@@ -35,4 +39,5 @@ private:
 
 	float SunMaxIntensity;
 	float MoonMaxIntensity;
+	float SkylightMaxIntensity;
 };
