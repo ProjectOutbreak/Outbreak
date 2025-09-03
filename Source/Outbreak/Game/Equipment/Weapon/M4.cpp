@@ -31,7 +31,7 @@ AM4::AM4()
 	if (FirableDataTableRef.Succeeded())
 	{
 		const FString ContextString;
-		const FFirableData* Data = FirableDataTableRef.Object->FindRow<FFirableData>(FName("Ak47"), ContextString);
+		const FFirableData* Data = FirableDataTableRef.Object->FindRow<FFirableData>(FName("M4"), ContextString);
 		if (Data)
 		{
 			FirableData = *Data;
