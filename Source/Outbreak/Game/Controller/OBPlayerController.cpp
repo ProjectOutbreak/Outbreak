@@ -13,6 +13,9 @@
 
 AOBPlayerController::AOBPlayerController()
 {
+	PrimaryActorTick.bCanEverTick = true;
+	InteractionDistance = 250.0f;
+	
 	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionFirstPersonMoveRef(TEXT("/Game/Inputs/Actions/IA_FirstPersonMove.IA_FirstPersonMove"));
 	if (InputActionFirstPersonMoveRef.Object)
 	{
@@ -59,6 +62,41 @@ AOBPlayerController::AOBPlayerController()
 		InteractAction = InputActionInteractRef.Object;
 	}
 }
+
+void AOBPlayerController::Tick(float DeltaTime)
+{
+	FVector CameraLocation;
+	FRotator CameraRotation;
+	GetPlayerViewPoint(CameraLocation, CameraRotation);
+	FVector TraceEnd = CameraLocation + (CameraRotation.Vector() * InteractionDistance);
+    
+	FHitResult HitResult;
+	FCollisionQueryParams Params;
+	if (GetPawn())
+	{
+		Params.AddIgnoredActor(GetPawn());
+	}
+
+	bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, CameraLocation, TraceEnd, ECC_Visibility, Params);
+
+	TScriptInterface<IInteractInterface> CurrentHitObject = bHit ? HitResult.GetActor() : nullptr;
+
+	if (CurrentHitObject != FocusedInteractable)
+	{
+		if (FocusedInteractable)
+		{
+			FocusedInteractable->Execute_EndFocus(FocusedInteractable.GetObject());
+		}
+
+		if (CurrentHitObject)
+		{
+			CurrentHitObject->Execute_BeginFocus(CurrentHitObject.GetObject());
+		}
+
+		FocusedInteractable = CurrentHitObject;
+	}
+}
+
 
 void AOBPlayerController::BeginPlay()
 {
@@ -192,40 +230,9 @@ void AOBPlayerController::StopCrouch()
 
 void AOBPlayerController::PerformInteract()
 {
-	ACharacterPlayer* MyCharacter = Cast<ACharacterPlayer>(GetPawn());
-	if (!MyCharacter)
+	if (FocusedInteractable)
 	{
-		return;
-	}
-	
-	TScriptInterface<IInteractInterface> InteractableObject = MyCharacter->GetCurrentInteractable();
-	if (!InteractableObject)
-	{
-		return; 
-	}
-	
-	
-	FVector CameraLocation;
-	FRotator CameraRotation;
-	GetPlayerViewPoint(CameraLocation, CameraRotation);
-	
-	float InteractionDistance = 2000.0f;
-	FVector TraceEnd = CameraLocation + (CameraRotation.Vector() * InteractionDistance);
-    
-	FHitResult HitResult;
-	FCollisionQueryParams CollisionParams;
-	CollisionParams.AddIgnoredActor(MyCharacter);
-	
-	bool bHit = GetWorld()->LineTraceSingleByChannel(
-		HitResult,
-		CameraLocation,
-		TraceEnd,
-		ECC_Visibility,
-		CollisionParams
-	);
-	if (bHit && HitResult.GetActor() == Cast<AActor>(InteractableObject.GetObject()))
-	{
-		InteractableObject->Execute_Interact(InteractableObject.GetObject(), MyCharacter);
+		FocusedInteractable->Execute_Interact(FocusedInteractable.GetObject(), GetPawn());
 	}
 }
 

@@ -23,9 +23,6 @@ class OUTBREAK_API ACharacterPlayer : public ACharacterBase, public IGenericTeam
 public:
 	ACharacterPlayer();
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-	void SetCurrentInteractable(AActor* NewInteractable);
-	void ClearCurrentInteractable(AActor* OldInteractable);
-	FORCEINLINE TScriptInterface<IInteractInterface> GetCurrentInteractable() const { return CurrentInteractable; }
 
 	void ChangePlayerControl();
 	
@@ -80,7 +77,5 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Minimap")
 	TObjectPtr<UTextRenderComponent> PlayerNameText;
-
-private:
-	TScriptInterface<IInteractInterface> CurrentInteractable;
+	
 };

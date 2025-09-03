@@ -5,8 +5,9 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
 #include "OBPlayerController.generated.h"
-
+class IInteractInterface;
 UCLASS()
+
 class OUTBREAK_API AOBPlayerController : public APlayerController
 {
 	GENERATED_BODY()
@@ -23,6 +24,7 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaTime) override;
 	virtual void OnPossess(class APawn* PossessedPawn) override;
 	virtual void SetupInputComponent() override;
 	void PerformInteract();
@@ -90,4 +92,10 @@ private:
 	float CrouchSpeed = 200.f;
 	
 	bool bMenuOpen = false;
+	
+	UPROPERTY()
+	TScriptInterface<IInteractInterface> FocusedInteractable;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Interaction")
+	float InteractionDistance;
 };

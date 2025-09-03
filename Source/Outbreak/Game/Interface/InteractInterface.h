@@ -24,4 +24,11 @@ class OUTBREAK_API IInteractInterface
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interaction")
 	void Interact(APawn* InstigatorPawn);
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Interaction") 
+	void BeginFocus(); // 플레이어가 상호작용 대상을 보기 시작했을 때 (UI 띄우기 등)
+
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Interaction")
+	void EndFocus(); // 상호작용 대상에서 시선 돌렸을 때 (UI 없애기 등) 
 };
