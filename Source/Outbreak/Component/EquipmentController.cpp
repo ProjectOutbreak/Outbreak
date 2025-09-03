@@ -210,7 +210,7 @@ void UEquipmentController::HandleReload()
 	FOnReloadFinished DoneCallback;
 	DoneCallback.BindUObject(this, &UEquipmentController::OnReloadFinished);
 
-	CurrentFirable->OnReload(DoneCallback);
+	CurrentFirable->StartReload(DoneCallback);
 	bIsReload = true;
 }
 
@@ -234,7 +234,7 @@ void UEquipmentController::Equip(const TObjectPtr<AEquipmentBase>& Equipment)
 
 	if (IsValid(CurrentEquippedItem) && IsValid(CachedOwner))
 	{
-		CurrentEquippedItem->AttachToComponent(CachedOwner->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("weapon_r"));
+		CurrentEquippedItem->AttachToComponent(CachedOwner->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("ik_hand_gun"));
 		CurrentEquippedItem->SetActorHiddenInGame(false);
 
 		// TODO : below if statement should be removed

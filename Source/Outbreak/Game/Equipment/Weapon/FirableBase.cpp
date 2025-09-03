@@ -20,6 +20,7 @@ void AFirableBase::StartFire()
 	switch (CurrentFireType)
 	{
 	case EFireType::Single:
+		EquipmentMesh->PlayAnimation(FireAnim, false);
 		ProcessFire();
 		break;
 	case EFireType::Burst:
@@ -27,6 +28,7 @@ void AFirableBase::StartFire()
 		// GetWorld()->GetTimerManager().SetTimer(FireTimerHandle, this, &AFirableBase::ProcessFire, Interval, true, 0.0f);
 		break;
 	case EFireType::Auto:
+		EquipmentMesh->PlayAnimation(FireAnim, true);
 		GetWorld()->GetTimerManager().SetTimer(FireTimerHandle, this, &AFirableBase::ProcessFire, Interval, true, 0.0f);
 		break;
 	case EFireType::None:
@@ -36,6 +38,7 @@ void AFirableBase::StartFire()
 
 void AFirableBase::StopFire()
 {
+	EquipmentMesh->Stop();
 	GetWorld()->GetTimerManager().ClearTimer(FireTimerHandle);
 }
 
@@ -84,21 +87,17 @@ void AFirableBase::SpawnProjectile()
 {
 }
 
-void AFirableBase::OnReload(const FOnReloadFinished& DoneCallback)
+void AFirableBase::StartReload(const FOnReloadFinished& DoneCallback)
 {
 	if (!CanReload())
 		return;
 
 	OnReloadFinishedCallback = DoneCallback;
-	StartReload();
-}
-
-void AFirableBase::StartReload()
-{
 	bIsReloading = true;
+	EquipmentMesh->PlayAnimation(CurrentAmmoInMag == 0 ? ReloadEmptyAnim : ReloadAnim, false);
 	
 	// TODO : Manage Reload Duration
-	const float ReloadDuration = 2.5f;
+	const float ReloadDuration = 2.0f;
 	FTimerHandle ReloadTimerHandle;
 	GetWorld()->GetTimerManager().SetTimer(ReloadTimerHandle, this, &AFirableBase::FinishReload, ReloadDuration, false);
 }

@@ -77,7 +77,7 @@ ACharacterPlayer::ACharacterPlayer()
 	PlayerNameText->bVisibleInSceneCaptureOnly = true;
 	
 	// ----- Mesh
-	static ConstructorHelpers::FObjectFinder<USkeletalMesh> DefaultMesh(TEXT("/Script/Engine.SkeletalMesh'/Game/Art/Characters/SciFiWarrior/Meshes/SKM_Player.SKM_Player'"));
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> DefaultMesh(TEXT("/Game/Art/Characters/Mannequin_UE4/Meshes/SK_Mannequin.SK_Mannequin"));
 	if (DefaultMesh.Succeeded())
 	{
 		GetMesh()->SetSkeletalMesh(DefaultMesh.Object);

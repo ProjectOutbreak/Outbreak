@@ -22,7 +22,7 @@ public:
 	virtual void OnUse() override { StartFire(); }
 	virtual void OnEndUse() override { StopFire(); }
 	virtual bool CanUse() const override { return !bIsInUse && !bIsReloading && CurrentAmmoInMag > 0; }
-	void OnReload(const FOnReloadFinished& DoneCallback);
+	virtual void StartReload(const FOnReloadFinished& DoneCallback);
 
 	bool CanReload() const { return !bIsReloading && CurrentAmmoInMag < FirableData.MagazineSize && CurrentTotalAmmo > 0; }
 	bool IsReloading() const { return bIsReloading; }
@@ -41,7 +41,6 @@ protected:
 	virtual void ProcessFire();
 	virtual void SpawnProjectile();
 
-	virtual void StartReload();
 	virtual void FinishReload();
 	
 // --------------------
