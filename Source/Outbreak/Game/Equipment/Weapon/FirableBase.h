@@ -35,11 +35,15 @@ public:
 	EFireType ToggleFireMode();
 
 protected:
+	virtual void Tick(float DeltaSeconds) override;
 	void StartFire();
 	void StopFire();
 	
 	virtual void ProcessFire();
 	virtual void FinishReload();
+
+private:
+	void RecoverRecoil(float DeltaTime);
 	
 // --------------------
 // Variables
@@ -67,4 +71,8 @@ protected:
 	FTimerHandle FireTimerHandle;
 	
 	FOnReloadFinished OnReloadFinishedCallback;
+
+	float RecoilRecoveryTime = 0.5f;
+	FTimerHandle RecoilResetTimer;
+	bool bIsRecoiling = false;
 };

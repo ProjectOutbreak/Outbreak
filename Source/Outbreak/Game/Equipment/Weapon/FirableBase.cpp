@@ -4,12 +4,26 @@
 #include "FirableBase.h"
 
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "Outbreak/Character/Player/CharacterPlayer.h"
 #include "Outbreak/Util/EnumHelper.h"
 #include "Outbreak/Util/FloatHelper.h"
 
 AFirableBase::AFirableBase()
 {
 }
+
+
+void AFirableBase::Tick(const float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	if (bIsRecoiling)
+	{
+		RecoverRecoil(DeltaSeconds);
+	}
+}
+
 
 void AFirableBase::StartFire()
 {
@@ -82,6 +96,24 @@ void AFirableBase::ProcessFire()
 		}
 	}
 
+	const ACharacterPlayer* OwnerCharacter = Cast<ACharacterPlayer>(GetOwner());
+	if (!OwnerCharacter) return;
+	
+	APlayerController* PC = Cast<APlayerController>(OwnerCharacter->GetController());
+	if (!PC) return;
+	
+	const float HorizontalRecoil = UKismetMathLibrary::RandomFloatInRange(-FirableData.HorizontalRecoil, FirableData.HorizontalRecoil);
+
+	PC->AddPitchInput(-FirableData.VerticalRecoil);
+	PC->AddYawInput(HorizontalRecoil);
+
+	bIsRecoiling = true;
+
+	GetWorldTimerManager().ClearTimer(RecoilResetTimer);
+	GetWorldTimerManager().SetTimer(RecoilResetTimer, FTimerDelegate::CreateLambda([&]()
+	{
+		bIsRecoiling = false;
+	}), RecoilRecoveryTime, false);
 }
 
 void AFirableBase::StartReload(const FOnReloadFinished& DoneCallback)
@@ -110,6 +142,18 @@ void AFirableBase::FinishReload()
 	bIsReloading = false;
 	OnReloadFinishedCallback.ExecuteIfBound();
 	OnAmmoChanged.Broadcast(CurrentAmmoInMag, CurrentTotalAmmo);
+}
+
+void AFirableBase::RecoverRecoil(const float DeltaTime)
+{
+	const ACharacterPlayer* OwnerCharacter = Cast<ACharacterPlayer>(GetOwner());
+	if (!OwnerCharacter) return;
+	
+	APlayerController* PC = Cast<APlayerController>(OwnerCharacter->GetController());
+	if (!PC) return;
+	
+	const float RecoveryAmount = (FirableData.VerticalRecoil / RecoilRecoveryTime) * DeltaTime;
+	PC->AddPitchInput(RecoveryAmount);
 }
 
 EFireType AFirableBase::ToggleFireMode()
