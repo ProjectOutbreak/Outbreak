@@ -6,7 +6,3 @@
 AWeaponBase::AWeaponBase()
 {
 }
-
-void AWeaponBase::DealDamage(AActor* Target, float Damage)
-{
-}

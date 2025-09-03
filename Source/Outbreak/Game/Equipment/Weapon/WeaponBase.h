@@ -25,9 +25,6 @@ public:
 	EWeaponType GetWeaponType() const { return WeaponType; }
 	float GetBaseDamage() const { return WeaponData.Damage; }
 
-protected:
-	virtual void DealDamage(AActor* Target, float Damage);
-
 // --------------------
 // Variables
 // --------------------

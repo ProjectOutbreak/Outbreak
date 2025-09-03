@@ -46,7 +46,4 @@ protected:
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<USkeletalMeshComponent> EquipmentMesh;
 
-	UPROPERTY()
-	TObjectPtr<class ACharacterPlayer> OwnerCharacter;
-	
 };

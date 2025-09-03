@@ -39,8 +39,6 @@ protected:
 	void StopFire();
 	
 	virtual void ProcessFire();
-	virtual void SpawnProjectile();
-
 	virtual void FinishReload();
 	
 // --------------------

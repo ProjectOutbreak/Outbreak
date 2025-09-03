@@ -81,10 +81,7 @@ void AFirableBase::ProcessFire()
 			UGameplayStatics::ApplyPointDamage(HitActor, FirableData.Damage, PlayerViewPointRotation.Vector(), HitResult, OwnerController, this, nullptr);
 		}
 	}
-}
 
-void AFirableBase::SpawnProjectile()
-{
 }
 
 void AFirableBase::StartReload(const FOnReloadFinished& DoneCallback)
