@@ -6,7 +6,7 @@
 #include "Components/LightComponent.h"
 #include "Components/SkyLightComponent.h"
 #include "Engine/DirectionalLight.h"
-#include "Engine/SkyLight.h"
+#include "Engine/SkyLight.h" 
 #include "Kismet/GameplayStatics.h"
 #include "Outbreak/Manager/TimeManager.h"
 
@@ -42,14 +42,14 @@ void ASkyController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	
-	if (SunLight && MoonLight && SkylightRef && TimeManagerRef)
+	if (SunLight && MoonLight && SkylightRef && MoonActor && TimeManagerRef)
     {
        FRotator SunRotation = TimeManagerRef->GetSunRotation();
        SunLight->SetActorRotation(SunRotation);
-       FRotator MoonRotation = SunRotation;
-       MoonRotation.Yaw += 180.0f;
-       MoonRotation.Pitch *= -1.0f;
-       MoonLight->SetActorRotation(MoonRotation);
+	   FRotator MoonRotation = SunRotation;
+	   MoonRotation.Yaw += 180.0f;
+	   MoonRotation.Pitch *= -1.0f;
+	   MoonLight->SetActorRotation(MoonRotation);
 
        ULightComponent* SunLightComponent = SunLight->GetLightComponent();
        ULightComponent* MoonLightComponent = MoonLight->GetLightComponent();
@@ -79,6 +79,12 @@ void ASkyController::Tick(float DeltaTime)
           MoonLightComponent->SetIntensity(MoonMaxIntensity * MoonAlpha);
           SunLightComponent->SetVisibility(SunAlpha > 0.001f);
           MoonLightComponent->SetVisibility(MoonAlpha > 0.001f);
+
+       	  const bool bShowStars = (CurrentHour < 6.f || CurrentHour >= 18.f);
+       	  if (NightStarSky)
+       	  {
+       	  	  NightStarSky->SetActorHiddenInGame(!bShowStars);
+       	  }
        	
           const float MinNightLightLevel = 0.15f;
 
@@ -90,6 +96,8 @@ void ASkyController::Tick(float DeltaTime)
           
           float NewSkylightIntensity = SkylightMaxIntensity * FinalSkylightAlpha;
           SkylightComponent->SetIntensity(NewSkylightIntensity);
-       }     
+
+       	  
+       }
     }
 }

@@ -32,7 +32,12 @@ public:
 
 	UPROPERTY(EditInstanceOnly, Category="Sky Controller")
 	ASkyLight* SkylightRef;
-	
+
+	UPROPERTY(EditInstanceOnly, Category="Sky Controller")
+	AActor* MoonActor;
+
+	UPROPERTY(EditInstanceOnly, Category="Sky Controller")
+	AActor* NightStarSky;
 private:
 	UPROPERTY()
 	ATimeManager* TimeManagerRef;
