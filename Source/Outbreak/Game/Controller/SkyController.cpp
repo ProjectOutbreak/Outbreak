@@ -51,6 +51,18 @@ void ASkyController::Tick(float DeltaTime)
 	   MoonRotation.Pitch *= -1.0f;
 	   MoonLight->SetActorRotation(MoonRotation);
 
+		if (MoonActor)
+		{
+			const APlayerCameraManager* CamMgr = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
+			const FVector Anchor = CamMgr ? CamMgr->GetCameraLocation() : FVector::ZeroVector;
+			const FVector Dir = -FRotationMatrix(MoonRotation).GetUnitAxis(EAxis::X);
+			const FVector MoonLoc = Anchor + (Dir * MoonRadius);
+			const FRotator FaceCamera = (Anchor - MoonLoc).Rotation();
+			
+			MoonActor->SetActorLocation(MoonLoc);
+			MoonActor->SetActorRotation(FaceCamera);
+		}
+
        ULightComponent* SunLightComponent = SunLight->GetLightComponent();
        ULightComponent* MoonLightComponent = MoonLight->GetLightComponent();
        USkyLightComponent* SkylightComponent = SkylightRef->GetLightComponent();

@@ -45,4 +45,5 @@ private:
 	float SunMaxIntensity;
 	float MoonMaxIntensity;
 	float SkylightMaxIntensity;
+	const float MoonRadius = 50000.f;
 };
