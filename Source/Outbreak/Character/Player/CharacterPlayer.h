@@ -91,4 +91,10 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Minimap")
 	TObjectPtr<UTextRenderComponent> PlayerNameText;
+
+	// TODO : for test. delete later
+	UPROPERTY()
+	TObjectPtr<class AWeaponBase> SpawnedWeapon;
+	UPROPERTY()
+	TSubclassOf<class AM4> WeaponToSpawn;
 };

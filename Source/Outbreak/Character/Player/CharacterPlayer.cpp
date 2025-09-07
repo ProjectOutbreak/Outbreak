@@ -14,8 +14,8 @@
 #include "Net/UnrealNetwork.h"
 #include "Outbreak/Component/EquipmentController.h"
 #include "Outbreak/Data/PlayerControlData.h"
-#include "Outbreak/Game/Equipment/Weapon/Ak47.h"
 #include "Outbreak/Game/Controller/OBPlayerController.h"
+#include "Outbreak/Game/Equipment/Weapon/M4.h"
 #include "Outbreak/Game/Equipment/Weapon/WeaponBase.h"
 #include "Outbreak/Game/Framework/OBGameMode.h"
 #include "Outbreak/Game/Framework/OutBreakGameState.h"
@@ -24,6 +24,13 @@
 
 ACharacterPlayer::ACharacterPlayer()
 {
+	// TODO : for test. delete later
+	static ConstructorHelpers::FClassFinder<AM4> WeaponClassRef(TEXT("/Game/Blueprints/BP_M4.BP_M4_C"));
+	if (WeaponClassRef.Class)
+	{
+		WeaponToSpawn = WeaponClassRef.Class;
+	}
+	
 	CharacterType = ECharacterType::Player;
 	PlayerType = EPlayerType::Player1;
 
@@ -160,6 +167,24 @@ void ACharacterPlayer::BeginPlay()
 	if (IsLocallyControlled())
 	{
 		SetPlayerControl(CurrentCharacterControlType);
+	}
+
+	// TODO : For Test. Remove later.
+	if (IsValid(WeaponToSpawn))
+	{
+		const FVector SpawnLocation = GetActorLocation();
+		const FRotator SpawnRotation = GetActorRotation();
+
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.Owner = this;
+		SpawnParams.Instigator = GetInstigator();
+
+		SpawnedWeapon = GetWorld()->SpawnActor<AWeaponBase>(WeaponToSpawn, SpawnLocation, SpawnRotation, SpawnParams);
+        
+		if (IsValid(SpawnedWeapon))
+		{
+			EquipmentController->AddEquipment(SpawnedWeapon);
+		}
 	}
 }
 
