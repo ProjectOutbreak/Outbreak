@@ -153,9 +153,9 @@ UENUM(BlueprintType)
 enum class EZombieSubType : uint8
 {
 	None,
-	Walker      UMETA(DisplayName = "걷는 좀비"),
-	Runner      UMETA(DisplayName = "뛰는 좀비"),
-	Fat         UMETA(DisplayName = "뚱뚱 좀비"),
+	Walker      UMETA(DisplayName = "워커"),
+	Runner      UMETA(DisplayName = "러너"),
+	Bloater     UMETA(DisplayName = "블로터"),
 	Soldier     UMETA(DisplayName = "군인 좀비"),
     
 	GymRat      UMETA(DisplayName = "헬창 좀비"),

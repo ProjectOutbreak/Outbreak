@@ -37,7 +37,6 @@ ACharacterBase::ACharacterBase()
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 
 	// Mesh
-	GetMesh()->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, -100.0f), FRotator(0.0f, -90.0f, 0.0f));
 	GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
 	GetMesh()->SetCollisionProfileName(TEXT("CharacterMesh"));
 	GetMesh()->SetHiddenInGame(false);

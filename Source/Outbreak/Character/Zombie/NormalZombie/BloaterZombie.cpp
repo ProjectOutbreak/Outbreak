@@ -1,14 +1,14 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "FatZombie.h"
+#include "BloaterZombie.h"
 
-AFatZombie::AFatZombie()
+ABloaterZombie::ABloaterZombie()
 {
-	ZombieSubType = EZombieSubType::Fat;
+	ZombieSubType = EZombieSubType::Bloater;
 }
 
-void AFatZombie::BeginPlay()
+void ABloaterZombie::BeginPlay()
 {
 	SetMesh(ECharacterBodyType::Fat);
 	SetPhysicalAsset(ECharacterType::Zombie, ECharacterBodyType::Fat);

@@ -4,18 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "NormalZombie.h"
-#include "FatZombie.generated.h"
+#include "BloaterZombie.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class OUTBREAK_API AFatZombie : public ANormalZombie
+class OUTBREAK_API ABloaterZombie : public ANormalZombie
 {
 	GENERATED_BODY()
 
 public:
-	AFatZombie();
+	ABloaterZombie();
 	
 protected:
 	virtual void BeginPlay() override;

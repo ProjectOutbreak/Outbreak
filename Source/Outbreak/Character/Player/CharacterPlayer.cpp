@@ -84,6 +84,7 @@ ACharacterPlayer::ACharacterPlayer()
 	PlayerNameText->bVisibleInSceneCaptureOnly = true;
 	
 	// ----- Mesh
+	GetMesh()->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, -100.0f), FRotator(0.0f, -90.0f, 0.0f));
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh> DefaultMesh(TEXT("/Game/Art/Characters/Mannequin_UE4/Meshes/SK_Mannequin.SK_Mannequin"));
 	if (DefaultMesh.Succeeded())
 	{
