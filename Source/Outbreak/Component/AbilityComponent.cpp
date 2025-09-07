@@ -1,7 +1,7 @@
 #include "AbilityComponent.h"
 #include "Outbreak/Character/CharacterBase.h"
-#include "Outbreak/Game/Ability/ActiveAbilityObject.h"
-#include "Outbreak/Game/Ability/PassiveAbilityObject.h"
+#include "Outbreak/Game/Ability/BaseActiveAbility.h"
+#include "Outbreak/Game/Ability/BasePassiveAbility.h"
 #include "Outbreak/Util/UObjectHelper.h"
 
 UAbilityComponent::UAbilityComponent()
@@ -14,19 +14,18 @@ void UAbilityComponent::BeginPlay()
 	Super::BeginPlay();
 }
 
-bool UAbilityComponent::TryUseAbility(const EAbilityType Type) const
+void UAbilityComponent::TryUseAbility(const EAbilityType Type) const
 {
-	if (const TObjectPtr<UActiveAbilityObject> Ability = Cast<UActiveAbilityObject>(GetAbility(Type)))
+	if (const TObjectPtr<UBaseActiveAbility> Ability = Cast<UBaseActiveAbility>(GetAbility(Type)))
 	{
 		if (Ability->CanUseAbility())
 		{
-			return Ability->UseAbility();
+			Ability->Activate();
 		}
 	}
-	return false;
 }
 
-void UAbilityComponent::AddAbility(const TObjectPtr<UBaseAbilityObject>& NewAbility)
+void UAbilityComponent::AddAbility(const TObjectPtr<UBaseAbility>& NewAbility)
 {
 	if (!UObjectHelper::IsUObjectValid(NewAbility))
 	{
@@ -36,26 +35,45 @@ void UAbilityComponent::AddAbility(const TObjectPtr<UBaseAbilityObject>& NewAbil
 
 	const EAbilityType Type = NewAbility->GetAbilityType();
 
-	NewAbility->SetOwnerCharacter(Cast<ACharacterBase>(GetOwner()));
+	NewAbility->Initialize(Cast<ACharacterBase>(GetOwner()));
 	AbilityArray.Add(NewAbility);
 	AbilityMap.Add(Type, NewAbility);
 
-	if (const TObjectPtr<UPassiveAbilityObject> Passive = Cast<UPassiveAbilityObject>(NewAbility))
+	if (const TObjectPtr<UBasePassiveAbility> Passive = Cast<UBasePassiveAbility>(NewAbility))
 	{
-		Passive->UseAbility();
+		Passive->OnEquip();
 	}
 }
 
 void UAbilityComponent::RemoveAbility(const EAbilityType Type)
 {
-	if (const TObjectPtr<UBaseAbilityObject> Ability = GetAbility(Type))
+	if (const TObjectPtr<UBaseAbility> Ability = GetAbility(Type))
 	{
 		AbilityArray.Remove(Ability);
 		AbilityMap.Remove(Type);
 	}
 }
 
-TObjectPtr<UBaseAbilityObject> UAbilityComponent::GetAbility(const EAbilityType Type) const
+void UAbilityComponent::Release()
+{
+	for (TObjectPtr Ability : AbilityArray)
+	{
+		if (!UObjectHelper::IsUObjectValid(Ability))
+		{
+			UE_LOG(LogTemp, Error, TEXT("[%s] Ability is not valid."), CURRENT_CONTEXT);
+			continue;
+		}
+		
+		if (const TObjectPtr<UBasePassiveAbility> Passive = Cast<UBasePassiveAbility>(Ability))
+		{
+			Passive->OnUnequip();
+		}
+	}
+	AbilityArray.Empty();
+	AbilityMap.Empty();
+}
+
+TObjectPtr<UBaseAbility> UAbilityComponent::GetAbility(const EAbilityType Type) const
 {
 	if (AbilityMap.Contains(Type))
 	{
@@ -84,7 +102,7 @@ void UAbilityComponent::UpdateCooldowns(const float DeltaTime)
 			continue;
 		}
 		
-		if (const TObjectPtr<UActiveAbilityObject> Active = Cast<UActiveAbilityObject>(Ability))
+		if (const TObjectPtr<UBaseActiveAbility> Active = Cast<UBaseActiveAbility>(Ability))
 		{
 			Active->TickCooldown(DeltaTime);
 		}
@@ -101,7 +119,7 @@ void UAbilityComponent::UpdateDurations(const float DeltaTime)
 			continue;
 		}
 		
-		if (const TObjectPtr<UActiveAbilityObject> Active = Cast<UActiveAbilityObject>(Ability))
+		if (const TObjectPtr<UBaseActiveAbility> Active = Cast<UBaseActiveAbility>(Ability))
 		{
 			Active->TickDuration(DeltaTime);
 		}

@@ -9,7 +9,9 @@ ASpecialZombie::ASpecialZombie()
 	AbilityComponent = CreateDefaultSubobject<UAbilityComponent>(TEXT("AbilityComponent"));
 }
 
-void ASpecialZombie::BeginPlay()
+void ASpecialZombie::OnRep_Die()
 {
-	Super::BeginPlay();
+	Super::OnRep_Die();
+	
+	AbilityComponent->Release();
 }

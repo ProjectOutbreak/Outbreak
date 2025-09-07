@@ -288,8 +288,6 @@ void ACharacterZombie::OnAttackEnd()
 	if (!HasAuthority())
 		return;
 	
-	// TODO : 자동으로 공격 데미지 계산하는 구조로 개선
-	const int32 FinalDamage = static_cast<int32>(ZombieData.AttackDamage * AttackDamageMultiplier);
 	const FVector Start = GetActorLocation();
 	const FVector End = Start + GetActorForwardVector() * ZombieData.AttackRange;
 
@@ -302,7 +300,7 @@ void ACharacterZombie::OnAttackEnd()
 		AActor* HitActor = Hit.GetActor();
 		if (HitActor && HitActor->IsA(ACharacterPlayer::StaticClass()))
 		{
-			UGameplayStatics::ApplyDamage(HitActor, FinalDamage, GetController(), this, UDamageType::StaticClass());
+			UGameplayStatics::ApplyDamage(HitActor, ZombieData.AttackDamage, GetController(), this, UDamageType::StaticClass());
 		}
 	}
 

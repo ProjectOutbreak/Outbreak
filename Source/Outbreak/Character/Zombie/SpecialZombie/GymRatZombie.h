@@ -19,9 +19,4 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-
-private:
-	// TODO : modify magic number
-	float BodyScale = 1.5f;
-	
 };

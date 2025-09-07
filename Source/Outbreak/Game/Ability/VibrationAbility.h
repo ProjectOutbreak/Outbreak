@@ -1,24 +1,19 @@
 ﻿#pragma once
-#include "PassiveAbilityObject.h"
+#include "BasePassiveAbility.h"
 #include "VibrationAbility.generated.h"
 
 UCLASS()
-class OUTBREAK_API UVibrationAbility : public UPassiveAbilityObject
+class OUTBREAK_API UVibrationAbility : public UBasePassiveAbility
 {
 	GENERATED_BODY()
 
 public:
-	UVibrationAbility()
-	{
-		AbilityType = EAbilityType::Vibration;
-		AbilityName = TEXT("Vibration");
-	}
-
-	virtual void ActivateAbility() override;
-	virtual void DeactivateAbility() override;
+	UVibrationAbility();
+	virtual void OnEquip() override;
+	virtual void OnUnequip() override;
 
 private:
-	void OnVibrationAbility();
+	void OnVibrationAbility() const;
 
 private:
 	FTimerHandle VibrationTimerHandle;

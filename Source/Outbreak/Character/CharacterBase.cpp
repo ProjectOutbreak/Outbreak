@@ -133,7 +133,7 @@ void ACharacterBase::Die()
 		return;
 
 	bIsDead = true;
-	
+
 	OnRep_Die();
 }
 

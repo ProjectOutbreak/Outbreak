@@ -42,9 +42,6 @@ private:
 // --------------------
 // Variables
 // --------------------
-public:
-	float AttackDamageMultiplier = 1.0f;
-	
 protected:
 	UPROPERTY(ReplicatedUsing = OnRep_Die)
 	uint8 bIsDead = false;

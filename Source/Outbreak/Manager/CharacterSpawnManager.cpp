@@ -11,7 +11,7 @@
 
 ACharacterSpawnManager::ACharacterSpawnManager()
 {
-	static ConstructorHelpers::FObjectFinder<UDataTable> ZombieDataTableAsset(TEXT("/Script/Engine.DataTable'/Game/Data/ZombieDataTable.ZombieDataTable'"));
+	static ConstructorHelpers::FObjectFinder<UDataTable> ZombieDataTableAsset(TEXT("/Game/Data/DT_Zombie.DT_Zombie"));
 	if (ZombieDataTableAsset.Succeeded())
 	{
 		ZombieDataTable = ZombieDataTableAsset.Object;
@@ -334,7 +334,7 @@ void ACharacterSpawnManager::SpawnEnemies()
 		const int32 SpawnMax = FMath::Clamp(EnemyData.SpawnMax, EnemyData.SpawnMin, SettingData->MaxEnemies);
 		const int32 SpawnAmount = GetRandomSpawnCount(SpawnMin, SpawnMax);
 
-		for (int i = 0; i < SpawnAmount - 1; i++)
+		for (int i = 0; i < SpawnAmount; i++)
 		{
 			if (SettingData->MaxEnemies <= SpawnedEnemies)
 				return;

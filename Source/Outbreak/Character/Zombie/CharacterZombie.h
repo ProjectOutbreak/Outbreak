@@ -49,6 +49,8 @@ private:
 protected:
 	EZombieType ZombieType = EZombieType::None;
 	EZombieSubType ZombieSubType = EZombieSubType::None;
+	// TODO : modify magic number
+	float BodyScale = 1.0f;
 	
 	UPROPERTY(Replicated)
 	FZombieData ZombieData;

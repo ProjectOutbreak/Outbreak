@@ -1,49 +1,26 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
-
 #include "CoreMinimal.h"
-#include "UObject/Interface.h"
+#include "Outbreak/Character/CharacterBase.h"
+#include "Outbreak/Util/EnumHelper.h"
 #include "BaseAbility.generated.h"
 
-UENUM()
-enum class EAbilityType : uint8
-{
-	None            UMETA(DisplayName = "None"),
-	DamageEnhance	UMETA(DisplayName = "DamageEnhance"),
-	Vibration		UMETA(DisplayName = "Vibration"),
-};
-
-UENUM()
-enum class EAbilityActivationType : uint8
-{
-	None	UMETA(DisplayName = "None"),
-	Passive	UMETA(DisplayName = "Passive"),
-	Active	UMETA(DisplayName = "Active"),
-};
-
-UINTERFACE(MinimalAPI)
-class UBaseAbility : public UInterface
+UCLASS()
+class OUTBREAK_API UBaseAbility : public UObject
 {
 	GENERATED_BODY()
-};
 
-class OUTBREAK_API IBaseAbility
-{
-	GENERATED_BODY()
-	
 public:
-	virtual EAbilityActivationType GetActivationType() const = 0;
-	virtual EAbilityType GetAbilityType() const = 0;
-	virtual FString GetAbilityName() const = 0;
+	virtual void Initialize(ACharacterBase* InOwner) { Owner = InOwner;}
+	virtual EAbilityType GetAbilityType() const { return AbilityType; }
+	virtual FString GetAbilityName() const { return EnumHelper::EnumToString(AbilityType); }
 	
-	virtual float GetCooldown() const = 0;
-	virtual float GetRemainingCooldown() const = 0;
+	TObjectPtr<ACharacterBase> GetOwner() const { return Owner; }
+
+protected:
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<ACharacterBase> Owner;
 	
-	virtual float GetDuration() const = 0;
-	virtual float GetRemainingDuration() const = 0;
-	
-	virtual bool IsAbilityActive() const = 0;
-	virtual bool CanUseAbility() const = 0;
-	virtual bool UseAbility() = 0;
+	EAbilityType AbilityType = EAbilityType::None;
 };

@@ -1,29 +1,24 @@
 ﻿#include "VibrationAbility.h"
-
 #include "Kismet/GameplayStatics.h"
 #include "Outbreak/Character/Player/CharacterPlayer.h"
 #include "Outbreak/Util/CameraShake.h"
 
-void UVibrationAbility::ActivateAbility()
+UVibrationAbility::UVibrationAbility()
 {
-	Super::ActivateAbility();
-
-	GetOwner()->GetWorldTimerManager().SetTimer(
-		VibrationTimerHandle,
-		this,
-		&UVibrationAbility::OnVibrationAbility,
-		VibrationInterval,
-		true);
+	AbilityType = EAbilityType::Vibration;
 }
 
-void UVibrationAbility::DeactivateAbility()
+void UVibrationAbility::OnEquip()
 {
-	Super::DeactivateAbility();
+	GetOwner()->GetWorldTimerManager().SetTimer(VibrationTimerHandle,this, &UVibrationAbility::OnVibrationAbility,VibrationInterval,true);
+}
 
+void UVibrationAbility::OnUnequip()
+{
 	GetOwner()->GetWorldTimerManager().ClearTimer(VibrationTimerHandle);
 }
 
-void UVibrationAbility::OnVibrationAbility()
+void UVibrationAbility::OnVibrationAbility() const
 {
 	const FVector Origin = GetOwner()->GetActorLocation();
 	

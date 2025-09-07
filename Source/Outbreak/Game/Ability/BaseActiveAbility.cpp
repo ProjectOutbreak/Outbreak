@@ -1,21 +1,24 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "ActiveAbilityObject.h"
+#include "BaseActiveAbility.h"
 
-bool UActiveAbilityObject::UseAbility()
+void UBaseActiveAbility::Activate()
 {
 	if (!CanUseAbility())
-		return false;
+		return;
 
-	ActivateAbility();
 	RemainingCooldown = Cooldown;
 	RemainingDuration = Duration;
 	bIsActive = true;
-	
-	return true;
 }
 
-void UActiveAbilityObject::TickCooldown(float DeltaTime)
+void UBaseActiveAbility::Deactivate()
+{
+	RemainingDuration = 0.0f;
+	bIsActive = false;
+}
+
+void UBaseActiveAbility::TickCooldown(float DeltaTime)
 {
 	if (RemainingCooldown > 0.0f)
 	{
@@ -23,14 +26,14 @@ void UActiveAbilityObject::TickCooldown(float DeltaTime)
 	}
 }
 
-void UActiveAbilityObject::TickDuration(float DeltaTime)
+void UBaseActiveAbility::TickDuration(float DeltaTime)
 {
 	if (bIsActive)
 	{
 		RemainingDuration = FMath::Max(RemainingDuration - DeltaTime, 0.0f);
 		if (RemainingDuration <= 0.0f)
 		{
-			DeactivateAbility();
+			Deactivate();
 			bIsActive = false;
 		}
 	}

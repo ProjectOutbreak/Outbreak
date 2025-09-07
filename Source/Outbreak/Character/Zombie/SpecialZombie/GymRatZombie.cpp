@@ -3,12 +3,12 @@
 
 #include "GymRatZombie.h"
 #include "Outbreak/Component/AbilityComponent.h"
-#include "Outbreak/Game/Ability/DamageEnhanceAbility.h"
 #include "Outbreak/Game/Ability/VibrationAbility.h"
 
 AGymRatZombie::AGymRatZombie()
 {
 	ZombieSubType = EZombieSubType::GymRat;
+	BodyScale = 1.5f;
 }
 
 void AGymRatZombie::BeginPlay()
@@ -18,8 +18,7 @@ void AGymRatZombie::BeginPlay()
 	
 	Super::BeginPlay();
 
-	AbilityComponent->AddAbility(NewObject<UDamageEnhanceAbility>(AbilityComponent));
-	AbilityComponent->AddAbility(NewObject<UVibrationAbility>(AbilityComponent));
-
 	SetActorScale3D(FVector(BodyScale, BodyScale, BodyScale));
+	
+	AbilityComponent->AddAbility(NewObject<UVibrationAbility>(AbilityComponent));
 }
