@@ -46,7 +46,7 @@ AOBPlayerController::AOBPlayerController()
 	{
 		ChangePlayerControlAction = InputActionChangeCamRef.Object;
 	}
-	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionToggleMenuRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Inputs/IA_ToggleMenu.IA_ToggleMenu'"));
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionToggleMenuRef(TEXT("/Game/Inputs/Actions/IA_ToggleMenu.IA_ToggleMenu"));
 	if (InputActionToggleMenuRef.Object)
 	{
 		ToggleMenuAction = InputActionToggleMenuRef.Object;
