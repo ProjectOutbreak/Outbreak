@@ -30,6 +30,8 @@ public:
 	void HandleEquipBySlot(const int32 SlotNumber) const { EquipmentController->EquipBySlot(SlotNumber); }
 	void HandleToggleFireMode() const { EquipmentController->HandleToggleFireMode(); }
 	TObjectPtr<class AOBHUD> GetHud() const { return CachedHUD; }
+
+	void UpdateToxicAuraEffect(float Intensity);
 	
 protected:
 	virtual void BeginPlay() override;
@@ -92,9 +94,20 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Minimap")
 	TObjectPtr<UTextRenderComponent> PlayerNameText;
 
+	// VFX
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<class UPostProcessComponent> PostProcessComponent;
+
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UMaterialInterface> ToxicAuraPostProcessMaterial;
+
 	// TODO : for test. delete later
 	UPROPERTY()
 	TObjectPtr<class AWeaponBase> SpawnedWeapon;
 	UPROPERTY()
 	TSubclassOf<class AM4> WeaponToSpawn;
+	
+private:
+	UPROPERTY()
+	TObjectPtr<UMaterialInstanceDynamic> ToxicAuraMID;
 };

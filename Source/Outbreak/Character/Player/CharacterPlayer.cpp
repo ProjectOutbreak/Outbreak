@@ -7,6 +7,7 @@
 #include "Components/SceneCaptureComponent2D.h"
 #include "Engine/TextureRenderTarget2D.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/PostProcessComponent.h"
 #include "Components/TextRenderComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -24,6 +25,16 @@
 
 ACharacterPlayer::ACharacterPlayer()
 {
+	PostProcessComponent = CreateDefaultSubobject<UPostProcessComponent>(TEXT("PostProcessComponent"));
+	PostProcessComponent->SetupAttachment(RootComponent);
+	PostProcessComponent->bEnabled = true;
+	
+	static ConstructorHelpers::FObjectFinder<UMaterialInterface> ToxicAuraMaterialRef(TEXT("/Game/Art/VFX/PostProcess/M_ToxicAura.M_ToxicAura"));
+	if (ToxicAuraMaterialRef.Succeeded())
+	{
+		ToxicAuraPostProcessMaterial = ToxicAuraMaterialRef.Object;
+	}
+	
 	// TODO : for test. delete later
 	static ConstructorHelpers::FClassFinder<AM4> WeaponClassRef(TEXT("/Game/Blueprints/BP_M4.BP_M4_C"));
 	if (WeaponClassRef.Class)
@@ -147,6 +158,19 @@ void ACharacterPlayer::InitCharacterData()
 	
 	CurrentHealth = PlayerData.MaxHealth;
 	CurrentExtraHealth = 0;
+}
+
+void ACharacterPlayer::UpdateToxicAuraEffect(float Intensity)
+{
+	if (!ToxicAuraPostProcessMaterial) return;
+
+	if (!ToxicAuraMID)
+	{
+		ToxicAuraMID = UMaterialInstanceDynamic::Create(ToxicAuraPostProcessMaterial, this);
+	}
+
+	ToxicAuraMID->SetScalarParameterValue("EffectIntensity", Intensity);
+	PostProcessComponent->Settings.AddBlendable(ToxicAuraMID, FMath::Clamp(Intensity, 0.0f, 1.0f));
 }
 
 void ACharacterPlayer::BeginPlay()
