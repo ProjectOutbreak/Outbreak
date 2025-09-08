@@ -168,4 +168,15 @@ enum class EZombieSubType : uint8
 	Boss_0,
 };
 
+UENUM()
+enum class ETimePreset : uint8
+{
+	Dawn		UMETA(DisplayName = "06:00"),
+	Noon		UMETA(DisplayName = "12:00"),
+	Dusk		UMETA(DisplayName = "18:00"),
+	Midnight	UMETA(DisplayName = "24:00"),
+	CurrentTime UMETA(DisplayName = "현재시간 (UTC+9)"),
+	RandomOne	UMETA(DisplayName = "랜덤 시간대")
+};
+
 class OUTBREAK_API Define { };
