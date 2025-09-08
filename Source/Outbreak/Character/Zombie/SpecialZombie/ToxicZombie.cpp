@@ -2,6 +2,7 @@
 
 #include "ToxicZombie.h"
 #include "Outbreak/Component/AbilityComponent.h"
+#include "Outbreak/Game/Ability/ToxicAttackAbility.h"
 #include "Outbreak/Game/Ability/ToxicAuraAbility.h"
 
 AToxicZombie::AToxicZombie()
@@ -23,4 +24,5 @@ void AToxicZombie::BeginPlay()
 	SetActorScale3D(FVector(BodyScale, BodyScale, BodyScale));
 
 	AbilityComponent->AddAbility(NewObject<UToxicAuraAbility>(AbilityComponent));
+	AbilityComponent->AddAbility(NewObject<UToxicAttackAbility>(AbilityComponent));
 }

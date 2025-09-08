@@ -4,6 +4,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Engine/DamageEvents.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Outbreak/Util/Define.h"
 #include "Outbreak/Util/EnumHelper.h"
 #include "PhysicsEngine/PhysicsAsset.h"
@@ -42,6 +43,24 @@ ACharacterBase::ACharacterBase()
 	GetMesh()->SetHiddenInGame(false);
 }
 
+void ACharacterBase::BeginPlay()
+{
+	Super::BeginPlay();
+	
+	InitCharacterData();
+	SetupCollision();
+	SetupMovement();
+}
+
+void ACharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ACharacterBase, CurrentHealth);
+	DOREPLIFETIME(ACharacterBase, bIsDead);
+	DOREPLIFETIME(ACharacterBase, bIsToxic);
+}
+
 float ACharacterBase::TakeDamage(const float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	if (IsDead()) return 0.0f;
@@ -78,15 +97,6 @@ void ACharacterBase::OnRep_CurrentHealth()
 			HUD->DisplayCurrentHealth(CurrentHealth);
 		}
 	}
-}
-
-void ACharacterBase::BeginPlay()
-{
-	Super::BeginPlay();
-	
-	InitCharacterData();
-	SetupCollision();
-	SetupMovement();
 }
 
 void ACharacterBase::InitCharacterData()
@@ -210,11 +220,53 @@ void ACharacterBase::SetupMovement()
 	MovementComp->bImpartBaseVelocityZ = false;
 }
 
-void ACharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+void ACharacterBase::ApplyToxicDamage(float DamagePerSecond, float Duration)
 {
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	if (!HasAuthority())
+		return;
 
-	DOREPLIFETIME(ACharacterBase, CurrentHealth);
-	DOREPLIFETIME(ACharacterBase, bIsDead);
+	GetWorldTimerManager().ClearTimer(ToxicTickTimerHandle);
+	GetWorldTimerManager().ClearTimer(ToxicDurationTimerHandle);
 
+	ToxicDamagePerTick = DamagePerSecond;
+
+	GetWorldTimerManager().SetTimer(ToxicTickTimerHandle, this, &ACharacterBase::ApplyToxicTick, 1.0f, true);
+	GetWorldTimerManager().SetTimer(ToxicDurationTimerHandle, this, &ACharacterBase::ClearToxicEffect, Duration, false);
+    
+	if (!bIsToxic)
+	{
+		bIsToxic = true;
+		OnRep_IsToxic();
+	}
+}
+
+void ACharacterBase::OnRep_IsToxic()
+{
+	if (bIsToxic)
+	{
+		// TODO : Visual, Audio Effect
+	}
+	else
+	{
+		// TODO : Clear Visual, Audio Effect
+	}
+}
+
+void ACharacterBase::ApplyToxicTick()
+{
+	ApplyDamage(ToxicDamagePerTick);
+}
+
+void ACharacterBase::ClearToxicEffect()
+{
+	GetWorldTimerManager().ClearTimer(ToxicTickTimerHandle);
+	GetWorldTimerManager().ClearTimer(ToxicDurationTimerHandle);
+
+	ToxicDamagePerTick = 0.f;
+	
+	if (bIsToxic)
+	{
+		bIsToxic = false;
+		OnRep_IsToxic();
+	}
 }

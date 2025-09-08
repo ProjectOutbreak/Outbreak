@@ -19,6 +19,7 @@ enum class EAbilityType : uint8
 	DamageEnhance,
 	Vibration,
 	ToxicAura,
+	ToxicAttack,
 };
 
 UENUM()

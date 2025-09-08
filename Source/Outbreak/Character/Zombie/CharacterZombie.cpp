@@ -287,20 +287,24 @@ void ACharacterZombie::OnAttackEnd()
 {
 	if (!HasAuthority())
 		return;
-	
+
 	const FVector Start = GetActorLocation();
 	const FVector End = Start + GetActorForwardVector() * ZombieData.AttackRange;
+	const float SphereRadius = 50.0f; 
 
 	FCollisionQueryParams Params;
 	Params.AddIgnoredActor(this);
-	
+    
 	FHitResult Hit;
-	if (GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, Params))
+	bool bHit = GetWorld()->SweepSingleByChannel(Hit, Start, End, FQuat::Identity, ECC_Visibility, FCollisionShape::MakeSphere(SphereRadius), Params);
+
+	if (bHit)
 	{
 		AActor* HitActor = Hit.GetActor();
 		if (HitActor && HitActor->IsA(ACharacterPlayer::StaticClass()))
 		{
 			UGameplayStatics::ApplyDamage(HitActor, ZombieData.AttackDamage, GetController(), this, UDamageType::StaticClass());
+			OnAttackHit.Broadcast(HitActor, Hit);
 		}
 	}
 
