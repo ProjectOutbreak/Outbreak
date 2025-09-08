@@ -21,10 +21,6 @@ void UOBGameInstance::BeginLoading()
 	{
 		Paths.AddUnique(OBWidgetClass.ToSoftObjectPath());
 	}
-	if (!CachedWidgetClass)
-	{
-		CachedWidgetClass = OBWidgetClass.LoadSynchronous();
-	}
 	
 	for (const auto& Asset : AssetsToPreload)
 	{
@@ -46,6 +42,7 @@ void UOBGameInstance::BeginLoading()
 
 void UOBGameInstance::OnAssetsLoaded()
 {
+	CachedWidgetClass = OBWidgetClass.Get();
 	UE_LOG(LogTemp, Warning, TEXT("모든 에셋 로딩 완료!"));
 	// TODO : 레벨 -> 로딩창 -> 레벨 -> 로딩창... 구현
 	UGameplayStatics::OpenLevel(GetWorld(), "L_FirstPhase");

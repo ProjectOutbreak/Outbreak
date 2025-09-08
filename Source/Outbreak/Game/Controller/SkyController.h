@@ -18,6 +18,16 @@ class OUTBREAK_API ASkyController : public AActor
 public:	
 	ASkyController();
 
+private:
+	void GetLightsComponent();
+	FRotator ComputeMoonRotation(const FRotator& SunRotation) const;
+	void ComputeLightAplhas(float CurrentHour, float& SunAlpha, float& MoonAlpha) const;
+	void ApplyStarSky(float CurrentHour);
+	void ApplyLights(float SunAlpha, float MoonAlpha);
+	void ApplySkylights(float SunAlpha, float MoonAlpha);
+	void UpdateMoonPosition(const FRotator& MoonRotation) const;
+
+
 protected:
 	virtual void BeginPlay() override;
 
