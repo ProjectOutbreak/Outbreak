@@ -325,10 +325,7 @@ void ACharacterSpawnManager::SpawnEnemies()
 	for (const FSingleEnemyData& EnemyData : WaveData.Enemies)
 	{
 		if (SettingData->MaxEnemies <= SpawnedEnemies)
-		{
-			UE_LOG(LogTemp, Log, TEXT("[%s] Exceeded max enemy limit: %d"), CURRENT_CONTEXT, SettingData->MaxEnemies);
 			return;
-		}
 
 		if (!CheckSpawnChance(EnemyData.SpawnChance))
 			return;
@@ -340,10 +337,7 @@ void ACharacterSpawnManager::SpawnEnemies()
 		for (int i = 0; i < SpawnAmount - 1; i++)
 		{
 			if (SettingData->MaxEnemies <= SpawnedEnemies)
-			{
-				UE_LOG(LogTemp, Log, TEXT("[%s] Exceeded max enemy limit: %d"), CURRENT_CONTEXT, SettingData->MaxEnemies);
 				return;
-			}
 
 			FVector SpawnLocation = FindRandomSpawnLocation(SettingData->SpawnDistanceMin, SettingData->SpawnDistanceMax);
 			if (SpawnLocation.Equals(FVector::ZeroVector))

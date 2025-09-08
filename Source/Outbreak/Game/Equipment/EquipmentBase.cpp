@@ -4,8 +4,14 @@
 
 AEquipmentBase::AEquipmentBase()
 {
+	USceneComponent* DefaultSceneRoot = CreateDefaultSubobject<USceneComponent>(TEXT("DefaultSceneRoot"));
+	RootComponent = DefaultSceneRoot;
+	
 	PrimaryActorTick.bCanEverTick = true;
-
+	EquipmentMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("EquipmentMesh"));
+	EquipmentMesh->SetupAttachment(RootComponent);
+	EquipmentMesh->SetAnimationMode(EAnimationMode::AnimationBlueprint);
+	EquipmentMesh->SetRelativeRotation(FRotator(0.f, 90.f, 0.f));
 }
 
 void AEquipmentBase::BeginPlay()
@@ -16,19 +22,6 @@ void AEquipmentBase::BeginPlay()
 
 void AEquipmentBase::Tick(float DeltaTime)
 {
-	Super::Tick(DeltaTime);
+	Super::Tick(DeltaTime); 
 
 }
-
-void AEquipmentBase::PlayAnimation(TObjectPtr<UAnimMontage> Montage)
-{
-}
-
-void AEquipmentBase::PlaySound(TObjectPtr<USoundCue> Sound)
-{
-}
-
-void AEquipmentBase::SetMeshVisibility(bool bVisible)
-{
-}
-

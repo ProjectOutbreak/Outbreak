@@ -43,7 +43,7 @@ enum class EFirableType : uint8
 };
 
 
-UENUM()
+UENUM(BlueprintType)
 enum class EFireType : uint8
 {
 	None,
@@ -65,7 +65,9 @@ UENUM()
 enum class EEquipmentType : uint8
 {
 	None,
-	Weapon,
+	PrimaryWeapon,
+	SecondaryWeapon,
+	ThrowableWeapon,
 	Medicine,
 };
 

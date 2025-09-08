@@ -3,6 +3,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Outbreak/Util/Define.h"
 #include "EquipmentBase.generated.h"
 
 UCLASS(Abstract)
@@ -15,37 +16,34 @@ class OUTBREAK_API AEquipmentBase : public AActor
 // --------------------
 public:	
 	AEquipmentBase();
-	virtual void OnEquip(TObjectPtr<class ACharacterPlayer> Character) PURE_VIRTUAL(AEquipmentBase::OnEquip, );
-	virtual void OnUnequip() PURE_VIRTUAL(AEquipmentBase::OnUnequip, );
+	virtual void OnEquip() PURE_VIRTUAL(AEquipmentBase::OnEquip, );
 	virtual void OnUse() PURE_VIRTUAL(AEquipmentBase::OnUse, );
-	virtual bool CanUse() const PURE_VIRTUAL(AEquipmentBase::CanUse, return false;);
+	virtual void OnEndUse() PURE_VIRTUAL(AEquipmentBase::OnEndUse, );
+	virtual bool CanUse() const PURE_VIRTUAL(AEquipmentBase::CanUse, return true;);
 
-	enum class EEquipmentType GetEquipmentType() const { return EquipmentType; }
+	EEquipmentType GetEquipmentType() const { return EquipmentType; }
 	int32 GetSlotIndex() const { return SlotIndex; }
 	FString GetEquipmentName() const { return EquipmentName; }
 
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
-	void PlayAnimation(TObjectPtr<UAnimMontage> Montage);
-	void PlaySound(TObjectPtr<USoundCue> Sound);
-	void SetMeshVisibility(bool bVisible);
 
 // --------------------
 // Variables
 // --------------------
-	EEquipmentType EquipmentType;
-	FString EquipmentName;
-	int32 SlotIndex;
-	bool bIsInUse;
+protected:
+	UPROPERTY(EditAnywhere)
+	EEquipmentType EquipmentType = EEquipmentType::PrimaryWeapon;
+	
+	FString EquipmentName = "Equipment";
+	int32 SlotIndex = 1;
+	bool bIsInUse = false;
 
 	UPROPERTY()
 	TObjectPtr<UTexture2D> EquipmentIcon;
 	
-	UPROPERTY()
+	UPROPERTY(EditAnywhere)
 	TObjectPtr<USkeletalMeshComponent> EquipmentMesh;
 
-	UPROPERTY()
-	TObjectPtr<ACharacterPlayer> OwnerCharacter;
-	
 };

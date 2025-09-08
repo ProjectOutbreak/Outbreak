@@ -7,16 +7,6 @@ AThrowableBase::AThrowableBase()
 {
 }
 
-void AThrowableBase::Attack()
-{
-	Super::Attack();
-}
-
-bool AThrowableBase::CanAttack() const
-{
-	return Super::CanAttack();
-}
-
 void AThrowableBase::Throw()
 {
 }

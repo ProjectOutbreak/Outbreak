@@ -7,6 +7,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Outbreak/Character/Player/CharacterPlayer.h"
 #include "Outbreak/UI/OBWidget.h"
+#include "Outbreak/Util/EnumHelper.h"
 
 AOBPlayerController::AOBPlayerController()
 {
@@ -30,12 +31,12 @@ AOBPlayerController::AOBPlayerController()
 	{
 		JumpAction = InputActionJumpRef.Object;
 	}
-	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionSprintRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Inputs/IA_Sprint.IA_Sprint'"));
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionSprintRef(TEXT("/Game/Inputs/Actions/IA_Sprint.IA_Sprint"));
 	if (InputActionSprintRef.Object)
 	{
 		SprintAction = InputActionSprintRef.Object;
 	}
-	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionCrouchRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Inputs/IA_Crouch.IA_Crouch'"));
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionCrouchRef(TEXT("/Game/Inputs/Actions/IA_Crouch.IA_Crouch"));
 	if (InputActionCrouchRef.Object)
 	{
 		CrouchAction = InputActionCrouchRef.Object;
@@ -45,10 +46,35 @@ AOBPlayerController::AOBPlayerController()
 	{
 		ChangePlayerControlAction = InputActionChangeCamRef.Object;
 	}
-	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionToggleMenuRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Inputs/IA_ToggleMenu.IA_ToggleMenu'"));
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionToggleMenuRef(TEXT("/Game/Inputs/Actions/IA_ToggleMenu.IA_ToggleMenu"));
 	if (InputActionToggleMenuRef.Object)
 	{
 		ToggleMenuAction = InputActionToggleMenuRef.Object;
+	}
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionFireRef(TEXT("/Game/Inputs/Actions/IA_Use.IA_Use"));
+	if (InputActionFireRef.Object)
+	{
+		UseAction = InputActionFireRef.Object;
+	}
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionEndFireRef(TEXT("/Game/Inputs/Actions/IA_EndUse.IA_EndUse"));
+	if (InputActionEndFireRef.Object)
+	{
+		EndUseAction = InputActionEndFireRef.Object;
+	}
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionReloadRef(TEXT("/Game/Inputs/Actions/IA_Reload.IA_Reload"));
+	if (InputActionReloadRef.Object)
+	{
+		ReloadAction = InputActionReloadRef.Object;
+	}
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionSelectEquipmentRef(TEXT("/Game/Inputs/Actions/IA_SelectEquipment.IA_SelectEquipment"));
+	if (InputActionSelectEquipmentRef.Object)
+	{
+		SelectEquipmentAction = InputActionSelectEquipmentRef.Object;
+	}
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionToggleFireModeRef(TEXT("/Game/Inputs/Actions/IA_ToggleFireMode.IA_ToggleFireMode"));
+	if (InputActionToggleFireModeRef.Object)
+	{
+		ToggleFireModeAction = InputActionToggleFireModeRef.Object;
 	}
 }
 
@@ -84,6 +110,11 @@ void AOBPlayerController::SetupInputComponent()
 	EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Completed, this, &AOBPlayerController::StopCrouch);
 	EnhancedInputComponent->BindAction(ChangePlayerControlAction, ETriggerEvent::Triggered, this, &AOBPlayerController::ChangePlayerControl);
 	EnhancedInputComponent->BindAction(ToggleMenuAction, ETriggerEvent::Started, this, &AOBPlayerController::TogglePauseMenu);
+	EnhancedInputComponent->BindAction(UseAction, ETriggerEvent::Started, this, &AOBPlayerController::Use);
+	EnhancedInputComponent->BindAction(EndUseAction, ETriggerEvent::Completed, this, &AOBPlayerController::EndUse);
+	EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Started, this, &AOBPlayerController::Reload);
+	EnhancedInputComponent->BindAction(SelectEquipmentAction, ETriggerEvent::Triggered, this, &AOBPlayerController::SelectEquipment);
+	EnhancedInputComponent->BindAction(ToggleFireModeAction, ETriggerEvent::Started, this, &AOBPlayerController::ToggleFireMode);
 }
 
 void AOBPlayerController::FirstPersonMove(const FInputActionValue& Value)
@@ -230,4 +261,40 @@ void AOBPlayerController::TogglePauseMenu()
 			}
 		}
 	}
+}
+
+void AOBPlayerController::Use()
+{
+	if (!ControlledCharacter) return;
+
+	ControlledCharacter->HandleUse();
+}
+
+void AOBPlayerController::EndUse()
+{
+	if (!ControlledCharacter) return;
+	
+	ControlledCharacter->HandleEndUse();
+}
+
+void AOBPlayerController::Reload()
+{
+	if (!ControlledCharacter) return;
+
+	ControlledCharacter->HandleReload();
+}
+
+void AOBPlayerController::SelectEquipment(const FInputActionValue& Value)
+{
+	const float SlotNumber = Value.Get<float>();
+	const int32 SlotIndex = FMath::RoundToInt(SlotNumber);
+
+	UE_LOG(LogTemp, Log, TEXT("[%s] Select Equipment Slot: %d"), CURRENT_CONTEXT, SlotIndex);
+}
+
+void AOBPlayerController::ToggleFireMode()
+{
+	if (!ControlledCharacter) return;
+
+	ControlledCharacter->HandleToggleFireMode();
 }
