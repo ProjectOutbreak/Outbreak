@@ -2,6 +2,7 @@
 
 
 #include "TimeManager.h"
+#include "Outbreak/Game/Framework/OBGameInstance.h"
 
 ATimeManager::ATimeManager()
 {
@@ -13,7 +14,11 @@ void ATimeManager::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (bUseRealWorldTime)
+	if (const UOBGameInstance* GI = GetWorld() ? GetWorld()->GetGameInstance<UOBGameInstance>() : nullptr)
+	{
+		ApplyTimePreset(GI->GetSelectedTimePreset());
+	}
+	else if (bUseRealWorldTime)
 	{
 		FDateTime Now = FDateTime::UtcNow();
 		float RealTimeHour = Now.GetHour() + TimezoneOffset;
@@ -36,6 +41,62 @@ void ATimeManager::Tick(float DeltaTime)
 		CurrentTimeInSeconds = FMath::Fmod(CurrentTimeInSeconds, SecondsInDay);
 	}
 }
+void ATimeManager::SetTimeOfDayHours(float Hour)
+{
+	const float WrappedHour = FMath::Fmod(FMath::Max(Hour, 0.f), 24.f);
+	CurrentTimeInSeconds = WrappedHour * 3600.f;	
+}
+
+void ATimeManager::ApplyTimePreset(ETimePreset Preset)
+{
+	switch (Preset)
+	{
+		case ETimePreset::Dawn:
+			SetTimeOfDayHours(6.f);
+			break;
+		case ETimePreset::Noon:
+			SetTimeOfDayHours(12.f);
+			break;
+		case ETimePreset::Dusk:
+			SetTimeOfDayHours(18.f);
+			break;
+		case ETimePreset::Midnight:
+			SetTimeOfDayHours(0.f);
+			break;
+		case ETimePreset::CurrentTime:
+			{
+				const FDateTime Now = FDateTime::UtcNow();
+				const float HourF = FMath::Fmod((Now.GetHour() + TimezoneOffset), 24.f) + (Now.GetMinute() / 60.f) + (Now.GetSecond() / 3600.f);
+				SetTimeOfDayHours(HourF);
+				break;
+			}
+		case ETimePreset::RandomOne:
+			{
+				static const ETimePreset Pool[] =
+					{ ETimePreset::Dawn, ETimePreset::Noon,
+					ETimePreset::Dusk, ETimePreset::Midnight,
+					ETimePreset::CurrentTime
+					};
+				const int32 Index = FMath::RandRange(0, UE_ARRAY_COUNT(Pool) - 1);
+				ApplyTimePreset(Pool[Index]);
+				break;
+			}
+		default:
+			break;		
+	}
+}
+
+void ATimeManager::ApplyPresetFromGameInstance()
+{
+	if (UWorld* World = GetWorld())
+	{
+		if (const UOBGameInstance* OB = World->GetGameInstance<UOBGameInstance>())
+		{
+			ApplyTimePreset(OB->GetSelectedTimePreset());
+		}
+	}
+}
+
 
 float ATimeManager::GetTimeOfDayInHours() const
 {

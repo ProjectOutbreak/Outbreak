@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Outbreak/Util/Define.h"
 #include "TimeManager.generated.h"
 
 UCLASS()
@@ -36,6 +37,15 @@ public:
 
 
 	//-----Function-----//
+
+	UFUNCTION()
+	void SetTimeOfDayHours(float Hour);
+
+	UFUNCTION()
+	void ApplyTimePreset(ETimePreset Preset);
+
+	UFUNCTION()
+	void ApplyPresetFromGameInstance();
 	
 	UFUNCTION()
 	float GetTimeOfDayInHours() const;

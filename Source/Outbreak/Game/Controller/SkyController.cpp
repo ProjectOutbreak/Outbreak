@@ -42,7 +42,7 @@ void ASkyController::Tick(float DeltaTime)
 		const float CurrentHour = TimeManagerRef->GetTimeOfDayInHours();
 		float SunAlpha = 0.f, MoonAlpha = 0.f;
 		
-		ComputeLightAplhas(CurrentHour, SunAlpha, MoonAlpha);
+		ComputeLightAlphas(CurrentHour, SunAlpha, MoonAlpha);
 		ApplyLights(SunAlpha, MoonAlpha);
 		ApplySkylights(SunAlpha, MoonAlpha);
 		ApplyStarSky(CurrentHour);
@@ -90,7 +90,7 @@ void ASkyController::UpdateMoonPosition(const FRotator& MoonRotation) const
 	MoonActor->SetActorRotation(FaceCamera);
 }
 
-void ASkyController::ComputeLightAplhas(float CurrentHour, float& SunAlpha, float& MoonAlpha) const
+void ASkyController::ComputeLightAlphas(float CurrentHour, float& SunAlpha, float& MoonAlpha) const
 {
 	SunAlpha = 0.0f;
 	if (CurrentHour >= 4.f && CurrentHour <= 20.f)

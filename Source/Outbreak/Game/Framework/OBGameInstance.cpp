@@ -1,6 +1,7 @@
 #include "OBGameInstance.h"
 #include "Kismet/GameplayStatics.h"
 #include "Outbreak/Game/Graphics/GraphicsSettingsLibrary.h"
+#include "Outbreak/Manager/TimeManager.h"
 
 void UOBGameInstance::Init()
 {
@@ -48,4 +49,14 @@ void UOBGameInstance::OnAssetsLoaded()
 	UGameplayStatics::OpenLevel(GetWorld(), "L_FirstPhase");
 }
 
+void UOBGameInstance::ApplySelectedTimePreset()
+{
+	UWorld* World = GetWorld();
+
+	TArray<AActor*> FoundManagers;
+	UGameplayStatics::GetAllActorsOfClass(World, ATimeManager::StaticClass(), FoundManagers);
+
+	ATimeManager* TM = Cast<ATimeManager>(FoundManagers[0]);
+	TM->ApplyPresetFromGameInstance();
+}
 
