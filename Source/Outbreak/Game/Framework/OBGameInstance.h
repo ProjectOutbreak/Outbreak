@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "UObject/SoftObjectPtr.h"
 #include "Engine/GameInstance.h"
 #include "Blueprint/UserWidget.h"
 #include "Engine/StreamableManager.h"
@@ -17,12 +18,8 @@ class OUTBREAK_API UOBGameInstance : public UGameInstance
 public:
 
 	//-----Variables-----//
-	UPROPERTY()
-	TArray<TSoftObjectPtr<UObject>> AssetsToPreload;
-
-	UPROPERTY()
-	TSoftClassPtr<UUserWidget> OBWidgetClass;
-
+	TArray<TSoftObjectPtr<UClass>> ClassesToPreload;
+	
 	UPROPERTY()
 	TSubclassOf<UUserWidget> CachedWidgetClass = nullptr;
 	
@@ -31,26 +28,15 @@ protected:
 	ETimePreset SelectedTimePreset = ETimePreset::RandomOne;
 public:
 	//-----Function-----//
-	UFUNCTION()
-	TSubclassOf<UUserWidget> GetCachedWidgetClass() const { return CachedWidgetClass; }
-	
 	virtual void Init() override;
-
-	UFUNCTION()
-	void BeginLoading();
-
-	UFUNCTION()
-	void OnAssetsLoaded();
 	
-	UFUNCTION()
-	void SetSelectedTimePreset(ETimePreset InPreset) {SelectedTimePreset = InPreset;}
-
-	UFUNCTION()
-	ETimePreset GetSelectedTimePreset() const { return SelectedTimePreset; }
-
-	UFUNCTION()
-	void ApplySelectedTimePreset(); // 테스트용
-
+	UFUNCTION()	void AddAssetsPath();
+	UFUNCTION()	void BeginLoading();
+	UFUNCTION()	void OnAssetsLoaded();
+	UFUNCTION()	TSubclassOf<UUserWidget> GetCachedWidgetClass() const { return CachedWidgetClass; }
+	UFUNCTION()	void SetSelectedTimePreset(ETimePreset InPreset) {SelectedTimePreset = InPreset;}
+	UFUNCTION()	ETimePreset GetSelectedTimePreset() const { return SelectedTimePreset; }
+	UFUNCTION()	void ApplySelectedTimePreset(); // 테스트용
 
 private:
 	FStreamableManager StreamableManager;	
