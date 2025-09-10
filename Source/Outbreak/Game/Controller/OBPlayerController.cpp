@@ -65,36 +65,7 @@ AOBPlayerController::AOBPlayerController()
 
 void AOBPlayerController::Tick(float DeltaTime)
 {
-	FVector CameraLocation;
-	FRotator CameraRotation;
-	GetPlayerViewPoint(CameraLocation, CameraRotation);
-	FVector TraceEnd = CameraLocation + (CameraRotation.Vector() * InteractionDistance);
-    
-	FHitResult HitResult;
-	FCollisionQueryParams Params;
-	if (GetPawn())
-	{
-		Params.AddIgnoredActor(GetPawn());
-	}
-
-	bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, CameraLocation, TraceEnd, ECC_Visibility, Params);
-
-	TScriptInterface<IInteractInterface> CurrentHitObject = bHit ? HitResult.GetActor() : nullptr;
-
-	if (CurrentHitObject != FocusedInteractable)
-	{
-		if (FocusedInteractable)
-		{
-			FocusedInteractable->Execute_EndFocus(FocusedInteractable.GetObject());
-		}
-
-		if (CurrentHitObject)
-		{
-			CurrentHitObject->Execute_BeginFocus(CurrentHitObject.GetObject());
-		}
-
-		FocusedInteractable = CurrentHitObject;
-	}
+	GetInteractableObject();
 }
 
 
@@ -286,5 +257,40 @@ void AOBPlayerController::TogglePauseMenu()
 				Move->MaxWalkSpeed = WalkSpeed;
 			}
 		}
+	}
+}
+
+void AOBPlayerController::GetInteractableObject()
+{
+	
+	FVector CameraLocation;
+	FRotator CameraRotation;
+	GetPlayerViewPoint(CameraLocation, CameraRotation);
+	FVector TraceEnd = CameraLocation + (CameraRotation.Vector() * InteractionDistance);
+    
+	FHitResult HitResult;
+	FCollisionQueryParams Params;
+	if (GetPawn())
+	{
+		Params.AddIgnoredActor(GetPawn());
+	}
+
+	bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, CameraLocation, TraceEnd, ECC_Visibility, Params);
+
+	TScriptInterface<IInteractInterface> CurrentHitObject = bHit ? HitResult.GetActor() : nullptr;
+
+	if (CurrentHitObject != FocusedInteractable)
+	{
+		if (FocusedInteractable)
+		{
+			FocusedInteractable->Execute_EndFocus(FocusedInteractable.GetObject());
+		}
+
+		if (CurrentHitObject)
+		{
+			CurrentHitObject->Execute_BeginFocus(CurrentHitObject.GetObject());
+		}
+
+		FocusedInteractable = CurrentHitObject;
 	}
 }

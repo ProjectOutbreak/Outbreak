@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -12,64 +10,52 @@ UENUM(BlueprintType)
 enum class EDoorStatus : uint8
 {
 	Open,
-	Close
+	Close,
+	None
 };
 
 UCLASS()
 class OUTBREAK_API ADoorBase : public AActor, public IInteractInterface
 {
 	GENERATED_BODY()
-	
-public:	
-	// Sets default values for this actor's properties
+
+public:
 	ADoorBase();
 
+	// 멤버 함수
+public:
 	virtual void Interact_Implementation(APawn* InstigatorPawn) override;
-	
 	bool IsOpen() const;
 
-	UPROPERTY(EditAnywhere)
-	UCurveFloat* DoorTimelineFloatCurve;
-
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	UStaticMeshComponent* DoorMesh;
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	UStaticMeshComponent* DoorFrame;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Door Settings")
-	bool bIsCanInteract = true;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Door Settings")
-	bool bIsDestroyable = false;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Door Settings", meta = (EditCondition = "bIsDestroyable"))
-	int HP = 100;
-	
-	//UPROPERTY(Replicated, BlueprintReadOnly, Category = "Door State")
-	EDoorStatus CurrentStatus = EDoorStatus::Close;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	UTimelineComponent* DoorTimelineComp;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	class UBoxComponent* DoorProxVolume;
-	
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-	
 private:
-	FOnTimelineFloat UpdateFunctionFloat;
-
 	UFUNCTION()
 	void UpdateTimeline(float Output);
-	
-	FRotator InitialRotation;
 
+	
+	// 멤버 변수
+public:
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UCurveFloat> DoorTimelineFloatCurve;
+
+protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	TObjectPtr<UStaticMeshComponent> DoorMesh;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	TObjectPtr<UStaticMeshComponent> DoorFrame;
+    
+	TObjectPtr<UTimelineComponent> DoorTimelineComp;
+    
+	bool bIsCanInteract = true;
+	bool bIsDestroyable = false;
+	int HP = 100;
+	EDoorStatus CurrentStatus = EDoorStatus::Close;
+
+private:
+	FOnTimelineFloat UpdateFunctionFloat;
+	FRotator InitialRotation;
 	FRotator TargetRotation;
 };
