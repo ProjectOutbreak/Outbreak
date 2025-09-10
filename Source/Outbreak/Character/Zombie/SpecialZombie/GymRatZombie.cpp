@@ -11,10 +11,10 @@ AGymRatZombie::AGymRatZombie()
 	ZombieSubType = EZombieSubType::GymRat;
 	BodyScale = 1.5f;
 
-	static ConstructorHelpers::FObjectFinder<UNiagaraSystem> FootstepEffectAsset(TEXT("/Game/Art/VFX/Niagara/NS_Smoke_A.NS_Smoke_A"));
-	if (FootstepEffectAsset.Succeeded())
+	static ConstructorHelpers::FObjectFinder<UNiagaraSystem> VibrationEffectAsset(TEXT("/Game/Art/VFX/Niagara/NS_Smoke_A.NS_Smoke_A"));
+	if (VibrationEffectAsset.Succeeded())
 	{
-		VibrationEffect = FootstepEffectAsset.Object;
+		VibrationEffect = VibrationEffectAsset.Object;
 	}
 }
 

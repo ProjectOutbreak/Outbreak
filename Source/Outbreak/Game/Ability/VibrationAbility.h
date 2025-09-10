@@ -20,5 +20,5 @@ private:
 	float VibrationInterval = 3.0f;
 	float VibrationDamage = 5.0f;
 	float VibrationIntensity = 3.0f;
-	float VibrationRange = 1000.0f;
+	float VibrationRange = 700.0f;
 };

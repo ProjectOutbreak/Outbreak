@@ -16,4 +16,16 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void OnRep_Die() override;
+
+private:
+	void AttachToxicEffect();
+	void ReleaseToxicEffect();
+
+private:
+	UPROPERTY()
+	TObjectPtr<class UNiagaraSystem> ToxicEffect;
+
+	UPROPERTY()
+	TObjectPtr<class UNiagaraComponent> ToxicEffectComponent;
 };

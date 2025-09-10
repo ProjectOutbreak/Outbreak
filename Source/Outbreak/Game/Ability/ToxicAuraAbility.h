@@ -24,7 +24,7 @@ private:
 	TSet<AActor*> AffectedPlayers;
 	
 	FTimerHandle ToxicAuraTimerHandle;
-	float AuraRadius = 1000.0f;
+	float AuraRadius = 700.0f;
 	float CheckInterval = 0.5f;
 	
 };
