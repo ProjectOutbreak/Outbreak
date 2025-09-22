@@ -15,12 +15,14 @@ public:
 	virtual void Initialize(ACharacterBase* InOwner) { Owner = InOwner;}
 	virtual EAbilityType GetAbilityType() const { return AbilityType; }
 	virtual FString GetAbilityName() const { return EnumHelper::EnumToString(AbilityType); }
-	
+
+protected:
 	TObjectPtr<ACharacterBase> GetOwner() const { return Owner; }
 
 protected:
+	EAbilityType AbilityType = EAbilityType::None;
+	
+private:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<ACharacterBase> Owner;
-	
-	EAbilityType AbilityType = EAbilityType::None;
 };

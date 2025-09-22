@@ -20,5 +20,5 @@ class OUTBREAK_API IActiveAbility
 public:
 	virtual void Activate() = 0;
 	virtual void Deactivate() = 0;
-	virtual void CanActivate() const = 0;
+	virtual bool CanActivate() const = 0;
 };

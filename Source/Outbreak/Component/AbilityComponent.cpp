@@ -14,11 +14,11 @@ void UAbilityComponent::BeginPlay()
 	Super::BeginPlay();
 }
 
-void UAbilityComponent::TryUseAbility(const EAbilityType Type) const
+void UAbilityComponent::TryActivateAbility(const EAbilityType Type) const
 {
 	if (const TObjectPtr<UBaseActiveAbility> Ability = Cast<UBaseActiveAbility>(GetAbility(Type)))
 	{
-		if (Ability->CanUseAbility())
+		if (Ability->CanActivate())
 		{
 			Ability->Activate();
 		}

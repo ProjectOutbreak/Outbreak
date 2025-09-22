@@ -14,7 +14,7 @@ public:
 	UAbilityComponent();
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	void TryUseAbility(EAbilityType Type) const;
+	void TryActivateAbility(EAbilityType Type) const;
 
 	void AddAbility(const TObjectPtr<class UBaseAbility>& NewAbility);
 	void RemoveAbility(EAbilityType Type);

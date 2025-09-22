@@ -4,18 +4,22 @@
 
 void UBaseActiveAbility::Activate()
 {
-	if (!CanUseAbility())
+	if (!CanActivate())
 		return;
 
 	RemainingCooldown = Cooldown;
 	RemainingDuration = Duration;
 	bIsActive = true;
+
+	OnActivate();
 }
 
 void UBaseActiveAbility::Deactivate()
 {
 	RemainingDuration = 0.0f;
 	bIsActive = false;
+
+	OnDeactivate();
 }
 
 void UBaseActiveAbility::TickCooldown(float DeltaTime)

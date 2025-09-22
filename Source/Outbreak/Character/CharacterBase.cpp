@@ -52,6 +52,11 @@ void ACharacterBase::BeginPlay()
 	SetupMovement();
 }
 
+void ACharacterBase::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+}
+
 void ACharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -75,11 +80,6 @@ float ACharacterBase::TakeDamage(const float Damage, FDamageEvent const& DamageE
 		if (PhysMat)
 		{
 			DamageAmount *= GetDamageMultiplier(PhysMat->SurfaceType);
-			UE_LOG(LogTemp, Log, TEXT("[%s] Hit PhysMat: %s, Damage : %d"), CURRENT_CONTEXT, PhysMat ? *PhysMat->GetName() : TEXT("None"), DamageAmount);
-		}
-		else
-		{
-			UE_LOG(LogTemp, Log, TEXT("[%s] No PhysMat found, Damage : %d"), CURRENT_CONTEXT, DamageAmount);
 		}
 	}
 	
@@ -171,10 +171,9 @@ float ACharacterBase::GetDamageMultiplier(const EPhysicalSurface SurfaceType)
 
 void ACharacterBase::ApplyDamage(int32 DamageAmount)
 {
-	if (!HasAuthority())
-	{
-		return;
-	}
+	if (!HasAuthority()) return;
+
+	UE_LOG(LogTemp, Log, TEXT("[%s] Actor %s took %d damage"), CURRENT_CONTEXT, *GetName(), DamageAmount);
 	
 	const int32 DamageAbsorbedByExtraHealth = FMath::Min(DamageAmount, CurrentExtraHealth);
 	CurrentExtraHealth -= DamageAbsorbedByExtraHealth;

@@ -61,4 +61,12 @@ void AToxicZombie::ReleaseToxicEffect()
 
 	ToxicEffectComponent->DestroyComponent();
 	ToxicEffectComponent = nullptr;
+
+	UBaseAbility* Ability = AbilityComponent->GetAbility(EAbilityType::ToxicAura);
+	if (!Ability) return;
+
+	if (UToxicAuraAbility* ToxicAbility = Cast<UToxicAuraAbility>(Ability))
+	{
+		ToxicAbility->OnUnequip();
+	}
 }

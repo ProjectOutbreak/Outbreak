@@ -20,6 +20,7 @@ enum class EAbilityType : uint8
 	Vibration,
 	ToxicAura,
 	ToxicAttack,
+	SelfDestruct,
 };
 
 UENUM()
@@ -170,6 +171,7 @@ enum class EZombieSubType : uint8
     
 	GymRat      UMETA(DisplayName = "헬창"),
 	Toxic       UMETA(DisplayName = "톡식"),
+	Boomer 		UMETA(DisplayName = "부머"),
 	Ghost       UMETA(DisplayName = "유체화 좀비"),
 	Shield      UMETA(DisplayName = "방패 좀비"),
 	Berserker   UMETA(DisplayName = "광분화 좀비"),

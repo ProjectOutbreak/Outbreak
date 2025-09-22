@@ -4,16 +4,21 @@
 
 #include "CoreMinimal.h"
 #include "BaseAbility.h"
+#include "ActiveAbility.h"
 #include "BaseActiveAbility.generated.h"
 
 UCLASS()
-class OUTBREAK_API UBaseActiveAbility : public UBaseAbility
+class OUTBREAK_API UBaseActiveAbility : public UBaseAbility, public IActiveAbility
 {
 	GENERATED_BODY()
 
 public:
-	virtual void Activate();
-	virtual void Deactivate();
+	virtual void Activate() override;
+	virtual void Deactivate() override;
+	virtual bool CanActivate() const override { return GetRemainingCooldown() <= 0.0f && !bIsActive; }
+
+	virtual void OnActivate() PURE_VIRTUAL(OnActivate, );
+	virtual void OnDeactivate() PURE_VIRTUAL(OnDeactivate, );
 
 	virtual float GetCooldown() const { return Cooldown; }
 	virtual float GetRemainingCooldown() const { return RemainingCooldown; }
@@ -22,7 +27,6 @@ public:
 	virtual float GetRemainingDuration() const { return RemainingDuration; }
 	
 	virtual bool IsAbilityActive() const { return bIsActive; }
-	virtual bool CanUseAbility() const { return GetRemainingCooldown() <= 0.f && !bIsActive; }
 
 	void TickCooldown(float DeltaTime);
 	void TickDuration(float DeltaTime);

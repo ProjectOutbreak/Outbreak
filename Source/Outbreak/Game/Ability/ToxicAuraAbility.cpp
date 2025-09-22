@@ -31,13 +31,13 @@ void UToxicAuraAbility::OnUnequip()
 
 void UToxicAuraAbility::OnToxicAuraAbility()
 {
-	if (!Owner) return;
+	if (!GetOwner()) return;
 
 	TArray<AActor*> OverlappingActors;
 	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
 	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_Pawn));
 
-	UKismetSystemLibrary::SphereOverlapActors(GetWorld(), Owner->GetActorLocation(), AuraRadius, ObjectTypes, ACharacterPlayer::StaticClass(), {Owner}, OverlappingActors);
+	UKismetSystemLibrary::SphereOverlapActors(GetWorld(), GetOwner()->GetActorLocation(), AuraRadius, ObjectTypes, ACharacterPlayer::StaticClass(), {GetOwner()}, OverlappingActors);
 
 	TSet CurrentPlayersInAura(OverlappingActors);
     

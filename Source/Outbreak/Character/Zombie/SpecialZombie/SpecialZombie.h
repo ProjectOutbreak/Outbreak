@@ -15,6 +15,7 @@ public:
 	ASpecialZombie();
 	
 protected:
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void OnRep_Die() override;
 
 protected:
