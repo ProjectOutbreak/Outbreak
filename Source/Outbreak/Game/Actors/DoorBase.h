@@ -15,8 +15,6 @@ enum class EDoorStatus : uint8
 	Close
 };
 
-class UGeometryCollectionComponent;
-
 UCLASS()
 class OUTBREAK_API ADoorBase : public AActor, public IInteractInterface
 {
@@ -32,8 +30,6 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	UCurveFloat* DoorTimelineFloatCurve;
-
-	void ApplyChaosDamage(int32 DamageAmount);
 
 protected:
 	// Called when the game starts or when spawned
@@ -62,9 +58,6 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	class UBoxComponent* DoorProxVolume;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Door Components")
-	UGeometryCollectionComponent* DoorDestructibleMesh;
 	
 public:	
 	// Called every frame
