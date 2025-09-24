@@ -47,12 +47,6 @@ void ADoorBase::BeginPlay()
 
 }
 
-// Called every frame
-void ADoorBase::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
 
 void ADoorBase::Interact_Implementation(APawn* InstigatorPawn)
 {

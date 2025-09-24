@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -12,7 +10,8 @@ UENUM(BlueprintType)
 enum class EDoorStatus : uint8
 {
 	Open,
-	Close
+	Close,
+	None
 };
 
 class UGeometryCollectionComponent;
@@ -21,13 +20,13 @@ UCLASS()
 class OUTBREAK_API ADoorBase : public AActor, public IInteractInterface
 {
 	GENERATED_BODY()
-	
-public:	
-	// Sets default values for this actor's properties
+
+public:
 	ADoorBase();
 
+	// 멤버 함수
+public:
 	virtual void Interact_Implementation(APawn* InstigatorPawn) override;
-	
 	bool IsOpen() const;
 
 	UPROPERTY(EditAnywhere)
@@ -36,25 +35,30 @@ public:
 	void ApplyChaosDamage(int32 DamageAmount);
 
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	UStaticMeshComponent* DoorMesh;
+private:
+	UFUNCTION()
+	void UpdateTimeline(float Output);
+
 	
+	// 멤버 변수
+public:
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UCurveFloat> DoorTimelineFloatCurve;
+
+protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	UStaticMeshComponent* DoorFrame;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Door Settings")
+	TObjectPtr<UStaticMeshComponent> DoorMesh;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	TObjectPtr<UStaticMeshComponent> DoorFrame;
+    
+	TObjectPtr<UTimelineComponent> DoorTimelineComp;
+    
 	bool bIsCanInteract = true;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Door Settings")
 	bool bIsDestroyable = false;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Door Settings", meta = (EditCondition = "bIsDestroyable"))
 	int HP = 100;
-	
-	//UPROPERTY(Replicated, BlueprintReadOnly, Category = "Door State")
 	EDoorStatus CurrentStatus = EDoorStatus::Close;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
@@ -72,11 +76,6 @@ public:
 	
 private:
 	FOnTimelineFloat UpdateFunctionFloat;
-
-	UFUNCTION()
-	void UpdateTimeline(float Output);
-	
 	FRotator InitialRotation;
-
 	FRotator TargetRotation;
 };

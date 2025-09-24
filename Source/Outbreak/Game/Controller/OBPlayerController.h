@@ -20,8 +20,6 @@ public:
 	
 	void TogglePauseMenu();
 
-
-
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
@@ -41,9 +39,7 @@ private:
 	void Crouch();
 	void StopCrouch();
 	void ChangePlayerControl();
-
-
-
+	void GetInteractableObject();
 
 
 // --------------------
