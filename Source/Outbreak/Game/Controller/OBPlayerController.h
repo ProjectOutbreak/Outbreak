@@ -28,6 +28,7 @@ protected:
 	virtual void OnPossess(class APawn* PossessedPawn) override;
 	virtual void SetupInputComponent() override;
 	void PerformInteract();
+	void DamageTarget();
 
 private:
 	void FirstPersonMove(const struct FInputActionValue& Value);
@@ -72,11 +73,11 @@ private:
 	UPROPERTY()
 	TObjectPtr<class UInputAction> ChangePlayerControlAction;
 	
-
-	UPROPERTY(EditAnywhere)
+	UPROPERTY()
 	TObjectPtr<class UInputAction> InteractAction;
 	
-
+	UPROPERTY()
+	TObjectPtr<class UInputAction> DamageTargetAction;
 
 	UPROPERTY()
 	TObjectPtr<class UInputAction> ToggleMenuAction;

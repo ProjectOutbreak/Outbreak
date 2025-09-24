@@ -9,6 +9,8 @@
 #include "Outbreak/Game/Interface/InteractInterface.h"
 #include "Outbreak/UI/OBWidget.h"
 #include "DrawDebugHelpers.h"
+#include "Kismet/GameplayStatics.h"
+#include "Outbreak/Game/Actors/DoorBase.h"
 
 
 AOBPlayerController::AOBPlayerController()
@@ -60,6 +62,11 @@ AOBPlayerController::AOBPlayerController()
 	if (InputActionInteractRef.Object)
 	{
 		InteractAction = InputActionInteractRef.Object;
+	}
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionDamageRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Inputs/IA_GetDoorDamage.IA_GetDoorDamage'"));
+	if (InputActionDamageRef.Object)
+	{
+		DamageTargetAction = InputActionDamageRef.Object;
 	}
 }
 
@@ -131,6 +138,7 @@ void AOBPlayerController::SetupInputComponent()
 	EnhancedInputComponent->BindAction(ChangePlayerControlAction, ETriggerEvent::Triggered, this, &AOBPlayerController::ChangePlayerControl);
 	EnhancedInputComponent->BindAction(ToggleMenuAction, ETriggerEvent::Started, this, &AOBPlayerController::TogglePauseMenu);
 	EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Triggered, this, &AOBPlayerController::PerformInteract);
+	EnhancedInputComponent->BindAction(DamageTargetAction, ETriggerEvent::Triggered, this, &AOBPlayerController::DamageTarget);
 }
 
 void AOBPlayerController::FirstPersonMove(const FInputActionValue& Value)
@@ -286,5 +294,22 @@ void AOBPlayerController::TogglePauseMenu()
 				Move->MaxWalkSpeed = WalkSpeed;
 			}
 		}
+	}
+	
+}
+void AOBPlayerController::DamageTarget()
+{
+	// 1. 월드에 있는 ADoorBase 클래스의 액터를 직접 찾습니다.
+	ADoorBase* TargetDoor = Cast<ADoorBase>(UGameplayStatics::GetActorOfClass(GetWorld(), ADoorBase::StaticClass()));
+
+	// 2. 액터를 성공적으로 찾았다면, 대미지 함수를 호출합니다.
+	if (TargetDoor)
+	{
+		TargetDoor->ApplyChaosDamage(50);
+	}
+	else
+	{
+		// 만약 문을 찾지 못했다면 로그를 남깁니다.
+		UE_LOG(LogTemp, Warning, TEXT("DamageTarget: ADoorBase actor not found in the level."));
 	}
 }
