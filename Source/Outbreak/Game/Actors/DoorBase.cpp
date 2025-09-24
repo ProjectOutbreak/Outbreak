@@ -4,8 +4,7 @@
 #include "DoorBase.h"
 #include "Components/BoxComponent.h"
 #include "DrawDebugHelpers.h"
-#include "GeometryCollection/GeometryCollectionComponent.h"
-#include "Chaos/ChaosEngineInterface.h"
+#include "Outbreak/Character/Player/CharacterPlayer.h"
 
 // Sets default values
 ADoorBase::ADoorBase()
@@ -19,13 +18,6 @@ ADoorBase::ADoorBase()
 
 	DoorFrame->SetupAttachment(RootComponent);
 	DoorMesh->AttachToComponent(DoorFrame, FAttachmentTransformRules::KeepRelativeTransform);
-
-	DoorDestructibleMesh = CreateDefaultSubobject<UGeometryCollectionComponent>(TEXT("DoorDestructibleMesh"));
-	DoorDestructibleMesh->SetupAttachment(RootComponent);
-	DoorDestructibleMesh->SetSimulatePhysics(true);
-	DoorDestructibleMesh -> SetVisibility(false);
-	DoorDestructibleMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision); // 충돌도 비활성화
-
 }
 
 // Called when the game starts or when spawned
@@ -126,30 +118,3 @@ void ADoorBase::UpdateTimeline(float Output)
 	DoorMesh->SetRelativeRotation(NewRotation);
 }
 
-void ADoorBase::ApplyChaosDamage(int32 DamageAmount)
-{
-	// 이미 파괴되었다면 아무것도 하지 않습니다.
-	if (HP <= 0)
-	{
-		return;
-	}
-
-	HP -= DamageAmount;
-
-	// 로그를 출력하여 HP가 깎이는 것을 확인합니다.
-	UE_LOG(LogTemp, Warning, TEXT("Door HP: %d"), HP);
-
-	// HP가 0 이하가 되면 파괴 로직을 실행합니다.
-	if (HP <= 0)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Door has been destroyed!"));
-		DoorFrame->SetVisibility(false);
-		DoorFrame->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-
-		DoorDestructibleMesh->SetVisibility(true);
-		DoorDestructibleMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-		
-		const FVector ImpulseOrigin = GetActorLocation();
-		DoorDestructibleMesh->AddRadialImpulse(ImpulseOrigin, 300.f, 1000000.f, ERadialImpulseFalloff::RIF_Constant, true);
-	}
-}
