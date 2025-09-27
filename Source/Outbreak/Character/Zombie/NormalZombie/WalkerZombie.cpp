@@ -11,7 +11,6 @@ AWalkerZombie::AWalkerZombie()
 void AWalkerZombie::BeginPlay()
 {
 	SetMesh();
-	SetPhysicalAsset(ECharacterType::Zombie, ECharacterBodyType::Normal);
 	
 	Super::BeginPlay();
 }

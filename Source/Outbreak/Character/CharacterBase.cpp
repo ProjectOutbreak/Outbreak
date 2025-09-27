@@ -104,30 +104,6 @@ void ACharacterBase::InitCharacterData()
 	// Implement in derived classes
 }
 
-void ACharacterBase::SetPhysicalAsset(const ECharacterType InCharacterType, const ECharacterBodyType InBodyType)
-{
-	
-	const FString BasePath = TEXT("/Script/Engine.PhysicsAsset'/Game/Art/Characters");
-	const FString CharacterTypeString = EnumHelper::EnumToString(InCharacterType);
-	const FString BodyTypeString = EnumHelper::EnumToString(InBodyType);
-	const FString AssetName = FString::Printf(TEXT("PA_%s_%s"), *CharacterTypeString, *BodyTypeString);
-
-	const FString FullPath = FString::Printf(TEXT("%s/%ss/Meshes/%s.%s'"), *BasePath, *CharacterTypeString, *AssetName, *AssetName);
-
-	const TObjectPtr<USkeletalMeshComponent> MeshComponent = GetMesh();
-
-	if (const TObjectPtr<UPhysicsAsset> PhysicsAsset = LoadObject<UPhysicsAsset>(nullptr, *FullPath))
-	{
-		MeshComponent->SetPhysicsAsset(nullptr);
-		MeshComponent->SetPhysicsAsset(PhysicsAsset);
-		MeshComponent->RecreatePhysicsState();
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[%s] Failed to load Physics Asset: %s"), CURRENT_CONTEXT, *FullPath);
-	}
-}
-
 bool ACharacterBase::IsDead() const
 {
 	if (CurrentHealth <= 0)

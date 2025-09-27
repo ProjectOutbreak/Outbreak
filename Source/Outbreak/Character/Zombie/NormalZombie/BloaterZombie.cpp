@@ -11,7 +11,6 @@ ABloaterZombie::ABloaterZombie()
 void ABloaterZombie::BeginPlay()
 {
 	SetMesh(ECharacterBodyType::Fat);
-	SetPhysicalAsset(ECharacterType::Zombie, ECharacterBodyType::Fat);
 	
 	Super::BeginPlay();
 }

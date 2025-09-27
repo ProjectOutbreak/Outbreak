@@ -25,8 +25,6 @@ AToxicZombie::AToxicZombie()
 
 void AToxicZombie::BeginPlay()
 {
-	SetPhysicalAsset(ECharacterType::Zombie, ECharacterBodyType::Normal);
-	
 	Super::BeginPlay();
 
 	AbilityComponent->AddAbility(NewObject<UToxicAuraAbility>(AbilityComponent));

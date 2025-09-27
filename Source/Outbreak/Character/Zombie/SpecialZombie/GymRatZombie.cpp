@@ -10,7 +10,12 @@ AGymRatZombie::AGymRatZombie()
 {
 	ZombieSubType = EZombieSubType::GymRat;
 	BodyScale = 1.5f;
-
+	
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> ZombieMesh(TEXT("/Game/Art/Characters/Zombies/Meshes/SKM_Zombie_Muscle_003.SKM_Zombie_Muscle_003"));
+	if (ZombieMesh.Succeeded())
+	{
+		GetMesh()->SetSkeletalMesh(ZombieMesh.Object);
+	}
 	static ConstructorHelpers::FObjectFinder<UNiagaraSystem> VibrationEffectAsset(TEXT("/Game/Art/VFX/Niagara/NS_Smoke_A.NS_Smoke_A"));
 	if (VibrationEffectAsset.Succeeded())
 	{
@@ -20,9 +25,6 @@ AGymRatZombie::AGymRatZombie()
 
 void AGymRatZombie::BeginPlay()
 {
-	SetMesh(ECharacterBodyType::Muscle);
-	SetPhysicalAsset(ECharacterType::Zombie, ECharacterBodyType::Muscle);
-	
 	Super::BeginPlay();
 	
 	AbilityComponent->AddAbility(NewObject<UVibrationAbility>(AbilityComponent));

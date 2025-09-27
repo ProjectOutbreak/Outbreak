@@ -28,7 +28,6 @@ protected:
 	virtual void InitCharacterData();
 	virtual void SetupCollision();
 	virtual void SetupMovement();
-	virtual void SetPhysicalAsset(ECharacterType InCharacterType, ECharacterBodyType InBodyType);
 	virtual bool IsDead() const;
 
 	UFUNCTION()

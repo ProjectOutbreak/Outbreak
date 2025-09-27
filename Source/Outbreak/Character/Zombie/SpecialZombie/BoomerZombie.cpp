@@ -20,8 +20,6 @@ void ABoomerZombie::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	SetPhysicalAsset(ECharacterType::Zombie, ECharacterBodyType::Fat);
-
 	AbilityComponent->AddAbility(NewObject<USelfDestructAbility>(AbilityComponent));
 }
 
