@@ -1,14 +1,14 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "BoomerZombie.h"
+#include "PopperZombie.h"
 #include "Outbreak/Component/AbilityComponent.h"
 #include "Outbreak/Game/Ability/SelfDestructAbility.h"
 
-ABoomerZombie::ABoomerZombie()
+APopperZombie::APopperZombie()
 {
-	ZombieSubType = EZombieSubType::Boomer;
-	BodyScale = 1.1f;
-	
+	ZombieSubType = EZombieSubType::Popper;
+	BodyScale = 0.7f;
+
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh> ZombieMesh(TEXT("/Game/Art/Characters/Zombies/Meshes/SKM_Zombie_Fat_002.SKM_Zombie_Fat_002"));
 	if (ZombieMesh.Succeeded())
 	{
@@ -16,18 +16,18 @@ ABoomerZombie::ABoomerZombie()
 	}
 }
 
-void ABoomerZombie::BeginPlay()
+void APopperZombie::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 	SetPhysicalAsset(ECharacterType::Zombie, ECharacterBodyType::Fat);
 
 	AbilityComponent->AddAbility(NewObject<USelfDestructAbility>(AbilityComponent));
 }
 
-void ABoomerZombie::OnRep_Die()
+void APopperZombie::OnRep_Die()
 {
 	Super::OnRep_Die();
-	
+
 	AbilityComponent->TryActivateAbility(EAbilityType::SelfDestruct);
 }

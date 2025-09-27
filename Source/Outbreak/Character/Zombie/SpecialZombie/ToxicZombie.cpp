@@ -28,7 +28,6 @@ void AToxicZombie::BeginPlay()
 	SetPhysicalAsset(ECharacterType::Zombie, ECharacterBodyType::Normal);
 	
 	Super::BeginPlay();
-	SetActorScale3D(FVector(BodyScale, BodyScale, BodyScale));
 
 	AbilityComponent->AddAbility(NewObject<UToxicAuraAbility>(AbilityComponent));
 	AbilityComponent->AddAbility(NewObject<UToxicAttackAbility>(AbilityComponent));

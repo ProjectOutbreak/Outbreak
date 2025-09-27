@@ -103,6 +103,7 @@ void ACharacterZombie::BeginPlay()
 			return;
 		}
 		ZombieAI->InitializeZombieAI(this);
+		SetActorScale3D(FVector(BodyScale, BodyScale, BodyScale));
 	}
 }
 

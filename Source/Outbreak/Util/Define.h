@@ -171,13 +171,11 @@ enum class EZombieSubType : uint8
     
 	GymRat      UMETA(DisplayName = "헬창"),
 	Toxic       UMETA(DisplayName = "톡식"),
+	Popper      UMETA(DisplayName = "파퍼"),
 	Boomer 		UMETA(DisplayName = "부머"),
-	Ghost       UMETA(DisplayName = "유체화 좀비"),
+	Goo			UMETA(DisplayName = "구"),
 	Shield      UMETA(DisplayName = "방패 좀비"),
-	Berserker   UMETA(DisplayName = "광분화 좀비"),
-    
-    // TODO : Boss Zombie Manage
-	Boss_0,
+	Berserker   UMETA(DisplayName = "버서커"),
 };
 
 UENUM()

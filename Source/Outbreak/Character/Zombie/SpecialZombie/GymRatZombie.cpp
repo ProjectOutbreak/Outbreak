@@ -24,8 +24,6 @@ void AGymRatZombie::BeginPlay()
 	SetPhysicalAsset(ECharacterType::Zombie, ECharacterBodyType::Muscle);
 	
 	Super::BeginPlay();
-
-	SetActorScale3D(FVector(BodyScale, BodyScale, BodyScale));
 	
 	AbilityComponent->AddAbility(NewObject<UVibrationAbility>(AbilityComponent));
 	AttachVibrationEffect();
