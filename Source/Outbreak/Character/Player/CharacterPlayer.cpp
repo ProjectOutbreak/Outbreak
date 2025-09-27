@@ -25,6 +25,10 @@
 
 ACharacterPlayer::ACharacterPlayer()
 {
+#if WITH_EDITOR
+	SetFolderPath(TEXT("Players"));
+#endif
+	
 	PostProcessComponent = CreateDefaultSubobject<UPostProcessComponent>(TEXT("PostProcessComponent"));
 	PostProcessComponent->SetupAttachment(RootComponent);
 	PostProcessComponent->bEnabled = true;

@@ -13,6 +13,10 @@
 
 AZombieAIComponent::AZombieAIComponent()
 {
+#if WITH_EDITOR
+	SetFolderPath(TEXT("AIComponents"));
+#endif
+	
 	PrimaryActorTick.bCanEverTick = true;
 
 	AIPerception = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("AIPerception"));

@@ -14,6 +14,10 @@
 
 ACharacterZombie::ACharacterZombie()
 {
+#if WITH_EDITOR
+	SetFolderPath(TEXT("Zombies"));
+#endif
+	
 	PrimaryActorTick.bCanEverTick = true;
 	
 	CharacterType = ECharacterType::Zombie;
