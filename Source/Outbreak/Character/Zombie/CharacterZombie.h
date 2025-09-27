@@ -21,10 +21,11 @@ public:
 	ACharacterZombie();
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void OnAttackEnd();
-	FZombieData* GetZombieData() { return &ZombieData; }
 	void PlayAnimation(EZombieStateType InStateType);
-	TObjectPtr<AZombieAIComponent> GetZombieAI() const { return ZombieAI; }
-	float GetCurrentAnimationSectionLength() const { return CurrentAnimationSectionLength; }
+	
+	FORCEINLINE FZombieData* GetZombieData() { return &ZombieData; }
+	FORCEINLINE TObjectPtr<AZombieAIComponent> GetZombieAI() const { return ZombieAI; }
+	FORCEINLINE float GetCurrentAnimationSectionLength() const { return CurrentAnimationSectionLength; }
 
 	UFUNCTION(NetMulticast,Reliable)
 	void Multicast_PlayAnimation(EZombieStateType InStateType);
