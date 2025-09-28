@@ -54,8 +54,8 @@ public:
 protected:
 	TSharedPtr<TStateMachine<T, ContextType>> Fsm;
 	T StateKey;
-	virtual void ChangeState(T Key)
+	virtual void ChangeState(T Key, TObjectPtr<ContextType> Context = nullptr)
 	{
-		Fsm->ChangeState(Key);
+		Fsm->ChangeState(Key, Context);
 	}
 };

@@ -68,8 +68,6 @@ protected:
 	float BodyDamageMultiplier = 1.0f;
 	float LimbsDamageMultiplier = 0.7f;
 
-	float CurrentAnimationSectionLength = 0.0f;
-
 	UPROPERTY(ReplicatedUsing = OnRep_IsToxic)
 	bool bIsToxic = false;
 	FTimerHandle ToxicTickTimerHandle;

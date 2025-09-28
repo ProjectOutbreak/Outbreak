@@ -11,12 +11,11 @@ FZombieBaseState::FZombieBaseState(const TSharedPtr<TStateMachine<EZombieStateTy
 	Owner = InOwner;
 }
 
-void FZombieBaseState::Enter(EZombieStateType PreviousState, TObjectPtr<ACharacterPlayer> TargetPlayer)
+void FZombieBaseState::Enter(EZombieStateType PreviousState, const TObjectPtr<ACharacterPlayer> TargetPlayer)
 {
 	if (Owner->HasAuthority())
 	{
-		Owner->Multicast_PlayAnimation(StateKey);
-		CurrentAnimationLength = Owner->GetCurrentAnimationSectionLength();
+		// Owner->Multicast_PlayAnimation(StateKey);
 	}
 	if (TargetPlayer)
 	{
@@ -34,7 +33,7 @@ void FZombieBaseState::Exit(EZombieStateType NextState, TObjectPtr<ACharacterPla
 	CurrentAnimationLength = 0.0f;
 }
 
-void FZombieBaseState::RotateTowardsTarget(float DeltaTime) const
+void FZombieBaseState::RotateTowardsTarget(const float DeltaTime) const
 {
 	if (Owner && CurrentTargetPlayer)
 	{

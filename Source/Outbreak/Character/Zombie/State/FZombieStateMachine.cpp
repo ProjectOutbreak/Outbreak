@@ -1,6 +1,6 @@
 ﻿#include "FZombieStateMachine.h"
 
-void FZombieStateMachine::ChangeState(EZombieStateType Key, TObjectPtr<ACharacterPlayer> Context)
+void FZombieStateMachine::ChangeState(const EZombieStateType Key, const TObjectPtr<ACharacterPlayer> Context)
 {
 	if (IsInState(EZombieStateType::Die))
 	{

@@ -5,20 +5,45 @@ FZombieAttackState::FZombieAttackState(const TSharedPtr<TStateMachine<EZombieSta
 {
 }
 
-void FZombieAttackState::Enter(EZombieStateType PreviousState, TObjectPtr<ACharacterPlayer> Context)
+void FZombieAttackState::Enter(const EZombieStateType PreviousState, const TObjectPtr<ACharacterPlayer> TargetPlayer)
 {
-	FZombieBaseState::Enter(PreviousState, Context);
+	FZombieBaseState::Enter(PreviousState, TargetPlayer);
+
+	if (!Owner->HasAuthority()) return;
 	
+	Owner->bIsAttacking = true;
 }
 
-void FZombieAttackState::Execute(EZombieStateType CurrentState, float DeltaTime)
+void FZombieAttackState::Execute(const EZombieStateType CurrentState, const float DeltaTime)
 {
 	FZombieBaseState::Execute(CurrentState, DeltaTime);
 	
 	RotateTowardsTarget(DeltaTime);
+
+	if (CheckOutOfAttackRange())
+	{
+		ChangeState(EZombieStateType::Chase, CurrentTargetPlayer);
+	}
 }
 
-void FZombieAttackState::Exit(EZombieStateType NextState, TObjectPtr<ACharacterPlayer> Context)
+void FZombieAttackState::Exit(const EZombieStateType NextState, const TObjectPtr<ACharacterPlayer> TargetPlayer)
 {
-	FZombieBaseState::Exit(NextState, Context);
+	FZombieBaseState::Exit(NextState, TargetPlayer);
+
+	if (!Owner->HasAuthority()) return;
+
+	Owner->bIsAttacking = false;
+}
+
+bool FZombieAttackState::CheckOutOfAttackRange()
+{
+	if (!CurrentTargetPlayer) return true;
+	
+	const FZombieData* ZombieData = Owner->GetZombieData();
+	const float AttackRange = ZombieData->AttackRange;
+	const float DistanceToTarget = FVector::Dist(Owner->GetActorLocation(), CurrentTargetPlayer->GetActorLocation());
+	
+	if (DistanceToTarget > AttackRange) return true;
+	
+	return false;
 }

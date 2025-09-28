@@ -8,7 +8,7 @@ FZombieDieState::FZombieDieState(const TSharedPtr<TStateMachine<EZombieStateType
 {
 }
 
-void FZombieDieState::Enter(EZombieStateType PreviousState, TObjectPtr<ACharacterPlayer> TargetPlayer)
+void FZombieDieState::Enter(const EZombieStateType PreviousState, const TObjectPtr<ACharacterPlayer> TargetPlayer)
 {
 	FZombieBaseState::Enter(PreviousState, TargetPlayer);
 	
@@ -19,12 +19,12 @@ void FZombieDieState::Enter(EZombieStateType PreviousState, TObjectPtr<ACharacte
 	// TODO : Score, Exp
 }
 
-void FZombieDieState::Execute(EZombieStateType CurrentState, float DeltaTime)
+void FZombieDieState::Execute(const EZombieStateType CurrentState, const float DeltaTime)
 {
 	FZombieBaseState::Execute(CurrentState, DeltaTime);
 }
 
-void FZombieDieState::Exit(EZombieStateType NextState, TObjectPtr<ACharacterPlayer> TargetPlayer)
+void FZombieDieState::Exit(const EZombieStateType NextState, const TObjectPtr<ACharacterPlayer> TargetPlayer)
 {
 	FZombieBaseState::Exit(NextState, TargetPlayer);
 	

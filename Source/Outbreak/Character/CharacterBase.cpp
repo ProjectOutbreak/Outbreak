@@ -4,13 +4,8 @@
 #include "Components/CapsuleComponent.h"
 #include "Engine/DamageEvents.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "Kismet/GameplayStatics.h"
 #include "Outbreak/Util/Define.h"
-#include "Outbreak/Util/EnumHelper.h"
-#include "PhysicsEngine/PhysicsAsset.h"
-
 #include "Net/UnrealNetwork.h"
-#include "Outbreak/Game/Controller/OBPlayerController.h"
 #include "Outbreak/UI/OBHUD.h"
 
 // Sets default values

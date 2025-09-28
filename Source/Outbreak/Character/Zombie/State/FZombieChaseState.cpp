@@ -10,12 +10,15 @@ FZombieChaseState::FZombieChaseState(const TSharedPtr<TStateMachine<EZombieState
 {
 }
 
-void FZombieChaseState::Enter(EZombieStateType PreviousState, const TObjectPtr<ACharacterPlayer> TargetPlayer)
+void FZombieChaseState::Enter(const EZombieStateType PreviousState, const TObjectPtr<ACharacterPlayer> TargetPlayer)
 {
 	Super::Enter(PreviousState, TargetPlayer);
 
 	if (!TargetPlayer)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[%s] TargetPlayer is null"), CURRENT_CONTEXT);
 		return;
+	}
 
 	const TObjectPtr<UCharacterMovementComponent> MovementComp = Owner->GetCharacterMovement();
 	const FZombieData* ZombieData = Owner->GetZombieData();
@@ -54,12 +57,12 @@ void FZombieChaseState::Enter(EZombieStateType PreviousState, const TObjectPtr<A
 	ZombieAI->MoveToActor(CurrentTargetPlayer, AcceptanceRadius, true);
 }
 
-void FZombieChaseState::Execute(EZombieStateType CurrentState, float DeltaTime)
+void FZombieChaseState::Execute(const EZombieStateType CurrentState, const float DeltaTime)
 {
 	Super::Execute(CurrentState, DeltaTime);
 }
 
-void FZombieChaseState::Exit(EZombieStateType NextState, TObjectPtr<ACharacterPlayer> TargetPlayer)
+void FZombieChaseState::Exit(const EZombieStateType NextState, const TObjectPtr<ACharacterPlayer> TargetPlayer)
 {
 	Super::Exit(NextState, TargetPlayer);
 

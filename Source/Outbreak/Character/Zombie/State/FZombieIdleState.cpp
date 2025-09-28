@@ -6,7 +6,7 @@ FZombieIdleState::FZombieIdleState(const TSharedPtr<TStateMachine<EZombieStateTy
 {
 }
 
-void FZombieIdleState::Enter(EZombieStateType PreviousState, TObjectPtr<ACharacterPlayer> TargetPlayer)
+void FZombieIdleState::Enter(const EZombieStateType PreviousState, const TObjectPtr<ACharacterPlayer> TargetPlayer)
 {
 	Super::Enter(PreviousState, TargetPlayer);
 	
@@ -16,7 +16,7 @@ void FZombieIdleState::Enter(EZombieStateType PreviousState, TObjectPtr<ACharact
 	IdleTimer = 0.0f;
 }
 
-void FZombieIdleState::Execute(EZombieStateType CurrentState, float DeltaTime)
+void FZombieIdleState::Execute(const EZombieStateType CurrentState, const float DeltaTime)
 {
 	Super::Execute(CurrentState, DeltaTime);
 	
@@ -28,7 +28,7 @@ void FZombieIdleState::Execute(EZombieStateType CurrentState, float DeltaTime)
 	}
 }
 
-void FZombieIdleState::Exit(EZombieStateType NextState, TObjectPtr<ACharacterPlayer> TargetPlayer)
+void FZombieIdleState::Exit(const EZombieStateType NextState, const TObjectPtr<ACharacterPlayer> TargetPlayer)
 {
 	Super::Exit(NextState, TargetPlayer);
 	

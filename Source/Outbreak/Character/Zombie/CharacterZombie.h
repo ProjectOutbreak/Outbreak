@@ -20,15 +20,9 @@ class OUTBREAK_API ACharacterZombie : public ACharacterBase
 public:
 	ACharacterZombie();
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-	virtual void OnAttackEnd();
-	void PlayAnimation(EZombieStateType InStateType);
 	
 	FORCEINLINE FZombieData* GetZombieData() { return &ZombieData; }
 	FORCEINLINE TObjectPtr<AZombieAIComponent> GetZombieAI() const { return ZombieAI; }
-	FORCEINLINE float GetCurrentAnimationSectionLength() const { return CurrentAnimationSectionLength; }
-
-	UFUNCTION(NetMulticast,Reliable)
-	void Multicast_PlayAnimation(EZombieStateType InStateType);
 
 protected:
 	virtual void BeginPlay() override;
@@ -38,15 +32,19 @@ protected:
 	virtual void SetupMovement() override;
 	virtual void OnRep_Die() override;
 	virtual void SetMesh(ECharacterBodyType MeshType);
-	void ChangeZombieState(EZombieStateType NewState, TObjectPtr<ACharacterPlayer> TargetPlayer = nullptr);
+	void ChangeZombieState(EZombieStateType NewState, TObjectPtr<ACharacterPlayer> TargetPlayer = nullptr) const;
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator,class AActor* DamageCauser) override;
 
-private:
-	EZombieAnimationType GetZombieAnimationTypeFromState(EZombieStateType InStateType);
-	
 // --------------------
 // Variables
 // --------------------
+public:
+	UPROPERTY(BlueprintReadOnly)
+	bool bIsAttacking = false;
+
+	UPROPERTY(BlueprintReadOnly)
+	bool bIsScreaming = false;
+	
 protected:
 	EZombieType ZombieType = EZombieType::None;
 	EZombieSubType ZombieSubType = EZombieSubType::None;
@@ -59,8 +57,6 @@ protected:
 	UPROPERTY()
 	AController* LastDamagePlayer;
 
-	UPROPERTY()
-	TMap<EZombieAnimationType, TObjectPtr<UAnimMontage>> AnimMontageMap;
 	TMap<EZombieAnimationType, TArray<FName>> AnimSectionMap;
 
 private:

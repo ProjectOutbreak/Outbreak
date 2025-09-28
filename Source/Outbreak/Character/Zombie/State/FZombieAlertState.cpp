@@ -7,12 +7,16 @@ FZombieAlertState::FZombieAlertState(const TSharedPtr<TStateMachine<EZombieState
 {
 }
 
-void FZombieAlertState::Enter(EZombieStateType PreviousState, TObjectPtr<ACharacterPlayer> Context)
+void FZombieAlertState::Enter(const EZombieStateType PreviousState, const TObjectPtr<ACharacterPlayer> TargetPlayer)
 {
-	FZombieBaseState::Enter(PreviousState, Context);
+	FZombieBaseState::Enter(PreviousState, TargetPlayer);
+
+	if (!Owner->HasAuthority()) return;
+
+	Owner->bIsScreaming = false;
 }
 
-void FZombieAlertState::Execute(EZombieStateType CurrentState, float DeltaTime)
+void FZombieAlertState::Execute(const EZombieStateType CurrentState, const float DeltaTime)
 {
 	FZombieBaseState::Execute(CurrentState, DeltaTime);
 
@@ -25,8 +29,13 @@ void FZombieAlertState::Execute(EZombieStateType CurrentState, float DeltaTime)
 	}
 }
 
-void FZombieAlertState::Exit(EZombieStateType NextState, TObjectPtr<ACharacterPlayer> Context)
+void FZombieAlertState::Exit(const EZombieStateType NextState, const TObjectPtr<ACharacterPlayer> TargetPlayer)
 {
-	FZombieBaseState::Exit(NextState, Context);
+	FZombieBaseState::Exit(NextState, TargetPlayer);
+	
 	Timer = 0.0f;
+
+	if (!Owner->HasAuthority()) return;
+
+	Owner->bIsScreaming = false;
 }
