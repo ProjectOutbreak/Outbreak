@@ -45,6 +45,7 @@ protected:
 
 private:
 	void Die();
+	void OnRagdoll();
 	
 // --------------------
 // Variables

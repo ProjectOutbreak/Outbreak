@@ -1,6 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "CharacterBase.h"
+#include "AIController.h"
+#include "BrainComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Engine/DamageEvents.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -8,34 +10,14 @@
 #include "Net/UnrealNetwork.h"
 #include "Outbreak/UI/OBHUD.h"
 
-// Sets default values
 ACharacterBase::ACharacterBase()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	bReplicates = true;
 	
-	// Pawn
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = true;
 	bUseControllerRotationRoll = false;
-
-	// Capsule
-	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
-	GetCapsuleComponent()->SetCollisionProfileName(TEXT("Pawn"));
-
-	// Movement
-	GetCharacterMovement()->bOrientRotationToMovement = false;
-	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f);
-	GetCharacterMovement()->JumpZVelocity = 700.f;
-	GetCharacterMovement()->AirControl = 0.35f;
-	GetCharacterMovement()->MaxWalkSpeed = 500.f;
-	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
-	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
-
-	// Mesh
-	GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
-	GetMesh()->SetCollisionProfileName(TEXT("CharacterMesh"));
-	GetMesh()->SetHiddenInGame(false);
 }
 
 void ACharacterBase::BeginPlay()
@@ -118,11 +100,31 @@ void ACharacterBase::Die()
 	OnRep_Die();
 }
 
+void ACharacterBase::OnRagdoll()
+{
+	const FVector LastVelocity = GetCharacterMovement()->Velocity;
+
+	if (const AAIController* AIController = Cast<AAIController>(GetController()))
+	{
+		if (UBrainComponent* BrainComponent = AIController->GetBrainComponent())
+		{
+			BrainComponent->StopLogic("Death");
+		}
+	}
+
+	GetCharacterMovement()->DisableMovement();
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	GetMesh()->SetSimulatePhysics(true);
+	GetMesh()->SetCollisionProfileName(TEXT("Ragdoll"));
+	GetMesh()->AddImpulse(LastVelocity, NAME_None, true);
+
+	SetLifeSpan(10.0f);
+}
+
 void ACharacterBase::OnRep_Die()
 {
-	GetCharacterMovement()->DisableMovement();
-	GetCharacterMovement()->StopMovementImmediately();
-	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	OnRagdoll();
 }
 
 float ACharacterBase::GetDamageMultiplier(const EPhysicalSurface SurfaceType)
@@ -163,15 +165,26 @@ void ACharacterBase::ApplyDamage(int32 DamageAmount)
 
 void ACharacterBase::SetupCollision()
 {
-	GetCapsuleComponent()->SetCollisionProfileName(TEXT("Pawn"));
+	UCapsuleComponent* CapsuleComp = GetCapsuleComponent();
+	if (!CapsuleComp) return;
+	
+	CapsuleComp->SetCollisionProfileName(TEXT("Pawn"));
+	CapsuleComp->InitCapsuleSize(42.f, 96.0f);
 
-	GetMesh()->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, -100.0f), FRotator(0.0f, -90.0f, 0.0f));
-	GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
+	USkeletalMeshComponent* SkeletalMeshComp = GetMesh();
+	if (!SkeletalMeshComp) return;
+	
+	SkeletalMeshComp->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, -100.0f), FRotator(0.0f, -90.0f, 0.0f));
+	SkeletalMeshComp->SetAnimationMode(EAnimationMode::AnimationBlueprint);
+	SkeletalMeshComp->SetCollisionProfileName(TEXT("CharacterMesh"));
+	SkeletalMeshComp->SetHiddenInGame(false);
 }
 
 void ACharacterBase::SetupMovement()
 {
-	auto* MovementComp = GetCharacterMovement();
+	UCharacterMovementComponent* MovementComp = GetCharacterMovement();
+	if (!MovementComp) return;
+	
 	MovementComp->bOrientRotationToMovement = false;
 	MovementComp->RotationRate = FRotator(0.0f, 500.0f, 0.0f);
 	MovementComp->JumpZVelocity = 500.f;

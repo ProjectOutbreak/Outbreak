@@ -13,14 +13,10 @@ FZombieBaseState::FZombieBaseState(const TSharedPtr<TStateMachine<EZombieStateTy
 
 void FZombieBaseState::Enter(EZombieStateType PreviousState, const TObjectPtr<ACharacterPlayer> TargetPlayer)
 {
-	if (Owner->HasAuthority())
-	{
-		// Owner->Multicast_PlayAnimation(StateKey);
-	}
-	if (TargetPlayer)
-	{
-		CurrentTargetPlayer = TargetPlayer;
-	}
+	if (!TargetPlayer)
+		return;
+	
+	CurrentTargetPlayer = TargetPlayer;
 }
 
 void FZombieBaseState::Execute(EZombieStateType CurrentState, float DeltaTime)

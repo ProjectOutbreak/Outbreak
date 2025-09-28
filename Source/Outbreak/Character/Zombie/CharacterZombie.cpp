@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "CharacterZombie.h"
+#include "BrainComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -131,9 +132,8 @@ void ACharacterZombie::OnRep_Die()
 {
 	Super::OnRep_Die();
 
-	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-
 	ChangeZombieState(EZombieStateType::Die);
+	
 	if (HasAuthority())
 	{
 		if (AController* Killer = LastDamagePlayer)
