@@ -9,7 +9,6 @@
 #include "GameFramework/Character.h"
 #include "Outbreak/Game/Framework/InGameMode.h"
 #include "Outbreak/Game/Framework/OutBreakGameState.h"
-#include "Outbreak/Manager/SoundManager.h"
 
 ASafeZoneController::ASafeZoneController()
 {
@@ -128,20 +127,6 @@ void ASafeZoneController::OnStartZoneExit(UPrimitiveComponent* OverlappedComp, A
 				CutsceneManager->PlayCutscene(CutsceneSequence);
 				CutsceneManager->bHasPlayedCutscene = true;
 				StartSafeZoneCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-
-				// hard coded playing BGM
-				USoundBase* BGM = LoadObject<USoundBase>(nullptr, TEXT("SoundWave'/Game/Sounds/BGM1.BGM1'"));
-				if (BGM)
-				{
-					// SoundManager에서 BGM 재생
-
-					if (USoundManager* SoundManager = GetGameInstance()->GetSubsystem<USoundManager>())
-					{
-
-						SoundManager->PlayPersistentBGM(BGM);
-					}
-
-				}
 			}
 		}
 	}

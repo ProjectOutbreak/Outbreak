@@ -19,9 +19,10 @@ public:
 
 	//-----Variables-----//
 	TArray<TSoftObjectPtr<UClass>> ClassesToPreload;
+	TArray<TSoftObjectPtr<USoundBase>> SoundsToPreload;
 	
-	UPROPERTY()
-	TSubclassOf<UUserWidget> CachedWidgetClass = nullptr;
+	UPROPERTY()	TSubclassOf<UUserWidget> CachedWidgetClass = nullptr;
+	UPROPERTY() TArray<TObjectPtr<USoundBase>> CachedBgmSounds;
 	
 protected:
 	UPROPERTY()
@@ -33,10 +34,12 @@ public:
 	UFUNCTION()	void AddAssetsPath();
 	UFUNCTION()	void BeginLoading();
 	UFUNCTION()	void OnAssetsLoaded();
-	UFUNCTION()	TSubclassOf<UUserWidget> GetCachedWidgetClass() const { return CachedWidgetClass; }
 	UFUNCTION()	void SetSelectedTimePreset(ETimePreset InPreset) {SelectedTimePreset = InPreset;}
 	UFUNCTION()	ETimePreset GetSelectedTimePreset() const { return SelectedTimePreset; }
 	UFUNCTION()	void ApplySelectedTimePreset(); // 테스트용
+
+	UFUNCTION()	TSubclassOf<UUserWidget> GetCachedWidgetClass() const { return CachedWidgetClass; }
+	const TArray<TObjectPtr<USoundBase>>& GetCachedBgmList() const { return CachedBgmSounds; }
 
 private:
 	FStreamableManager StreamableManager;	

@@ -10,6 +10,7 @@
 #include "Containers/Set.h"
 #include "Outbreak/Character/Player/CharacterPlayer.h"
 #include "Outbreak/Game/Controller/OBPlayerController.h"
+#include "Outbreak/Manager/SoundManager.h"
 #include "Outbreak/UI/OBHUD.h"
 
 
@@ -27,6 +28,10 @@ void AInGameMode::BeginPlay()
 {
 	Super::BeginPlay();
 	StartMatch();
+	if (USoundManager* SM = GetGameInstance()->GetSubsystem<USoundManager>())
+	{
+		SM->StartMainBgmShuffle(false, 0.6f);
+	}
 	UE_LOG(LogTemp, Warning, TEXT("게임 시작됨"));
 }
 

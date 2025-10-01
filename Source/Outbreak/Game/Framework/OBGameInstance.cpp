@@ -16,6 +16,11 @@ void UOBGameInstance::Init()
 void UOBGameInstance::AddAssetsPath()
 {
 	ClassesToPreload.Add(TSoftObjectPtr<UClass>(FSoftObjectPath("/Game/Blueprints/UI/WBP_OBWidget.WBP_OBWidget_C")));
+	SoundsToPreload.Add(TSoftObjectPtr<USoundBase>(FSoftObjectPath("/Game/Audio/BGM/S_BGM1.S_BGM1")));
+	SoundsToPreload.Add(TSoftObjectPtr<USoundBase>(FSoftObjectPath("/Game/Audio/BGM/S_BGM2.S_BGM2")));
+	SoundsToPreload.Add(TSoftObjectPtr<USoundBase>(FSoftObjectPath("/Game/Audio/BGM/S_BGM3.S_BGM3")));
+	SoundsToPreload.Add(TSoftObjectPtr<USoundBase>(FSoftObjectPath("/Game/Audio/BGM/S_BGM4.S_BGM4")));
+	SoundsToPreload.Add(TSoftObjectPtr<USoundBase>(FSoftObjectPath("/Game/Audio/BGM/S_BGM5.S_BGM5")));
 }
 
 void UOBGameInstance::BeginLoading()
@@ -23,6 +28,7 @@ void UOBGameInstance::BeginLoading()
 	TArray<FSoftObjectPath> Paths;
 
 	AsynchronousLoadingHelper::AppendPaths(ClassesToPreload, Paths);
+	AsynchronousLoadingHelper::AppendPaths(SoundsToPreload, Paths);
 	
 	if (Paths.Num() > 0)
 	{
@@ -40,10 +46,20 @@ void UOBGameInstance::OnAssetsLoaded()
     UClass* WidgetClass = nullptr;
 	for (const auto& ClassPtr : ClassesToPreload)
     {
-		if (auto* C = ClassPtr.Get()) { WidgetClass = C; break; }
-    }
-	
+		if (auto* C = ClassPtr.Get())
+		{
+			WidgetClass = C; break;
+		}
+    }	
     CachedWidgetClass = WidgetClass;
+
+	for (const auto& SoundPtr : SoundsToPreload)
+	{
+		if (auto* S = SoundPtr.Get())
+		{
+			CachedBgmSounds.Add(S);
+		}
+	}
     UE_LOG(LogTemp, Warning, TEXT("모든 에셋 로딩 완료!"));
 	UGameplayStatics::OpenLevel(GetWorld(), "L_FirstPhase");
 }
