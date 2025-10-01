@@ -256,4 +256,28 @@ struct FEquipmentSounds
 	TObjectPtr<USoundCue> ReloadSound = nullptr;
 };
 
+USTRUCT()
+struct FFootStepSounds
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere)
+	TArray<TSoftObjectPtr<USoundCue>> SandSounds;
+
+	UPROPERTY(EditAnywhere)
+	TArray<TSoftObjectPtr<USoundCue>> ConcreteSounds;
+
+	UPROPERTY(EditAnywhere)
+	TArray<TSoftObjectPtr<USoundCue>> GrassSounds;
+
+	UPROPERTY(EditAnywhere)
+	TArray<TSoftObjectPtr<USoundCue>> WaterSounds;
+
+	UPROPERTY(EditAnywhere)
+	TArray<TSoftObjectPtr<USoundCue>> WoodSounds;
+
+	UPROPERTY(EditAnywhere)
+	TArray<TSoftObjectPtr<USoundCue>> MetalSounds;
+};
+
 class OUTBREAK_API GameData { };
