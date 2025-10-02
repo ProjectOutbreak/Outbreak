@@ -35,7 +35,6 @@ protected:
 
 	virtual float GetDamageMultiplier(EPhysicalSurface SurfaceType);
 	virtual void ApplyDamage(int32 DamageAmount);
-	virtual void ApplyHitEffects(const int32 DamageAmount, const EPhysicalSurface SurfaceType = EPhysicalSurface::SurfaceType_Default);
 
 private:
 	void Die();

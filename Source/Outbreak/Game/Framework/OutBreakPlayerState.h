@@ -6,13 +6,6 @@
 #include "GameFramework/PlayerState.h"
 #include "OutBreakPlayerState.generated.h"
 
-UENUM(BlueprintType)
-enum class ECharacterStatus : uint8
-{
-	Alive,
-	Downed,
-	Dead
-};
 
 UCLASS()
 class OUTBREAK_API AOutBreakPlayerState : public APlayerState

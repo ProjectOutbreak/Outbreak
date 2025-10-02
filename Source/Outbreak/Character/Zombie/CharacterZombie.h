@@ -61,5 +61,6 @@ protected:
 	TMap<EZombieAnimationType, TArray<FName>> AnimSectionMap;
 
 private:
+	UPROPERTY()
 	TObjectPtr<AZombieAIComponent> ZombieAI;
 };

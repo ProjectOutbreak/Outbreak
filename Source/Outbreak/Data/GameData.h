@@ -215,14 +215,8 @@ struct FFirableData : public FWeaponData
 	TArray<EFireType> FireTypes;
 	
 	UPROPERTY(EditAnywhere)
-	float TraceMaxDistance = 0.0f;
-	
-	UPROPERTY(EditAnywhere)
 	int32 MagazineSize = 0;
 
-	UPROPERTY(EditAnywhere)
-	int32 MaxAmmo = 0;
-	
 	UPROPERTY(EditAnywhere)
 	float ReloadTime = 0.0f;
 };
