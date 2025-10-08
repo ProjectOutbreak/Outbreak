@@ -257,7 +257,7 @@ struct FEquipmentSounds
 };
 
 USTRUCT()
-struct FFootStepSounds
+struct FFootStepSounds : public FTableRowBase
 {
 	GENERATED_BODY()
 
