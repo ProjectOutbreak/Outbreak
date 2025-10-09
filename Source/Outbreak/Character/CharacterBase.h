@@ -22,6 +22,9 @@ public:
 	UFUNCTION()
 	virtual void OnRep_CurrentHealth();
 
+	UFUNCTION() void TriggerFootStepLeft();
+	UFUNCTION() void TriggerFootStepRight();
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void InitCharacterData();
@@ -62,4 +65,6 @@ protected:
 	float LimbsDamageMultiplier = 0.7f;
 
 	float CurrentAnimationSectionLength = 0.0f;
+
+	UPROPERTY() TObjectPtr<class UFootStepComponent> FootStepComponent;
 };

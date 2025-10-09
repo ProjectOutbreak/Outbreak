@@ -9,6 +9,7 @@
 #include "PhysicsEngine/PhysicsAsset.h"
 
 #include "Net/UnrealNetwork.h"
+#include "Outbreak/Component/FootStepComponent.h"
 #include "Outbreak/Game/Controller/OBPlayerController.h"
 #include "Outbreak/UI/OBHUD.h"
 
@@ -41,6 +42,8 @@ ACharacterBase::ACharacterBase()
 	GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
 	GetMesh()->SetCollisionProfileName(TEXT("CharacterMesh"));
 	GetMesh()->SetHiddenInGame(false);
+
+	FootStepComponent = CreateDefaultSubobject<UFootStepComponent>(TEXT("FootStepComponent"));
 }
 
 float ACharacterBase::TakeDamage(const float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -209,6 +212,16 @@ void ACharacterBase::SetupMovement()
 	MovementComp->bImpartBaseVelocityX = false;
 	MovementComp->bImpartBaseVelocityY = false;
 	MovementComp->bImpartBaseVelocityZ = false;
+}
+
+void ACharacterBase::TriggerFootStepLeft()
+{
+	if (FootStepComponent) FootStepComponent->HandleFootStep(TEXT("ik_foot_l"));
+}
+
+void ACharacterBase::TriggerFootStepRight()
+{
+	if (FootStepComponent) FootStepComponent->HandleFootStep(TEXT("ik_foot_r"));
 }
 
 void ACharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

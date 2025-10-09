@@ -26,6 +26,8 @@ public:
 
 	UFUNCTION() void SetBgmVolume(float InVolume);
 	UFUNCTION() float GetBgmVolume() const { return BgmVolume; }
+
+	void PlayFootStepSound(EPhysicalSurface InSurfaceType, FVector InLocation);
 	
 private:
 	void PlayNextBgm(float FadeInTime);

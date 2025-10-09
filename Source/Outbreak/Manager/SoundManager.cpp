@@ -123,3 +123,8 @@ void USoundManager::PlayBgmInternal(USoundBase* Sound, const float FadeInTime)
 		BgmComponent->Play();
 	}
 }
+
+void USoundManager::PlayFootStepSound(EPhysicalSurface InSurfaceType, FVector InLocation)
+{
+	
+}
