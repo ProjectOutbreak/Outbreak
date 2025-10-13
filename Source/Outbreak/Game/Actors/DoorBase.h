@@ -27,9 +27,6 @@ public:
 	virtual void Interact_Implementation(APawn* InstigatorPawn) override;
 	bool IsOpen() const;
 
-	UPROPERTY(EditAnywhere)
-	UCurveFloat* DoorTimelineFloatCurve;
-
 protected:
 	virtual void BeginPlay() override;
 
@@ -57,15 +54,8 @@ protected:
 	int HP = 100;
 	EDoorStatus CurrentStatus = EDoorStatus::Close;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	UTimelineComponent* DoorTimelineComp;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	class UBoxComponent* DoorProxVolume;
-	
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
 	
 private:
 	FOnTimelineFloat UpdateFunctionFloat;
