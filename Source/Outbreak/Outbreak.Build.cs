@@ -27,9 +27,8 @@ public class Outbreak : ModuleRules
 			"PacketHandler",
 			"OnlineSubsystem",
 			"OnlineSubsystemNull",
-			"Niagara",
-            "GeometryCollectionEngine"
-        });
+			"Niagara"
+		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] { "Paper2D" });
 
