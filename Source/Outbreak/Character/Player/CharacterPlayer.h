@@ -7,6 +7,7 @@
 #include "PaperSpriteComponent.h"
 #include "Components/TextRenderComponent.h"
 #include "Outbreak/Character/CharacterBase.h"
+#include "Outbreak/Component/EquipmentController.h"
 #include "Outbreak/Data/GameData.h"
 #include "Outbreak/Game/Interface/InteractInterface.h"
 #include "Outbreak/Util/Define.h"
@@ -25,6 +26,12 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	void ChangePlayerControl();
+	void HandleUse() const { EquipmentController->HandleUse(); }
+	void HandleEndUse() const { EquipmentController->HandleEndUse(); }
+	void HandleReload() const { EquipmentController->HandleReload(); }
+	void HandleEquipBySlot(const int32 SlotNumber) const { EquipmentController->EquipBySlot(SlotNumber); }
+	void HandleToggleFireMode() const { EquipmentController->HandleToggleFireMode(); }
+	TObjectPtr<class AOBHUD> GetHud() const { return CachedHUD; }
 	
 protected:
 	virtual void BeginPlay() override;
@@ -48,11 +55,20 @@ public:
 	bool bIsCutscenePlaying = false;
 	
 protected:
+	UPROPERTY()
+	TObjectPtr<class AOBPlayerController> CachedPC;
+	
+	UPROPERTY()
+	TObjectPtr<class AOBHUD> CachedHUD;
+	
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<class USpringArmComponent> CameraBoom;
 
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<class UCameraComponent> FollowCamera;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TObjectPtr<class UEquipmentController> EquipmentController;
 	
 	UPROPERTY(Replicated)
 	FPlayerData PlayerData;
@@ -77,5 +93,11 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Minimap")
 	TObjectPtr<UTextRenderComponent> PlayerNameText;
-	
+
+	// TODO : for test. delete later
+	UPROPERTY()
+	TObjectPtr<class AWeaponBase> SpawnedWeapon;
+	UPROPERTY()
+	TSubclassOf<class AM4> WeaponToSpawn;
+
 };

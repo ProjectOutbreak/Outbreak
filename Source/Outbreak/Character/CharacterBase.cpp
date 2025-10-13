@@ -9,6 +9,7 @@
 #include "PhysicsEngine/PhysicsAsset.h"
 
 #include "Net/UnrealNetwork.h"
+#include "Outbreak/Game/Controller/OBPlayerController.h"
 #include "Outbreak/UI/OBHUD.h"
 
 // Sets default values
@@ -42,34 +43,33 @@ ACharacterBase::ACharacterBase()
 	GetMesh()->SetHiddenInGame(false);
 }
 
-float ACharacterBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+float ACharacterBase::TakeDamage(const float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-	if (IsDead()) return 0.0f; // 중복 Die 방지
+	if (IsDead()) return 0.0f;
 	
-	const float DamageAmount = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+	int32 DamageAmount = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
 
 	if (DamageEvent.IsOfType((FPointDamageEvent::ClassID)))
 	{
 		const auto PointDamageEvent = static_cast<const FPointDamageEvent*>(&DamageEvent);
 		const FHitResult& HitResult = PointDamageEvent->HitInfo;
 		const UPhysicalMaterial* PhysMat = HitResult.PhysMaterial.Get();
-
 		if (PhysMat)
 		{
-			const float DamageMultiplier = GetDamageMultiplier(PhysMat->SurfaceType);
-			const int32 FinalDamage = FMath::RoundToInt(DamageAmount * DamageMultiplier);
-			ApplyDamage(FinalDamage);
-			ApplyHitEffects(FinalDamage, PhysMat->SurfaceType);
-
-			return FinalDamage;
+			DamageAmount *= GetDamageMultiplier(PhysMat->SurfaceType);
+			UE_LOG(LogTemp, Log, TEXT("[%s] Hit PhysMat: %s, Damage : %d"), CURRENT_CONTEXT, PhysMat ? *PhysMat->GetName() : TEXT("None"), DamageAmount);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Log, TEXT("[%s] No PhysMat found, Damage : %d"), CURRENT_CONTEXT, DamageAmount);
 		}
 	}
 	
 	ApplyDamage(DamageAmount);
-	ApplyHitEffects(DamageAmount);
 		
 	return DamageAmount;
 }
+
 void ACharacterBase::OnRep_CurrentHealth()
 {
 	if (APlayerController* PC = Cast<APlayerController>(GetController()))
@@ -80,8 +80,6 @@ void ACharacterBase::OnRep_CurrentHealth()
 		}
 	}
 }
-
-
 
 void ACharacterBase::BeginPlay()
 {
@@ -164,22 +162,15 @@ float ACharacterBase::GetDamageMultiplier(const EPhysicalSurface SurfaceType)
 
 void ACharacterBase::ApplyDamage(int32 DamageAmount)
 {
-	if (CurrentExtraHealth > 0)
-	{
-		CurrentExtraHealth -= DamageAmount;
-		if (CurrentExtraHealth < 0)
-		{
-			DamageAmount = -CurrentExtraHealth;
-			CurrentExtraHealth = 0;
-		}
-	}
 	if (!HasAuthority())
 	{
 		return;
 	}
-	CurrentHealth -= DamageAmount;
-	if (CurrentHealth < 0)
-		CurrentHealth = 0;
+	
+	const int32 DamageAbsorbedByExtraHealth = FMath::Min(DamageAmount, CurrentExtraHealth);
+	CurrentExtraHealth -= DamageAbsorbedByExtraHealth;
+	const int32 RemainingDamage = DamageAmount - DamageAbsorbedByExtraHealth;
+	CurrentHealth = FMath::Max(0, CurrentHealth - RemainingDamage);
 
 	if (IsDead())
 	{
@@ -188,25 +179,6 @@ void ACharacterBase::ApplyDamage(int32 DamageAmount)
 	else
 	{
 		// TODO : Implement hit reaction logic (maybe animation)
-	}
-}
-
-void ACharacterBase::ApplyHitEffects(const int32 DamageAmount, const EPhysicalSurface SurfaceType)
-{
-	// TODO : Implement hit effects based on surface type and damage amount
-	switch (SurfaceType)
-	{
-		case SurfaceType1: // Head
-			break;
-
-		case SurfaceType2: // Body
-			break;
-
-		case SurfaceType3: // Limbs
-			break;
-		
-		default:
-			break;
 	}
 }
 

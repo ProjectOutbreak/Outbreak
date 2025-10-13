@@ -12,13 +12,25 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
+#include "Outbreak/Component/EquipmentController.h"
 #include "Outbreak/Data/PlayerControlData.h"
+#include "Outbreak/Game/Controller/OBPlayerController.h"
+#include "Outbreak/Game/Equipment/Weapon/M4.h"
+#include "Outbreak/Game/Equipment/Weapon/WeaponBase.h"
 #include "Outbreak/Game/Framework/OBGameMode.h"
 #include "Outbreak/Game/Framework/OutBreakGameState.h"
 #include "Outbreak/Manager/CharacterSpawnManager.h"
+#include "Outbreak/UI/OBHUD.h"
 
 ACharacterPlayer::ACharacterPlayer()
 {
+	// TODO : for test. delete later
+	static ConstructorHelpers::FClassFinder<AM4> WeaponClassRef(TEXT("/Game/Blueprints/BP_M4.BP_M4_C"));
+	if (WeaponClassRef.Class)
+	{
+		WeaponToSpawn = WeaponClassRef.Class;
+	}
+	
 	CharacterType = ECharacterType::Player;
 	PlayerType = EPlayerType::Player1;
 
@@ -28,6 +40,8 @@ ACharacterPlayer::ACharacterPlayer()
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
+
+	EquipmentController = CreateDefaultSubobject<UEquipmentController>(TEXT("EquipmentController"));
 
 	// ----- MiniMap
 	SceneCapture = CreateDefaultSubobject<USceneCaptureComponent2D>(TEXT("SceneCapture2D"));
@@ -70,7 +84,7 @@ ACharacterPlayer::ACharacterPlayer()
 	PlayerNameText->bVisibleInSceneCaptureOnly = true;
 	
 	// ----- Mesh
-	static ConstructorHelpers::FObjectFinder<USkeletalMesh> DefaultMesh(TEXT("/Script/Engine.SkeletalMesh'/Game/Art/Characters/SciFiWarrior/Meshes/SKM_Player.SKM_Player'"));
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> DefaultMesh(TEXT("/Game/Art/Characters/Mannequin_UE4/Meshes/SK_Mannequin.SK_Mannequin"));
 	if (DefaultMesh.Succeeded())
 	{
 		GetMesh()->SetSkeletalMesh(DefaultMesh.Object);
@@ -137,10 +151,40 @@ void ACharacterPlayer::InitCharacterData()
 void ACharacterPlayer::BeginPlay()
 {
 	Super::BeginPlay();
+	CachedPC = Cast<AOBPlayerController>(GetController());
+	if (!CachedPC)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[%s] Failed to cast AOBPlayerController"), CURRENT_CONTEXT);
+		return; 
+	}
+
+	CachedHUD = Cast<AOBHUD>(CachedPC->GetHUD());
+	if (!CachedHUD)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[%s] Failed to cast AOBHUD"), CURRENT_CONTEXT);
+	}
 	
 	if (IsLocallyControlled())
 	{
 		SetPlayerControl(CurrentCharacterControlType);
+	}
+
+	// TODO : For Test. Remove later.
+	if (IsValid(WeaponToSpawn))
+	{
+		const FVector SpawnLocation = GetActorLocation();
+		const FRotator SpawnRotation = GetActorRotation();
+
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.Owner = this;
+		SpawnParams.Instigator = GetInstigator();
+
+		SpawnedWeapon = GetWorld()->SpawnActor<AWeaponBase>(WeaponToSpawn, SpawnLocation, SpawnRotation, SpawnParams);
+        
+		if (IsValid(SpawnedWeapon))
+		{
+			EquipmentController->AddEquipment(SpawnedWeapon);
+		}
 	}
 }
 

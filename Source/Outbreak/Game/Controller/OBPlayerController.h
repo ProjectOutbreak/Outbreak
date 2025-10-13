@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+#include "Outbreak/Util/Define.h"
 #include "OBPlayerController.generated.h"
 class IInteractInterface;
 UCLASS()
@@ -40,6 +41,11 @@ private:
 	void ChangePlayerControl();
 	void GetInteractableObject();
 
+	void Use();
+	void EndUse();
+	void Reload();
+	void SelectEquipment(const struct FInputActionValue& Value);
+	void ToggleFireMode();
 
 // --------------------
 // Variables
@@ -67,12 +73,27 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<class UInputAction> ChangePlayerControlAction;
+
+	UPROPERTY()
+	TObjectPtr<class UInputAction> UseAction;
 	
+	UPROPERTY()
+	TObjectPtr<class UInputAction> EndUseAction;
 
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<class UInputAction> InteractAction;
 	
 
+
+	UPROPERTY()
+	TObjectPtr<class UInputAction> ReloadAction;
+
+	UPROPERTY()
+	TObjectPtr<class UInputAction> SelectEquipmentAction;
+	
+	UPROPERTY()
+	TObjectPtr<class UInputAction> ToggleFireModeAction;
+	
 
 	UPROPERTY()
 	TObjectPtr<class UInputAction> ToggleMenuAction;
