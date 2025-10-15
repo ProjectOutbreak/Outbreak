@@ -5,6 +5,7 @@
 #include "Components/AudioComponent.h"
 #include "Outbreak/Game/Framework/OBGameInstance.h"
 #include "Kismet/GameplayStatics.h"
+#include "Sound/SoundBase.h"
 
 void USoundManager::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -13,7 +14,6 @@ void USoundManager::Initialize(FSubsystemCollectionBase& Collection)
 	{
 		OBGameInstance = World->GetGameInstance<UOBGameInstance>();
 	}
-    
 }
 
 void USoundManager::Deinitialize()
@@ -25,12 +25,6 @@ void USoundManager::Deinitialize()
 		BgmComponent = nullptr;
 	}
 	Super::Deinitialize();
-}
-
-void USoundManager::SetBgmVolume(const float InVolume)
-{
-	BgmVolume = FMath::Clamp(InVolume, 0.0f, 1.0f);
-	if (IsValid(BgmComponent)) BgmComponent->SetVolumeMultiplier(BgmVolume);	
 }
 
 void USoundManager::StartMainBgmShuffle(bool bRestartIfPlaying, float FadeInTime)
@@ -54,31 +48,6 @@ void USoundManager::StartMainBgmShuffle(bool bRestartIfPlaying, float FadeInTime
 		BgmComponent->Stop();			
 	}
 	PlayNextBgm(FadeInTime);
-}
-
-void USoundManager::StopMainBgm(const float FadeOutTime)
-{
-	if (IsValid(BgmComponent) && BgmComponent->IsPlaying())
-	{
-		if (FadeOutTime > 0.0f) BgmComponent->FadeOut(FadeOutTime, 0.f);
-		else BgmComponent->Stop();
-	}
-}
-
-void USoundManager::PauseMainBgm()
-{
-	if (IsValid(BgmComponent))
-	{
-		BgmComponent->SetPaused(false);
-	}
-}
-
-void USoundManager::ResumeMainBgm()
-{
-	if (IsValid(BgmComponent))
-	{
-		BgmComponent->SetPaused(false);
-	}
 }
 
 void USoundManager::OnMusicFinished()
@@ -126,5 +95,12 @@ void USoundManager::PlayBgmInternal(USoundBase* Sound, const float FadeInTime)
 
 void USoundManager::PlayFootStepSound(EPhysicalSurface InSurfaceType, FVector InLocation)
 {
-	
+	if (!IsValid(OBGameInstance)) return;
+	const TMap<EPhysicalSurface, TObjectPtr<USoundBase>>& CachedSounds = OBGameInstance->GetCachedFootStepSounds();
+	const TObjectPtr<USoundBase>* FoundSound = CachedSounds.Find(InSurfaceType);
+    
+	if (FoundSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, *FoundSound, InLocation, 1.f, 1.f);
+	}
 }

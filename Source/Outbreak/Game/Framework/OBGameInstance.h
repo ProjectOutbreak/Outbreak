@@ -23,10 +23,15 @@ public:
 	
 	UPROPERTY()	TSubclassOf<UUserWidget> CachedWidgetClass = nullptr;
 	UPROPERTY() TArray<TObjectPtr<USoundBase>> CachedBgmSounds;
+	TMap<EPhysicalSurface, TObjectPtr<USoundBase>> CachedFootstepSounds;
 	
 protected:
 	UPROPERTY()
 	ETimePreset SelectedTimePreset = ETimePreset::RandomOne;
+	
+private:
+	FStreamableManager StreamableManager;
+
 public:
 	//-----Function-----//
 	virtual void Init() override;
@@ -40,7 +45,5 @@ public:
 
 	UFUNCTION()	TSubclassOf<UUserWidget> GetCachedWidgetClass() const { return CachedWidgetClass; }
 	const TArray<TObjectPtr<USoundBase>>& GetCachedBgmList() const { return CachedBgmSounds; }
-
-private:
-	FStreamableManager StreamableManager;	
+	const TMap<EPhysicalSurface, TObjectPtr<USoundBase>>& GetCachedFootStepSounds() const { return CachedFootstepSounds; }
 };

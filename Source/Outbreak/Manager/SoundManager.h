@@ -20,13 +20,6 @@ public:
 	virtual void Deinitialize() override;
 
 	UFUNCTION() void StartMainBgmShuffle(bool bRestartIfPlaying = false, float FadeInTimme = 0.5f);
-	UFUNCTION() void StopMainBgm(float FadeOutTime = 0.5f);
-	UFUNCTION() void PauseMainBgm();
-	UFUNCTION() void ResumeMainBgm();
-
-	UFUNCTION() void SetBgmVolume(float InVolume);
-	UFUNCTION() float GetBgmVolume() const { return BgmVolume; }
-
 	void PlayFootStepSound(EPhysicalSurface InSurfaceType, FVector InLocation);
 	
 private:
@@ -40,7 +33,6 @@ private:
 public:
 	UPROPERTY() UAudioComponent* BgmComponent = nullptr;
 
-	
 private:
 	float BgmVolume = 0.5f;
 	int32 LastBgmIndex = INDEX_NONE;

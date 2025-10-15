@@ -33,8 +33,8 @@ void UFootStepComponent::HandleFootStep(const FName& SocketName)
 	if (!OwningCharacter || !SoundManager) return;
 
 	const FVector FootLocation = OwningCharacter->GetMesh()->GetSocketLocation(SocketName);
-	const FVector TraceStart = FootLocation + FVector(0, 0 , 50.0f);
-	const FVector TraceEnd = FootLocation + FVector(0, 0, 100.0f);
+	const FVector TraceStart = FootLocation + FVector(0, 0, 20.0f);
+	const FVector TraceEnd   = FootLocation - FVector(0, 0, 60.0f);
 
 	FHitResult HitResult;
 	FCollisionQueryParams QueryParams;

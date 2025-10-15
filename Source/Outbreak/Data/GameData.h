@@ -262,22 +262,22 @@ struct FFootStepSounds : public FTableRowBase
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere)
-	TArray<TSoftObjectPtr<USoundCue>> SandSounds;
+	TSoftObjectPtr<USoundCue> SandSound;
 
 	UPROPERTY(EditAnywhere)
-	TArray<TSoftObjectPtr<USoundCue>> ConcreteSounds;
+	TSoftObjectPtr<USoundCue> ConcreteSound;
 
 	UPROPERTY(EditAnywhere)
-	TArray<TSoftObjectPtr<USoundCue>> GrassSounds;
+	TSoftObjectPtr<USoundCue> GrassSound;
 
 	UPROPERTY(EditAnywhere)
-	TArray<TSoftObjectPtr<USoundCue>> WaterSounds;
+	TSoftObjectPtr<USoundCue> WaterSound;
 
 	UPROPERTY(EditAnywhere)
-	TArray<TSoftObjectPtr<USoundCue>> WoodSounds;
+	TSoftObjectPtr<USoundCue> WoodSound;
 
 	UPROPERTY(EditAnywhere)
-	TArray<TSoftObjectPtr<USoundCue>> MetalSounds;
+	TSoftObjectPtr<USoundCue> EtcSound;
 };
 
 class OUTBREAK_API GameData { };

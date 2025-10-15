@@ -22,8 +22,8 @@ public:
 	UFUNCTION()
 	virtual void OnRep_CurrentHealth();
 
-	UFUNCTION() void TriggerFootStepLeft();
-	UFUNCTION() void TriggerFootStepRight();
+	UFUNCTION(BlueprintCallable) void TriggerFootStepLeft();
+	UFUNCTION(BlueprintCallable) void TriggerFootStepRight();
 
 protected:
 	virtual void BeginPlay() override;
