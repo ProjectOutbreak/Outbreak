@@ -185,8 +185,6 @@ void ACharacterBase::SetupMovement()
 	UCharacterMovementComponent* MovementComp = GetCharacterMovement();
 	if (!MovementComp) return;
 	
-	MovementComp->bOrientRotationToMovement = false;
-	MovementComp->RotationRate = FRotator(0.0f, 500.0f, 0.0f);
 	MovementComp->JumpZVelocity = 500.f;
 	MovementComp->AirControl = 0.35f;
 	MovementComp->MaxWalkSpeed = 500.f;

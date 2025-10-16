@@ -316,7 +316,9 @@ void ACharacterPlayer::SetupMovement()
 {
 	Super::SetupMovement();
 
-	auto* MovementComp = GetCharacterMovement();
+	UCharacterMovementComponent* MovementComp = GetCharacterMovement();
+	MovementComp->bOrientRotationToMovement = false;
+	MovementComp->RotationRate = FRotator(0.0f, 500.0f, 0.0f);
 	MovementComp->MaxStepHeight = 50.f;
 	MovementComp->SetWalkableFloorAngle(55.f);
 	MovementComp->bUseControllerDesiredRotation = true;

@@ -114,7 +114,12 @@ void ACharacterZombie::SetupMovement()
 {
 	Super::SetupMovement();
 
-	auto* MovementComp = GetCharacterMovement();
+	bUseControllerRotationYaw = false;
+	
+	UCharacterMovementComponent* MovementComp = GetCharacterMovement();
+	MovementComp->bOrientRotationToMovement = true;
+	MovementComp->RotationRate = FRotator(0.0f, 360.0f, 0.0f);
+	MovementComp->MaxAcceleration = 1024.0f;
 	MovementComp->AvoidanceConsiderationRadius = 500.0f;
 	MovementComp->SetAvoidanceEnabled(true);
 	MovementComp->SetRVOAvoidanceWeight(0.3f);
