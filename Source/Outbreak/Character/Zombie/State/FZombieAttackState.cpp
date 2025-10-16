@@ -20,7 +20,7 @@ void FZombieAttackState::Execute(const EZombieStateType CurrentState, const floa
 	
 	RotateTowardsTarget(DeltaTime);
 
-	if (CheckOutOfAttackRange())
+	if (IsOutOfAttackRange())
 	{
 		ChangeState(EZombieStateType::Chase, CurrentTargetPlayer);
 	}
@@ -35,7 +35,7 @@ void FZombieAttackState::Exit(const EZombieStateType NextState, const TObjectPtr
 	Owner->bIsAttacking = false;
 }
 
-bool FZombieAttackState::CheckOutOfAttackRange()
+bool FZombieAttackState::IsOutOfAttackRange()
 {
 	if (!CurrentTargetPlayer) return true;
 	

@@ -14,5 +14,5 @@ public:
 	virtual void Exit(EZombieStateType NextState, TObjectPtr<ACharacterPlayer> TargetPlayer = nullptr) override;
 
 protected:
-	bool CheckOutOfAttackRange();
+	bool IsOutOfAttackRange();
 };
