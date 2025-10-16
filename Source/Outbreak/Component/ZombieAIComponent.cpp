@@ -13,10 +13,6 @@
 
 AZombieAIComponent::AZombieAIComponent()
 {
-#if WITH_EDITOR
-	SetFolderPath(TEXT("AIComponents"));
-#endif
-	
 	PrimaryActorTick.bCanEverTick = true;
 
 	AIPerception = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("AIPerception"));
@@ -29,6 +25,15 @@ AZombieAIComponent::AZombieAIComponent()
 
 	AIPerception->ConfigureSense(*SightConfig);
 	AIPerception->SetDominantSense(SightConfig->GetSenseImplementation());
+}
+
+void AZombieAIComponent::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+#if WITH_EDITOR
+	SetFolderPath(TEXT("AIComponents"));
+#endif
 }
 
 void AZombieAIComponent::BeginPlay()

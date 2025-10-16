@@ -22,6 +22,7 @@ class OUTBREAK_API AZombieAIComponent : public AAIController
 
 public:
 	AZombieAIComponent();
+	virtual void PostInitializeComponents() override;
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 	virtual FGenericTeamId GetGenericTeamId() const override { return TeamId; }
