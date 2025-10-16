@@ -5,6 +5,14 @@
 #include "FZombieBaseState.h"
 #include "Outbreak/Util/Define.h"
 
+UENUM()
+enum class EChaseType : uint8
+{
+	Straight,
+	Arc,
+	Invalid UMETA(Hidden),
+};
+
 class OUTBREAK_API FZombieChaseState : public FZombieBaseState
 {
 public:
@@ -19,4 +27,10 @@ private:
 	float BlockDetectionDistance = 10.0f;
 	float BlockDetectionInterval = 0.5f;
 	int32 BlockDetectionSampleCount = 2;
+
+	EChaseType CurrentChaseType;
+	float FlankDirection;
+	float UpdateTimer;
+	const float UpdateInterval = 0.2f;
+	const float ArcWeight = 0.6f;
 };

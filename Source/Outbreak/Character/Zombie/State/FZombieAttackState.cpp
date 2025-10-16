@@ -22,7 +22,7 @@ void FZombieAttackState::Execute(const EZombieStateType CurrentState, const floa
 
 	if (IsOutOfAttackRange())
 	{
-		ChangeState(EZombieStateType::Chase, CurrentTargetPlayer);
+		ChangeState(EZombieStateType::Alert, CurrentTargetPlayer);
 	}
 }
 
