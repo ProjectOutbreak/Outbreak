@@ -8,11 +8,12 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Outbreak/Util/Define.h"
 #include "Net/UnrealNetwork.h"
+#include "Outbreak/Public/Utilities/DebugHelper.h"
 #include "Outbreak/UI/OBHUD.h"
 
 ACharacterBase::ACharacterBase()
 {
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 	bReplicates = true;
 	
 	bUseControllerRotationPitch = false;
@@ -27,11 +28,6 @@ void ACharacterBase::BeginPlay()
 	InitCharacterData();
 	SetupCollision();
 	SetupMovement();
-}
-
-void ACharacterBase::EndPlay(const EEndPlayReason::Type EndPlayReason)
-{
-	Super::EndPlay(EndPlayReason);
 }
 
 void ACharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -146,7 +142,8 @@ void ACharacterBase::ApplyDamage(int32 DamageAmount)
 {
 	if (!HasAuthority()) return;
 
-	UE_LOG(LogTemp, Log, TEXT("[%s] Actor %s took %d damage"), CURRENT_CONTEXT, *GetName(), DamageAmount);
+	const FString DebugMsg = FString::Printf(TEXT("Actor %s taking %d damage"), *GetName(), DamageAmount);
+	PRINT_WITH_CURRENT_CONTEXT(*DebugMsg);
 	
 	const int32 DamageAbsorbedByExtraHealth = FMath::Min(DamageAmount, CurrentExtraHealth);
 	CurrentExtraHealth -= DamageAbsorbedByExtraHealth;

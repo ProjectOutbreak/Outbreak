@@ -13,5 +13,7 @@ public:
 	virtual void Exit(EZombieStateType NextState, TObjectPtr<ACharacterPlayer> TargetPlayer = nullptr) override;
 
 private:
+	// TODO : delete magic number
+	float AlertAnimationLength = 1.6f;
 	float Timer = 0.0f;
 };

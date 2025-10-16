@@ -1,11 +1,7 @@
 ﻿#include "FZombieAlertState.h"
-
 #include "Outbreak/Character/Zombie/CharacterZombie.h"
 
-FZombieAlertState::FZombieAlertState(const TSharedPtr<TStateMachine<EZombieStateType, ACharacterPlayer>>& InFsm,
-                                     ACharacterZombie* InOwner) : FZombieBaseState(InFsm, EZombieStateType::Alert, InOwner)
-{
-}
+FZombieAlertState::FZombieAlertState(const TSharedPtr<TStateMachine<EZombieStateType, ACharacterPlayer>>& InFsm, ACharacterZombie* InOwner) : FZombieBaseState(InFsm, EZombieStateType::Alert, InOwner) { }
 
 void FZombieAlertState::Enter(const EZombieStateType PreviousState, const TObjectPtr<ACharacterPlayer> TargetPlayer)
 {
@@ -13,7 +9,7 @@ void FZombieAlertState::Enter(const EZombieStateType PreviousState, const TObjec
 
 	if (!Owner->HasAuthority()) return;
 
-	Owner->bIsScreaming = false;
+	Owner->SetIsScreaming(true);
 }
 
 void FZombieAlertState::Execute(const EZombieStateType CurrentState, const float DeltaTime)
@@ -23,7 +19,7 @@ void FZombieAlertState::Execute(const EZombieStateType CurrentState, const float
 	RotateTowardsTarget(DeltaTime);
 	
 	Timer += DeltaTime;
-	if (Timer >= CurrentAnimationLength)
+	if (Timer >= AlertAnimationLength)
 	{
 		Fsm->ChangeState(EZombieStateType::Chase, CurrentTargetPlayer);
 	}
@@ -37,5 +33,5 @@ void FZombieAlertState::Exit(const EZombieStateType NextState, const TObjectPtr<
 
 	if (!Owner->HasAuthority()) return;
 
-	Owner->bIsScreaming = false;
+	Owner->SetIsScreaming(false);
 }

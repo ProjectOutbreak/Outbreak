@@ -4,11 +4,10 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "Outbreak/Character/Zombie/CharacterZombie.h"
+#include "Outbreak/Component/ZombieAIComponent.h"
 #include "Outbreak/Util/Define.h"
 
-FZombieChaseState::FZombieChaseState(const TSharedPtr<TStateMachine<EZombieStateType, ACharacterPlayer>>& InFsm, ACharacterZombie* InOwner): FZombieBaseState(InFsm, EZombieStateType::Chase, InOwner)
-{
-}
+FZombieChaseState::FZombieChaseState(const TSharedPtr<TStateMachine<EZombieStateType, ACharacterPlayer>>& InFsm, ACharacterZombie* InOwner): FZombieBaseState(InFsm, EZombieStateType::Chase, InOwner) { }
 
 void FZombieChaseState::Enter(const EZombieStateType PreviousState, const TObjectPtr<ACharacterPlayer> TargetPlayer)
 {

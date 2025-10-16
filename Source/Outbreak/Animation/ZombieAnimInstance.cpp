@@ -28,11 +28,16 @@ void UZombieAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
 	Super::NativeUpdateAnimation(DeltaSeconds);
 	
-	if (!OwnerZombie || !MovementComponent)
+	if (!IsValid(OwnerZombie))
 	{
-		PRINT_WITH_CURRENT_CONTEXT("OwnerZombie or MovementComp is nullptr");
-		return;
+		OwnerZombie = Cast<ACharacterZombie>(TryGetPawnOwner());
+
+		if (!IsValid(OwnerZombie)) return;
+
+		MovementComponent = OwnerZombie->GetCharacterMovement();
 	}
+
+	if (!IsValid(MovementComponent)) return;
 
 	AttackRate = OwnerZombie->GetZombieData()->AttackRate;
 	Velocity = MovementComponent->Velocity;

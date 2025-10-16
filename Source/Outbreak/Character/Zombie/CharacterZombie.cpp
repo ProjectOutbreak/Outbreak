@@ -1,11 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "CharacterZombie.h"
-#include "BrainComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
+#include "Outbreak/Component/ZombieAIComponent.h"
 #include "Outbreak/Game/Framework/OBGameMode.h"
 #include "Outbreak/Game/Framework/OutBreakGameState.h"
 #include "Outbreak/Game/Framework/OutBreakPlayerState.h"
@@ -15,7 +15,7 @@
 
 ACharacterZombie::ACharacterZombie()
 {
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 	
 	CharacterType = ECharacterType::Zombie;
 	AIControllerClass = AZombieAIComponent::StaticClass();
@@ -75,11 +75,6 @@ void ACharacterZombie::BeginPlay()
 		ZombieAI->InitializeZombieAI(this);
 		SetActorScale3D(FVector(BodyScale, BodyScale, BodyScale));
 	}
-}
-
-void ACharacterZombie::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
 }
 
 void ACharacterZombie::PostInitializeComponents()

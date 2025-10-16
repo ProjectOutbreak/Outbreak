@@ -1,10 +1,7 @@
 ﻿#include "FZombieDieState.h"
 #include "Outbreak/Character/Zombie/CharacterZombie.h"
 
-FZombieDieState::FZombieDieState(const TSharedPtr<TStateMachine<EZombieStateType, ACharacterPlayer>>& InFsm,
-	ACharacterZombie* InOwner): FZombieBaseState(InFsm, EZombieStateType::Die, InOwner)
-{
-}
+FZombieDieState::FZombieDieState(const TSharedPtr<TStateMachine<EZombieStateType, ACharacterPlayer>>& InFsm, ACharacterZombie* InOwner): FZombieBaseState(InFsm, EZombieStateType::Die, InOwner) { }
 
 void FZombieDieState::Enter(const EZombieStateType PreviousState, const TObjectPtr<ACharacterPlayer> TargetPlayer)
 {

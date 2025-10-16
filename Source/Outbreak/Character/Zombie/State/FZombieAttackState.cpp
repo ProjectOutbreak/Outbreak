@@ -1,17 +1,15 @@
 ﻿#include "FZombieAttackState.h"
 #include "Outbreak/Character/Zombie/CharacterZombie.h"
 
-FZombieAttackState::FZombieAttackState(const TSharedPtr<TStateMachine<EZombieStateType, ACharacterPlayer>>& InFsm, ACharacterZombie* InOwner): FZombieBaseState(InFsm, EZombieStateType::Attack, InOwner)
-{
-}
+FZombieAttackState::FZombieAttackState(const TSharedPtr<TStateMachine<EZombieStateType, ACharacterPlayer>>& InFsm, ACharacterZombie* InOwner): FZombieBaseState(InFsm, EZombieStateType::Attack, InOwner) { }
 
 void FZombieAttackState::Enter(const EZombieStateType PreviousState, const TObjectPtr<ACharacterPlayer> TargetPlayer)
 {
 	FZombieBaseState::Enter(PreviousState, TargetPlayer);
 
 	if (!Owner->HasAuthority()) return;
-	
-	Owner->bIsAttacking = true;
+
+	Owner->SetIsAttacking(true);
 }
 
 void FZombieAttackState::Execute(const EZombieStateType CurrentState, const float DeltaTime)
@@ -32,7 +30,7 @@ void FZombieAttackState::Exit(const EZombieStateType NextState, const TObjectPtr
 
 	if (!Owner->HasAuthority()) return;
 
-	Owner->bIsAttacking = false;
+	Owner->SetIsAttacking(false);
 }
 
 bool FZombieAttackState::IsOutOfAttackRange()

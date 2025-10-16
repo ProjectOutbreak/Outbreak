@@ -3,6 +3,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "Outbreak/Character/Zombie/CharacterZombie.h"
+#include "Outbreak/Component/ZombieAIComponent.h"
 #include "Outbreak/Util/Define.h"
 
 FZombieWanderState::FZombieWanderState(const TSharedPtr<TStateMachine<EZombieStateType, ACharacterPlayer>>& InFsm,

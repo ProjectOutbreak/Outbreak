@@ -28,9 +28,9 @@ private:
 	float BlockDetectionInterval = 0.5f;
 	int32 BlockDetectionSampleCount = 2;
 
-	EChaseType CurrentChaseType;
-	float FlankDirection;
-	float UpdateTimer;
+	EChaseType CurrentChaseType = EChaseType::Invalid;
+	float FlankDirection = 1.0f;
+	float UpdateTimer = 0.0f;
 	const float UpdateInterval = 0.2f;
 	const float ArcWeight = 0.6f;
 };
