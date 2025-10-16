@@ -4,6 +4,7 @@
 #include "KismetAnimationLibrary.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Outbreak/Character/Zombie/CharacterZombie.h"
+#include "Outbreak/Public/Utilities/DebugHelper.h"
 
 void UZombieAnimInstance::NativeInitializeAnimation()
 {
@@ -12,13 +13,13 @@ void UZombieAnimInstance::NativeInitializeAnimation()
 	OwnerZombie = Cast<ACharacterZombie>(TryGetPawnOwner());
 	if (!OwnerZombie)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[%s] OwnerZombie is nullptr"), CURRENT_CONTEXT);
+		PRINT_WITH_CURRENT_CONTEXT("OwnerZombie is nullptr");
 		return;
 	}
 	MovementComponent = OwnerZombie->GetCharacterMovement();
 	if (!MovementComponent)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[%s] MovementComponent is nullptr"), CURRENT_CONTEXT);
+		PRINT_WITH_CURRENT_CONTEXT("MovementComponent is nullptr");
 		return;
 	}
 }
@@ -29,7 +30,7 @@ void UZombieAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	
 	if (!OwnerZombie || !MovementComponent)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[%s] OwnerZombie or MovementComponent is nullptr"), CURRENT_CONTEXT);
+		PRINT_WITH_CURRENT_CONTEXT("OwnerZombie or MovementComp is nullptr");
 		return;
 	}
 
