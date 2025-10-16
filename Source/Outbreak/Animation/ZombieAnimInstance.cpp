@@ -38,7 +38,7 @@ void UZombieAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	Velocity = MovementComponent->Velocity;
 	GroundSpeed = FVector(Velocity.X, Velocity.Y, 0.0f).Size();
 	Direction = UKismetAnimationLibrary::CalculateDirection(Velocity, OwnerZombie->GetActorRotation());
-	IsAttack = OwnerZombie->bIsAttacking;
-	IsScream = OwnerZombie->bIsScreaming;
+	IsAttack = OwnerZombie->GetIsAttacking();
+	IsScream = OwnerZombie->GetIsScreaming();
 	ShouldMove = GroundSpeed > 3.0f;
 }

@@ -24,6 +24,8 @@ public:
 	
 	FORCEINLINE FZombieData* GetZombieData() { return &ZombieData; }
 	FORCEINLINE TObjectPtr<AZombieAIComponent> GetZombieAI() const { return ZombieAI; }
+	FORCEINLINE bool GetIsAttacking() const { return bIsAttacking; }
+	FORCEINLINE bool GetIsScreaming() const { return bIsScreaming; }
 
 protected:
 	virtual void BeginPlay() override;
@@ -39,13 +41,6 @@ protected:
 // --------------------
 // Variables
 // --------------------
-public:
-	UPROPERTY(BlueprintReadOnly)
-	bool bIsAttacking = false;
-
-	UPROPERTY(BlueprintReadOnly)
-	bool bIsScreaming = false;
-	
 protected:
 	EZombieType ZombieType = EZombieType::None;
 	EZombieSubType ZombieSubType = EZombieSubType::None;
@@ -63,4 +58,7 @@ protected:
 private:
 	UPROPERTY()
 	TObjectPtr<AZombieAIComponent> ZombieAI;
+	
+	bool bIsAttacking = false;
+	bool bIsScreaming = false;
 };
