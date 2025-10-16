@@ -1,8 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "InGameMode.h"
-
 #include "OutBreakGameState.h"
 #include "OutBreakPlayerState.h"
 #include "Kismet/GameplayStatics.h"
@@ -10,8 +8,8 @@
 #include "Containers/Set.h"
 #include "Outbreak/Character/Player/CharacterPlayer.h"
 #include "Outbreak/Game/Controller/OBPlayerController.h"
+#include "Outbreak/Manager/CharacterSpawnManager.h"
 #include "Outbreak/UI/OBHUD.h"
-
 
 AInGameMode::AInGameMode()
 {
@@ -26,7 +24,13 @@ AInGameMode::AInGameMode()
 void AInGameMode::BeginPlay()
 {
 	Super::BeginPlay();
+	
 	StartMatch();
+	
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	SpawnManager = GetWorld()->SpawnActor<ACharacterSpawnManager>(SpawnManagerClass, SpawnParams);
+	
 	UE_LOG(LogTemp, Warning, TEXT("게임 시작됨"));
 }
 

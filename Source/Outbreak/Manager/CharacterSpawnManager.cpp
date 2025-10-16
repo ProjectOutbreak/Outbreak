@@ -9,32 +9,6 @@
 #include "Outbreak/Util/DataTableHelper.h"
 #include "Outbreak/Util/EnumHelper.h"
 
-ACharacterSpawnManager::ACharacterSpawnManager()
-{
-	static ConstructorHelpers::FObjectFinder<UDataTable> ZombieDataTableAsset(TEXT("/Game/Data/DT_Zombie.DT_Zombie"));
-	if (ZombieDataTableAsset.Succeeded())
-	{
-		ZombieDataTable = ZombieDataTableAsset.Object;
-	}
-	static ConstructorHelpers::FObjectFinder<UDataTable> PlayerDataTableAsset(TEXT("/Script/Engine.DataTable'/Game/Data/PlayerDataTable.PlayerDataTable'"));
-	if (PlayerDataTableAsset.Succeeded())
-	{
-		PlayerDataTable = PlayerDataTableAsset.Object;
-	}
-
-	static ConstructorHelpers::FObjectFinder<UDataTable> SpawnSettingDataTableAsset(TEXT("/Script/Engine.DataTable'/Game/Data/DT_SpawnerSetting.DT_SpawnerSetting'"));
-	if (SpawnSettingDataTableAsset.Succeeded())
-	{
-		SpawnerSettingDataTable = SpawnSettingDataTableAsset.Object;
-	}
-
-	static ConstructorHelpers::FObjectFinder<UDataTable> WaveDataTableAsset(TEXT("/Script/Engine.DataTable'/Game/Data/DT_Waves.DT_Waves'"));
-	if (WaveDataTableAsset.Succeeded())
-	{
-		WaveDataTable = WaveDataTableAsset.Object;
-	}
-}
-
 void ACharacterSpawnManager::BeginPlay()
 {
 	Super::BeginPlay();

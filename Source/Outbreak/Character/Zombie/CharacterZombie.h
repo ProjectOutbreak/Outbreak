@@ -30,9 +30,8 @@ public:
 	FORCEINLINE void SetIsAttacking(const bool NewAttack) { bIsAttacking = NewAttack; }
 	FORCEINLINE bool GetIsScreaming() const { return bIsScreaming; }
 	FORCEINLINE void SetIsScreaming(const bool NewScream) { bIsScreaming = NewScream; }
-	
 
-protected:\
+protected:
 	virtual void InitCharacterData() override;
 	virtual void SetupCollision() override;
 	virtual void SetupMovement() override;

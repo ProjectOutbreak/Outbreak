@@ -6,7 +6,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 #include "Outbreak/Component/ZombieAIComponent.h"
-#include "Outbreak/Game/Framework/OBGameMode.h"
+#include "Outbreak/Game/Framework/InGameMode.h"
 #include "Outbreak/Game/Framework/OutBreakGameState.h"
 #include "Outbreak/Game/Framework/OutBreakPlayerState.h"
 #include "Outbreak/Manager/CharacterSpawnManager.h"
@@ -47,7 +47,7 @@ void ACharacterZombie::InitCharacterData()
 	
 	if (HasAuthority())
 	{
-		const AOBGameMode * GameMode = Cast<AOBGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+		const AInGameMode* GameMode = Cast<AInGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 		if (!GameMode) return;
 		
 		ACharacterSpawnManager* SpawnManager = GameMode->GetSpawnManager();

@@ -3,10 +3,11 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Outbreak/Character/Player/CharacterPlayer.h"
 #include "Outbreak/Data/GameData.h"
 #include "Outbreak/Util/Define.h"
 #include "CharacterSpawnManager.generated.h"
+
+class ACharacterPlayer;
 
 UCLASS()
 class OUTBREAK_API ACharacterSpawnManager : public AActor
@@ -17,7 +18,6 @@ class OUTBREAK_API ACharacterSpawnManager : public AActor
 // Functions
 // --------------------
 public:	
-	ACharacterSpawnManager();
 	FZombieData* GetZombieData(const EZombieSubType Type);
 	FPlayerData* GetPlayerData(const EPlayerType Type);
 	
@@ -55,12 +55,6 @@ private:
 	TObjectPtr<ACharacter> Target;
 	
 	int32 SpawnedEnemies = 0;
-	
-	UPROPERTY()
-	TObjectPtr<UDataTable> SpawnerSettingDataTable;
-
-	UPROPERTY()
-	TObjectPtr<UDataTable> WaveDataTable;
 
 	FSpawnerSettingData SpawnerSettingData;
 	FWavesData WavesData;
@@ -69,15 +63,20 @@ private:
 	FName WaveId = FName("0");
 	int32 CurrentWaveIndex = 0;
 	
-	UPROPERTY()
-	TObjectPtr<UDataTable> ZombieDataTable;
-	
-	UPROPERTY()
-	TObjectPtr<UDataTable> PlayerDataTable;
-	
 	TMap<FString, FZombieData*> ZombieDataMap;
 	TMap<FString, FPlayerData*> PlayerDataMap;
 
 	FTimerHandle SpawnTimerHandle;
 	bool bIsActivated = false;
+
+	// Data Tables
+	UPROPERTY(EditAnywhere, Category="Data Tables")
+	TObjectPtr<UDataTable> ZombieDataTable;
+	UPROPERTY(EditAnywhere, Category="Data Tables")
+	TObjectPtr<UDataTable> PlayerDataTable;
+	UPROPERTY(EditAnywhere, Category="Data Tables")
+	TObjectPtr<UDataTable> SpawnerSettingDataTable;
+	UPROPERTY(EditAnywhere, Category="Data Tables")
+	TObjectPtr<UDataTable> WaveDataTable;
+	// ~Data Tables
 };
