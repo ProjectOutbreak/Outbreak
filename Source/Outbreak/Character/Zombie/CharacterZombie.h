@@ -20,6 +20,7 @@ class OUTBREAK_API ACharacterZombie : public ACharacterBase
 public:
 	ACharacterZombie();
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual void PostInitializeComponents() override;
 	
 	FORCEINLINE FZombieData* GetZombieData() { return &ZombieData; }
 	FORCEINLINE TObjectPtr<AZombieAIComponent> GetZombieAI() const { return ZombieAI; }

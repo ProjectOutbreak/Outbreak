@@ -15,10 +15,6 @@
 
 ACharacterZombie::ACharacterZombie()
 {
-#if WITH_EDITOR
-	SetFolderPath(TEXT("Zombies"));
-#endif
-	
 	PrimaryActorTick.bCanEverTick = true;
 	
 	CharacterType = ECharacterType::Zombie;
@@ -84,6 +80,15 @@ void ACharacterZombie::BeginPlay()
 void ACharacterZombie::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+}
+
+void ACharacterZombie::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+#if WITH_EDITOR
+	SetFolderPath(TEXT("Zombies"));
+#endif
 }
 
 void ACharacterZombie::SetupCollision()

@@ -23,6 +23,8 @@ class OUTBREAK_API ACharacterPlayer : public ACharacterBase, public IGenericTeam
 public:
 	ACharacterPlayer();
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual void PostInitializeComponents() override;
+	
 	void ChangePlayerControl();
 	void HandleUse() const { EquipmentController->HandleUse(); }
 	void HandleEndUse() const { EquipmentController->HandleEndUse(); }

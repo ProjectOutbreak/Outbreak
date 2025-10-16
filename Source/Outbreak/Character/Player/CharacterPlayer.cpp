@@ -25,10 +25,6 @@
 
 ACharacterPlayer::ACharacterPlayer()
 {
-#if WITH_EDITOR
-	SetFolderPath(TEXT("Players"));
-#endif
-	
 	PostProcessComponent = CreateDefaultSubobject<UPostProcessComponent>(TEXT("PostProcessComponent"));
 	PostProcessComponent->SetupAttachment(RootComponent);
 	PostProcessComponent->bEnabled = true;
@@ -134,6 +130,15 @@ void ACharacterPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 
 	DOREPLIFETIME(ACharacterPlayer, PlayerData);
 	DOREPLIFETIME(ACharacterPlayer, PlayerType);
+}
+
+void ACharacterPlayer::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+#if WITH_EDITOR
+	SetFolderPath(TEXT("Players"));
+#endif
 }
 
 void ACharacterPlayer::InitCharacterData()
