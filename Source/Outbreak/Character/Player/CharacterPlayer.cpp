@@ -15,13 +15,14 @@
 #include "Net/UnrealNetwork.h"
 #include "Outbreak/Component/EquipmentController.h"
 #include "Outbreak/Data/PlayerControlData.h"
-#include "Outbreak/Game/Controller/OBPlayerController.h"
+#include "Outbreak/Game/Controller/InGamePlayerController.h"
 #include "Outbreak/Game/Equipment/Weapon/M4.h"
 #include "Outbreak/Game/Equipment/Weapon/WeaponBase.h"
 #include "Outbreak/Game/Framework/InGameMode.h"
-#include "Outbreak/Game/Framework/OutBreakGameState.h"
+#include "Outbreak/Game/Framework/InGameState.h"
 #include "Outbreak/Manager/CharacterSpawnManager.h"
-#include "Outbreak/UI/OBHUD.h"
+#include "Outbreak/Public/Utilities/DebugHelper.h"
+#include "Outbreak/UI/InGameHUD.h"
 
 ACharacterPlayer::ACharacterPlayer()
 {
@@ -185,22 +186,26 @@ void ACharacterPlayer::UpdateToxicAuraEffect(float Intensity)
 void ACharacterPlayer::BeginPlay()
 {
 	Super::BeginPlay();
-	CachedPC = Cast<AOBPlayerController>(GetController());
-	if (!CachedPC)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[%s] Failed to cast AOBPlayerController"), CURRENT_CONTEXT);
-		return; 
-	}
-
-	CachedHUD = Cast<AOBHUD>(CachedPC->GetHUD());
-	if (!CachedHUD)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[%s] Failed to cast AOBHUD"), CURRENT_CONTEXT);
-	}
 	
 	if (IsLocallyControlled())
 	{
+		const FString DebugMsg = FString::Printf(TEXT("Player Name : %s"), *GetName());
+		PRINT_WITH_CURRENT_CONTEXT(DebugMsg);
+		
 		SetPlayerControl(CurrentCharacterControlType);
+		
+		CachedPC = Cast<AInGamePlayerController>(GetController());
+		if (!CachedPC)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("[%s] Failed to cast AOBPlayerController"), CURRENT_CONTEXT);
+			return; 
+		}
+
+		CachedHUD = Cast<AInGameHUD>(CachedPC->GetHUD());
+		if (!CachedHUD)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("[%s] Failed to cast AOBHUD"), CURRENT_CONTEXT);
+		}
 	}
 
 	// TODO : For Test. Remove later.

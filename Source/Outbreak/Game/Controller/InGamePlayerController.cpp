@@ -1,15 +1,15 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "OBPlayerController.h"
+#include "InGamePlayerController.h"
 #include "EnhancedInputComponent.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
-#include "Outbreak/UI/OBHUD.h"
+#include "Outbreak/UI/InGameHUD.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Outbreak/Character/Player/CharacterPlayer.h"
 #include "Outbreak/UI/OBWidget.h"
-#include "Outbreak/Util/EnumHelper.h"
+#include "Utilities/DebugHelper.h"
 
-AOBPlayerController::AOBPlayerController()
+AInGamePlayerController::AInGamePlayerController()
 {
 	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionFirstPersonMoveRef(TEXT("/Game/Inputs/Actions/IA_FirstPersonMove.IA_FirstPersonMove"));
 	if (InputActionFirstPersonMoveRef.Object)
@@ -78,12 +78,18 @@ AOBPlayerController::AOBPlayerController()
 	}
 }
 
-void AOBPlayerController::BeginPlay()
+void AInGamePlayerController::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (IsLocalController())
+	{
+		const FString DebugMsg = FString::Printf(TEXT("Is Server: %s"), HasAuthority() ? TEXT("True") : TEXT("False"));
+		PRINT_WITH_CURRENT_CONTEXT(DebugMsg);
+	}
 }
 
-void AOBPlayerController::OnPossess(class APawn* PossessedPawn)
+void AInGamePlayerController::OnPossess(class APawn* PossessedPawn)
 {
 	Super::OnPossess(PossessedPawn);
 
@@ -94,30 +100,30 @@ void AOBPlayerController::OnPossess(class APawn* PossessedPawn)
 	}
 }
 
-void AOBPlayerController::SetupInputComponent()
+void AInGamePlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
 	
 	UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(InputComponent);
-	EnhancedInputComponent->BindAction(FirstPersonMoveAction, ETriggerEvent::Triggered, this, &AOBPlayerController::FirstPersonMove);
-	EnhancedInputComponent->BindAction(FirstPersonLookAction, ETriggerEvent::Triggered, this, &AOBPlayerController::FirstPersonLook);
-	EnhancedInputComponent->BindAction(TopMoveAction, ETriggerEvent::Triggered, this, &AOBPlayerController::TopMove);
-	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &AOBPlayerController::Jump);
-	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &AOBPlayerController::StopJumping);
-	EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Started, this, &AOBPlayerController::Run);
-	EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &AOBPlayerController::StopRun);
-	EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Started, this, &AOBPlayerController::Crouch);
-	EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Completed, this, &AOBPlayerController::StopCrouch);
-	EnhancedInputComponent->BindAction(ChangePlayerControlAction, ETriggerEvent::Triggered, this, &AOBPlayerController::ChangePlayerControl);
-	EnhancedInputComponent->BindAction(ToggleMenuAction, ETriggerEvent::Started, this, &AOBPlayerController::TogglePauseMenu);
-	EnhancedInputComponent->BindAction(UseAction, ETriggerEvent::Started, this, &AOBPlayerController::Use);
-	EnhancedInputComponent->BindAction(EndUseAction, ETriggerEvent::Completed, this, &AOBPlayerController::EndUse);
-	EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Started, this, &AOBPlayerController::Reload);
-	EnhancedInputComponent->BindAction(SelectEquipmentAction, ETriggerEvent::Triggered, this, &AOBPlayerController::SelectEquipment);
-	EnhancedInputComponent->BindAction(ToggleFireModeAction, ETriggerEvent::Started, this, &AOBPlayerController::ToggleFireMode);
+	EnhancedInputComponent->BindAction(FirstPersonMoveAction, ETriggerEvent::Triggered, this, &AInGamePlayerController::FirstPersonMove);
+	EnhancedInputComponent->BindAction(FirstPersonLookAction, ETriggerEvent::Triggered, this, &AInGamePlayerController::FirstPersonLook);
+	EnhancedInputComponent->BindAction(TopMoveAction, ETriggerEvent::Triggered, this, &AInGamePlayerController::TopMove);
+	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &AInGamePlayerController::Jump);
+	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &AInGamePlayerController::StopJumping);
+	EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Started, this, &AInGamePlayerController::Run);
+	EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &AInGamePlayerController::StopRun);
+	EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Started, this, &AInGamePlayerController::Crouch);
+	EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Completed, this, &AInGamePlayerController::StopCrouch);
+	EnhancedInputComponent->BindAction(ChangePlayerControlAction, ETriggerEvent::Triggered, this, &AInGamePlayerController::ChangePlayerControl);
+	EnhancedInputComponent->BindAction(ToggleMenuAction, ETriggerEvent::Started, this, &AInGamePlayerController::TogglePauseMenu);
+	EnhancedInputComponent->BindAction(UseAction, ETriggerEvent::Started, this, &AInGamePlayerController::Use);
+	EnhancedInputComponent->BindAction(EndUseAction, ETriggerEvent::Completed, this, &AInGamePlayerController::EndUse);
+	EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Started, this, &AInGamePlayerController::Reload);
+	EnhancedInputComponent->BindAction(SelectEquipmentAction, ETriggerEvent::Triggered, this, &AInGamePlayerController::SelectEquipment);
+	EnhancedInputComponent->BindAction(ToggleFireModeAction, ETriggerEvent::Started, this, &AInGamePlayerController::ToggleFireMode);
 }
 
-void AOBPlayerController::FirstPersonMove(const FInputActionValue& Value)
+void AInGamePlayerController::FirstPersonMove(const FInputActionValue& Value)
 {
 	if (bMenuOpen) return;
 
@@ -138,7 +144,7 @@ void AOBPlayerController::FirstPersonMove(const FInputActionValue& Value)
 	}
 }
 
-void AOBPlayerController::FirstPersonLook(const FInputActionValue& Value)
+void AInGamePlayerController::FirstPersonLook(const FInputActionValue& Value)
 {
 	if (!ControlledCharacter) return;
 	
@@ -148,7 +154,7 @@ void AOBPlayerController::FirstPersonLook(const FInputActionValue& Value)
 	ControlledCharacter->AddControllerPitchInput(LookAxis.Y);
 }
 
-void AOBPlayerController::TopMove(const FInputActionValue& Value)
+void AInGamePlayerController::TopMove(const FInputActionValue& Value)
 {
 	if (!ControlledCharacter) return;
 	
@@ -170,49 +176,49 @@ void AOBPlayerController::TopMove(const FInputActionValue& Value)
 	ControlledCharacter->AddMovementInput(MoveDirection, MovementVectorSize);
 }
 
-void AOBPlayerController::Jump()
+void AInGamePlayerController::Jump()
 {
 	if (!ControlledCharacter || bMenuOpen) return;
 	
 	ControlledCharacter->Jump();
 }
 
-void AOBPlayerController::StopJumping()
+void AInGamePlayerController::StopJumping()
 {
 	if (!ControlledCharacter) return;
 	
 	ControlledCharacter->StopJumping();
 }
 
-void AOBPlayerController::Run()
+void AInGamePlayerController::Run()
 {
 	if (!ControlledCharacter) return;
 	
 	ControlledCharacter->GetCharacterMovement()->MaxWalkSpeed = SprintSpeed;
 }
 
-void AOBPlayerController::StopRun()
+void AInGamePlayerController::StopRun()
 {
 	if (!ControlledCharacter) return;
 	
 	ControlledCharacter->GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 }
 
-void AOBPlayerController::Crouch()
+void AInGamePlayerController::Crouch()
 {
 	if (!ControlledCharacter) return;
 	
 	ControlledCharacter->GetCharacterMovement()->MaxWalkSpeed = CrouchSpeed;
 }
 
-void AOBPlayerController::StopCrouch()
+void AInGamePlayerController::StopCrouch()
 {
 	if (!ControlledCharacter) return;
 	
 	ControlledCharacter->GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 }
 
-void AOBPlayerController::ChangePlayerControl()
+void AInGamePlayerController::ChangePlayerControl()
 {
 	if (!ControlledCharacter || bMenuOpen) return;
 	
@@ -220,12 +226,12 @@ void AOBPlayerController::ChangePlayerControl()
 }
 
 
-void AOBPlayerController::TogglePauseMenu()
+void AInGamePlayerController::TogglePauseMenu()
 {
 	bMenuOpen = !bMenuOpen;
 	bShowMouseCursor = bMenuOpen;
 
-	if (AOBHUD* HUD = Cast<AOBHUD>(GetHUD()))
+	if (AInGameHUD* HUD = Cast<AInGameHUD>(GetHUD()))
 	{
 		if (UOBWidget* W = HUD->GetOBWidget())
 		{
@@ -263,28 +269,28 @@ void AOBPlayerController::TogglePauseMenu()
 	}
 }
 
-void AOBPlayerController::Use()
+void AInGamePlayerController::Use()
 {
 	if (!ControlledCharacter) return;
 
 	ControlledCharacter->HandleUse();
 }
 
-void AOBPlayerController::EndUse()
+void AInGamePlayerController::EndUse()
 {
 	if (!ControlledCharacter) return;
 	
 	ControlledCharacter->HandleEndUse();
 }
 
-void AOBPlayerController::Reload()
+void AInGamePlayerController::Reload()
 {
 	if (!ControlledCharacter) return;
 
 	ControlledCharacter->HandleReload();
 }
 
-void AOBPlayerController::SelectEquipment(const FInputActionValue& Value)
+void AInGamePlayerController::SelectEquipment(const FInputActionValue& Value)
 {
 	const float SlotNumber = Value.Get<float>();
 	const int32 SlotIndex = FMath::RoundToInt(SlotNumber);
@@ -292,7 +298,7 @@ void AOBPlayerController::SelectEquipment(const FInputActionValue& Value)
 	UE_LOG(LogTemp, Log, TEXT("[%s] Select Equipment Slot: %d"), CURRENT_CONTEXT, SlotIndex);
 }
 
-void AOBPlayerController::ToggleFireMode()
+void AInGamePlayerController::ToggleFireMode()
 {
 	if (!ControlledCharacter) return;
 

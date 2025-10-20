@@ -31,7 +31,7 @@ public:
 	void HandleReload() const { EquipmentController->HandleReload(); }
 	void HandleEquipBySlot(const int32 SlotNumber) const { EquipmentController->EquipBySlot(SlotNumber); }
 	void HandleToggleFireMode() const { EquipmentController->HandleToggleFireMode(); }
-	TObjectPtr<class AOBHUD> GetHud() const { return CachedHUD; }
+	TObjectPtr<class AInGameHUD> GetHud() const { return CachedHUD; }
 
 	void UpdateToxicAuraEffect(float Intensity);
 	
@@ -58,10 +58,10 @@ public:
 	
 protected:
 	UPROPERTY()
-	TObjectPtr<class AOBPlayerController> CachedPC;
+	TObjectPtr<class AInGamePlayerController> CachedPC;
 	
 	UPROPERTY()
-	TObjectPtr<class AOBHUD> CachedHUD;
+	TObjectPtr<class AInGameHUD> CachedHUD;
 	
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<class USpringArmComponent> CameraBoom;

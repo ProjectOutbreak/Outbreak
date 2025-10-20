@@ -4,16 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerState.h"
-#include "OutBreakPlayerState.generated.h"
+#include "InGamePlayerState.generated.h"
 
 
 UCLASS()
-class OUTBREAK_API AOutBreakPlayerState : public APlayerState
+class OUTBREAK_API AInGamePlayerState : public APlayerState
 {
 	GENERATED_BODY()
 
 public:
-	AOutBreakPlayerState();
+	AInGamePlayerState();
 
 	UPROPERTY(ReplicatedUsing = OnRep_ZombieKills)
 	int32 ZombieKills;

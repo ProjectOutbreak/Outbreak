@@ -4,11 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
-#include "Outbreak/Util/Define.h"
-#include "OBPlayerController.generated.h"
+#include "InGamePlayerController.generated.h"
 
 UCLASS()
-class OUTBREAK_API AOBPlayerController : public APlayerController
+class OUTBREAK_API AInGamePlayerController : public APlayerController
 {
 	GENERATED_BODY()
 
@@ -16,7 +15,7 @@ class OUTBREAK_API AOBPlayerController : public APlayerController
 // Functions
 // --------------------
 public:
-	AOBPlayerController();
+	AInGamePlayerController();
 	
 	void TogglePauseMenu();
 

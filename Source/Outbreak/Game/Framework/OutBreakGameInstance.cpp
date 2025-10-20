@@ -2,9 +2,11 @@
 #include "Kismet/GameplayStatics.h"
 #include "Outbreak/Game/Graphics/GraphicsSettingsLibrary.h"
 #include "Outbreak/Manager/TimeManager.h"
+#include "Outbreak/Public/Framework/LoadingPlayerController.h"
 #include "Outbreak/Util/AsynchronousLoadingHelper.h"
+#include "Utilities/DebugHelper.h"
 
-void UOBGameInstance::Init()
+void UOutBreakGameInstance::Init()
 {
 	Super::Init();
 	
@@ -13,12 +15,12 @@ void UOBGameInstance::Init()
 	UE_LOG(LogTemp, Warning, TEXT("GameInstance 초기화 완료"));
 }
 
-void UOBGameInstance::AddAssetsPath()
+void UOutBreakGameInstance::AddAssetsPath()
 {
 	ClassesToPreload.Add(TSoftObjectPtr<UClass>(FSoftObjectPath("/Game/Blueprints/UI/WBP_OBWidget.WBP_OBWidget_C")));
 }
 
-void UOBGameInstance::BeginLoading()
+void UOutBreakGameInstance::BeginLoading()
 {
 	TArray<FSoftObjectPath> Paths;
 
@@ -28,14 +30,14 @@ void UOBGameInstance::BeginLoading()
 	{
 		StreamableManager.RequestAsyncLoad(
 			Paths,
-			FStreamableDelegate::CreateUObject(this, &UOBGameInstance::OnAssetsLoaded)
+			FStreamableDelegate::CreateUObject(this, &UOutBreakGameInstance::OnAssetsLoaded)
 			);
 	}
 	else
 		OnAssetsLoaded();
 }
 
-void UOBGameInstance::OnAssetsLoaded()
+void UOutBreakGameInstance::OnAssetsLoaded()
 {
     UClass* WidgetClass = nullptr;
 	for (const auto& ClassPtr : ClassesToPreload)
@@ -44,11 +46,21 @@ void UOBGameInstance::OnAssetsLoaded()
     }
 	
     CachedWidgetClass = WidgetClass;
-    UE_LOG(LogTemp, Warning, TEXT("모든 에셋 로딩 완료!"));
-	UGameplayStatics::OpenLevel(GetWorld(), "L_FirstPhase");
+	
+    if (APlayerController* PC = GetFirstLocalPlayerController(); IsValid(PC))
+	{
+		if (ALoadingPlayerController* LoadingPc = Cast<ALoadingPlayerController>(PC))
+		{
+			const FString IsServer = PC->HasAuthority() ? TEXT("[Server]") : TEXT("[Client]");
+			const FString DebugMsg = FString::Printf(TEXT("%s Player has completed loading. Notifying GameMode..."), *IsServer);
+			PRINT_WITH_CURRENT_CONTEXT(DebugMsg);
+			
+			LoadingPc->Server_NotifyLoadingComplete();
+		}
+	}
 }
 
-void UOBGameInstance::ApplySelectedTimePreset()
+void UOutBreakGameInstance::ApplySelectedTimePreset()
 {
 	UWorld* World = GetWorld();
 
@@ -58,4 +70,3 @@ void UOBGameInstance::ApplySelectedTimePreset()
 	ATimeManager* TM = Cast<ATimeManager>(FoundManagers[0]);
 	TM->ApplyPresetFromGameInstance();
 }
-

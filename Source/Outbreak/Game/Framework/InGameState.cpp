@@ -1,12 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "OutBreakGameState.h"
+#include "InGameState.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
-#include "Outbreak/UI/OBHUD.h"
+#include "Outbreak/UI/InGameHUD.h"
 
-AOutBreakGameState::AOutBreakGameState()
+AInGameState::AInGameState()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	bReplicates = true;
@@ -15,7 +15,7 @@ AOutBreakGameState::AOutBreakGameState()
 	AlivePlayerCount = 0;
 }
 
-void AOutBreakGameState::BeginPlay()
+void AInGameState::BeginPlay()
 {
 	Super::BeginPlay();
 
@@ -26,7 +26,7 @@ void AOutBreakGameState::BeginPlay()
 	else if (CurrentLevel == TEXT("LastPhase")) CurrentPhase = "LEVEL 4 : Last Forest";
 }
 
-void AOutBreakGameState::Tick(float DeltaTime)
+void AInGameState::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
@@ -54,14 +54,14 @@ void AOutBreakGameState::Tick(float DeltaTime)
 	}
 }
 
-void AOutBreakGameState::OnRep_TotalZombieKills()
+void AInGameState::OnRep_TotalZombieKills()
 {
 	UE_LOG(LogTemp, Log, TEXT("총 좀비 처치 수 변경: %d"), TotalZombieKills);
 	if (APlayerController* PC = GetWorld()->GetFirstPlayerController())
 	{
 		if (PC->IsLocalController())
 		{
-			if (AOBHUD* HUD = Cast<AOBHUD>(PC->GetHUD()))
+			if (AInGameHUD* HUD = Cast<AInGameHUD>(PC->GetHUD()))
 			{
 				HUD->DisplayTotalZombieKills(TotalZombieKills);
 			}
@@ -69,21 +69,21 @@ void AOutBreakGameState::OnRep_TotalZombieKills()
 	}
 }
 
-void AOutBreakGameState::AddTotalZombieKill()
+void AInGameState::AddTotalZombieKill()
 {
 	TotalZombieKills++;
 	OnRep_TotalZombieKills();
 }
 
 
-void AOutBreakGameState::OnRep_AlivePlayerCount()
+void AInGameState::OnRep_AlivePlayerCount()
 {
 	UE_LOG(LogTemp, Log, TEXT("생존 플레이어 수 변경: %d"), AlivePlayerCount);
 	if (APlayerController* PC = GetWorld()->GetFirstPlayerController())
 	{
 		if (PC->IsLocalController())
 		{
-			if (AOBHUD* HUD = Cast<AOBHUD>(PC->GetHUD()))
+			if (AInGameHUD* HUD = Cast<AInGameHUD>(PC->GetHUD()))
 			{
 				HUD->DisplayAlivePlayerCount(AlivePlayerCount);
 			}	
@@ -91,14 +91,14 @@ void AOutBreakGameState::OnRep_AlivePlayerCount()
 	}
 }
 
-void AOutBreakGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+void AInGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(AOutBreakGameState, MatchTime);
-	DOREPLIFETIME(AOutBreakGameState, CurrentPhase);
-	DOREPLIFETIME(AOutBreakGameState, TotalZombieKills);
-	DOREPLIFETIME(AOutBreakGameState, AlivePlayerCount);
+	DOREPLIFETIME(AInGameState, MatchTime);
+	DOREPLIFETIME(AInGameState, CurrentPhase);
+	DOREPLIFETIME(AInGameState, TotalZombieKills);
+	DOREPLIFETIME(AInGameState, AlivePlayerCount);
 }
 
 

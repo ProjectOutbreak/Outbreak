@@ -20,11 +20,6 @@ void ACharacterSpawnManager::BeginPlay()
 	UpdateWaveData();
 }
 
-void ACharacterSpawnManager::Tick(float DeltaSeconds)
-{
-	Super::Tick(DeltaSeconds);
-}
-
 void ACharacterSpawnManager::SetSettingId(const FName InSettingId)
 {
 	if (SpawnerSettingId != InSettingId)

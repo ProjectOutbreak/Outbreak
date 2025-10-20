@@ -1,37 +1,27 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "InGameMode.h"
-#include "OutBreakGameState.h"
-#include "OutBreakPlayerState.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerController.h"
 #include "Containers/Set.h"
-#include "Outbreak/Character/Player/CharacterPlayer.h"
-#include "Outbreak/Game/Controller/OBPlayerController.h"
 #include "Outbreak/Manager/CharacterSpawnManager.h"
-#include "Outbreak/UI/OBHUD.h"
 
 AInGameMode::AInGameMode()
 {
-	DefaultPawnClass = ACharacterPlayer::StaticClass();
-	PlayerControllerClass = AOBPlayerController::StaticClass();
-	HUDClass = AOBHUD::StaticClass();
-	GameStateClass = AOutBreakGameState::StaticClass();
-	PlayerStateClass = AOutBreakPlayerState::StaticClass();
-
-	bUseSeamlessTravel = true;
+	// bUseSeamlessTravel = true;
 }
+
 void AInGameMode::BeginPlay()
 {
 	Super::BeginPlay();
+	
+	UE_LOG(LogTemp, Warning, TEXT("게임 시작됨"));
 	
 	StartMatch();
 	
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	SpawnManager = GetWorld()->SpawnActor<ACharacterSpawnManager>(SpawnManagerClass, SpawnParams);
-	
-	UE_LOG(LogTemp, Warning, TEXT("게임 시작됨"));
 }
 
 void AInGameMode::ProceedToNextLevel() const

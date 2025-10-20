@@ -4,15 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
-#include "OutbreakGamemodeBase.generated.h"
+#include "MainGameMode.generated.h"
 
-/**
- * 
- */
 UCLASS()
-class OUTBREAK_API AOutbreakGamemodeBase : public AGameModeBase
+class OUTBREAK_API AMainGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
-public :
-	virtual void StartPlay() override;
+	
 };

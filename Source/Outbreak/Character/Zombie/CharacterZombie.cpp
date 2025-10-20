@@ -7,8 +7,8 @@
 #include "Net/UnrealNetwork.h"
 #include "Outbreak/Component/ZombieAIComponent.h"
 #include "Outbreak/Game/Framework/InGameMode.h"
-#include "Outbreak/Game/Framework/OutBreakGameState.h"
-#include "Outbreak/Game/Framework/OutBreakPlayerState.h"
+#include "Outbreak/Game/Framework/InGameState.h"
+#include "Outbreak/Game/Framework/InGamePlayerState.h"
 #include "Outbreak/Manager/CharacterSpawnManager.h"
 #include "Outbreak/Util/EnumHelper.h"
 #include "Outbreak/Util/MeshLoadHelper.h"
@@ -143,12 +143,12 @@ void ACharacterZombie::OnRep_Die()
 	{
 		if (AController* Killer = LastDamagePlayer)
 		{
-			if (AOutBreakPlayerState* PS = Cast<AOutBreakPlayerState>(Killer->PlayerState))
+			if (AInGamePlayerState* PS = Cast<AInGamePlayerState>(Killer->PlayerState))
 			{
 				PS->AddZombieKill();
 			}
 		}
-		if (AOutBreakGameState* GS = GetWorld()->GetGameState<AOutBreakGameState>())
+		if (AInGameState* GS = GetWorld()->GetGameState<AInGameState>())
 		{
 			GS->AddTotalZombieKill();
 		}

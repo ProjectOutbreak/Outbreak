@@ -11,17 +11,8 @@ void UZombieAnimInstance::NativeInitializeAnimation()
 	Super::NativeInitializeAnimation();
 
 	OwnerZombie = Cast<ACharacterZombie>(TryGetPawnOwner());
-	if (!OwnerZombie)
-	{
-		PRINT_WITH_CURRENT_CONTEXT("OwnerZombie is nullptr");
-		return;
-	}
+	if (!OwnerZombie) return;
 	MovementComponent = OwnerZombie->GetCharacterMovement();
-	if (!MovementComponent)
-	{
-		PRINT_WITH_CURRENT_CONTEXT("MovementComponent is nullptr");
-		return;
-	}
 }
 
 void UZombieAnimInstance::NativeUpdateAnimation(float DeltaSeconds)

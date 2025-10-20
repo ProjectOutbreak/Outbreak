@@ -29,7 +29,6 @@ public:
 	
 protected:
 	virtual void BeginPlay() override;
-	virtual void Tick(float DeltaSeconds) override;
 
 private:
 	FORCEINLINE FSpawnerSettingData* GetCurrentSettingData() { return &SpawnerSettingData; }

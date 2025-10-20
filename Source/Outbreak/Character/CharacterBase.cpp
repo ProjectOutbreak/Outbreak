@@ -9,7 +9,7 @@
 #include "Outbreak/Util/Define.h"
 #include "Net/UnrealNetwork.h"
 #include "Outbreak/Public/Utilities/DebugHelper.h"
-#include "Outbreak/UI/OBHUD.h"
+#include "Outbreak/UI/InGameHUD.h"
 
 ACharacterBase::ACharacterBase()
 {
@@ -65,7 +65,7 @@ void ACharacterBase::OnRep_CurrentHealth()
 {
 	if (APlayerController* PC = Cast<APlayerController>(GetController()))
 	{
-		if (AOBHUD* HUD = Cast<AOBHUD>(PC->GetHUD()))
+		if (AInGameHUD* HUD = Cast<AInGameHUD>(PC->GetHUD()))
 		{
 			HUD->DisplayCurrentHealth(CurrentHealth);
 		}

@@ -5,10 +5,10 @@
 #include "CoreMinimal.h"
 #include "GameFramework/HUD.h"
 #include "Outbreak/Data/GameData.h"
-#include "OBHUD.generated.h"
+#include "InGameHUD.generated.h"
 
 UCLASS()
-class OUTBREAK_API AOBHUD : public AHUD
+class OUTBREAK_API AInGameHUD : public AHUD
 {
 	GENERATED_BODY()
 

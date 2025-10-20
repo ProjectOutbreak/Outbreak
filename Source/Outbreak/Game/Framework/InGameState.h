@@ -2,10 +2,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameState.h"
-#include "OutBreakGameState.generated.h"
+#include "InGameState.generated.h"
 
 UCLASS()
-class OUTBREAK_API AOutBreakGameState : public AGameState
+class OUTBREAK_API AInGameState : public AGameState
 {
 	GENERATED_BODY()
 
@@ -14,7 +14,7 @@ class OUTBREAK_API AOutBreakGameState : public AGameState
 	
 	
 public:
-	AOutBreakGameState();
+	AInGameState();
 	
 // --------------------
 // Getters
