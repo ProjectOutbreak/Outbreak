@@ -32,7 +32,7 @@ void AInGameMode::ProceedToNextLevel() const
 
 	FName CurrentLevel = *UGameplayStatics::GetCurrentLevelName(GetWorld(), true);
 
-	if (CurrentLevel == TEXT("FirstPhase"))
+	if (CurrentLevel == TEXT("L_FirstPhase"))
 	{
 		NextLevelName = TEXT("/Game/Maps/SecondPhase?listen");
 	}
