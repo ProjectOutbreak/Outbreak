@@ -14,7 +14,7 @@ void ATimeManager::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (const UOutBreakGameInstance* GI = GetWorld() ? GetWorld()->GetGameInstance<UOutBreakGameInstance>() : nullptr)
+	if (const UOutbreakGameInstance* GI = GetWorld() ? GetWorld()->GetGameInstance<UOutbreakGameInstance>() : nullptr)
 	{
 		ApplyTimePreset(GI->GetSelectedTimePreset());
 	}
@@ -90,7 +90,7 @@ void ATimeManager::ApplyPresetFromGameInstance()
 {
 	if (UWorld* World = GetWorld())
 	{
-		if (const UOutBreakGameInstance* OB = World->GetGameInstance<UOutBreakGameInstance>())
+		if (const UOutbreakGameInstance* OB = World->GetGameInstance<UOutbreakGameInstance>())
 		{
 			ApplyTimePreset(OB->GetSelectedTimePreset());
 		}

@@ -8,10 +8,10 @@
 #include "Blueprint/UserWidget.h"
 #include "Engine/StreamableManager.h"
 #include "Outbreak/Util/Define.h"
-#include "OutBreakGameInstance.generated.h"
+#include "OutbreakGameInstance.generated.h"
 
 UCLASS()
-class OUTBREAK_API UOutBreakGameInstance : public UGameInstance
+class OUTBREAK_API UOutbreakGameInstance : public UGameInstance
 {
 	GENERATED_BODY()
 

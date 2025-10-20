@@ -2,7 +2,7 @@
 
 #include "InGameHUD.h"
 #include "OBWidget.h"
-#include "Outbreak/Game/Framework/OutBreakGameInstance.h"
+#include "Outbreak/Game/Framework/OutbreakGameInstance.h"
 #include "Kismet/GameplayStatics.h"
 #include "Blueprint/UserWidget.h"
 
@@ -10,7 +10,7 @@ void AInGameHUD::BeginPlay()
 {
     Super::BeginPlay();
 
-    if (UOutBreakGameInstance* GI = GetGameInstance<UOutBreakGameInstance>())
+    if (UOutbreakGameInstance* GI = GetGameInstance<UOutbreakGameInstance>())
     {
         if (TSubclassOf<UUserWidget> Cached = GI->GetCachedWidgetClass())
         {

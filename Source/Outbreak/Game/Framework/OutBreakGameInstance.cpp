@@ -1,4 +1,4 @@
-#include "OBGameInstance.h"
+#include "OutbreakGameInstance.h"
 #include "Kismet/GameplayStatics.h"
 #include "Outbreak/Game/Graphics/GraphicsSettingsLibrary.h"
 #include "Outbreak/Manager/TimeManager.h"
@@ -6,7 +6,7 @@
 #include "Outbreak/Util/AsynchronousLoadingHelper.h"
 #include "Utilities/DebugHelper.h"
 
-void UOutBreakGameInstance::Init()
+void UOutbreakGameInstance::Init()
 {
 	Super::Init();
 	
@@ -15,12 +15,12 @@ void UOutBreakGameInstance::Init()
 	UE_LOG(LogTemp, Warning, TEXT("GameInstance 초기화 완료"));
 }
 
-void UOutBreakGameInstance::AddAssetsPath()
+void UOutbreakGameInstance::AddAssetsPath()
 {
 	ClassesToPreload.Add(TSoftObjectPtr<UClass>(FSoftObjectPath("/Game/Blueprints/UI/WBP_OBWidget.WBP_OBWidget_C")));
 }
 
-void UOutBreakGameInstance::BeginLoading()
+void UOutbreakGameInstance::BeginLoading()
 {
 	TArray<FSoftObjectPath> Paths;
 
@@ -30,14 +30,14 @@ void UOutBreakGameInstance::BeginLoading()
 	{
 		StreamableManager.RequestAsyncLoad(
 			Paths,
-			FStreamableDelegate::CreateUObject(this, &UOutBreakGameInstance::OnAssetsLoaded)
+			FStreamableDelegate::CreateUObject(this, &UOutbreakGameInstance::OnAssetsLoaded)
 			);
 	}
 	else
 		OnAssetsLoaded();
 }
 
-void UOutBreakGameInstance::OnAssetsLoaded()
+void UOutbreakGameInstance::OnAssetsLoaded()
 {
     UClass* WidgetClass = nullptr;
 	for (const auto& ClassPtr : ClassesToPreload)
@@ -60,7 +60,7 @@ void UOutBreakGameInstance::OnAssetsLoaded()
 	}
 }
 
-void UOutBreakGameInstance::ApplySelectedTimePreset()
+void UOutbreakGameInstance::ApplySelectedTimePreset()
 {
 	UWorld* World = GetWorld();
 
