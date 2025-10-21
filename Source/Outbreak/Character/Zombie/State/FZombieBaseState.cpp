@@ -5,23 +5,17 @@
 #include "Outbreak/Character/Zombie/CharacterZombie.h"
 #include "Outbreak/Util/Define.h"
 
-FZombieBaseState::FZombieBaseState(const TSharedPtr<TStateMachine<EZombieStateType, ACharacterPlayer>>& InFsm,
-	const EZombieStateType InStateKey, ACharacterZombie* InOwner): TState(InFsm, InStateKey)
+FZombieBaseState::FZombieBaseState(const TSharedPtr<TStateMachine<EZombieStateType, ACharacterPlayer>>& InFsm, 	const EZombieStateType InStateKey, ACharacterZombie* InOwner): TState(InFsm, InStateKey)
 {
 	Owner = InOwner;
 }
 
-void FZombieBaseState::Enter(EZombieStateType PreviousState, TObjectPtr<ACharacterPlayer> TargetPlayer)
+void FZombieBaseState::Enter(EZombieStateType PreviousState, const TObjectPtr<ACharacterPlayer> TargetPlayer)
 {
-	if (Owner->HasAuthority())
-	{
-		Owner->Multicast_PlayAnimation(StateKey);
-		CurrentAnimationLength = Owner->GetCurrentAnimationSectionLength();
-	}
-	if (TargetPlayer)
-	{
-		CurrentTargetPlayer = TargetPlayer;
-	}
+	if (!TargetPlayer)
+		return;
+	
+	CurrentTargetPlayer = TargetPlayer;
 }
 
 void FZombieBaseState::Execute(EZombieStateType CurrentState, float DeltaTime)
@@ -31,10 +25,9 @@ void FZombieBaseState::Execute(EZombieStateType CurrentState, float DeltaTime)
 void FZombieBaseState::Exit(EZombieStateType NextState, TObjectPtr<ACharacterPlayer> TargetPlayer)
 {
 	CurrentTargetPlayer = nullptr;
-	CurrentAnimationLength = 0.0f;
 }
 
-void FZombieBaseState::RotateTowardsTarget(float DeltaTime) const
+void FZombieBaseState::RotateTowardsTarget(const float DeltaTime) const
 {
 	if (Owner && CurrentTargetPlayer)
 	{

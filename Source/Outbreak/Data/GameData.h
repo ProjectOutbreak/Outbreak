@@ -92,14 +92,8 @@ struct FCharacterBaseData : public FTableRowBase
 	GENERATED_BODY()
 	
 	UPROPERTY(EditAnywhere)
-	float MaxWalkSpeed = 500.0f;
+	float MaxRunSpeed = 500.0f;
 	
-	UPROPERTY(EditAnywhere)
-	float MaxRunSpeed = 1000.0f;
-
-	UPROPERTY(EditAnywhere)
-	uint8 bIsCanRun = 0;
-
 	UPROPERTY(EditAnywhere)
 	float AttackRate = 1.0f;
 

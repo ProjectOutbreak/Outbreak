@@ -7,7 +7,7 @@
 #include "Outbreak/Game/Equipment/Weapon/WeaponBase.h"
 #include "Outbreak/Game/Equipment/Weapon/ThrowableBase.h"
 #include "Outbreak/Game/Equipment/Medicine/MedicineBase.h"
-#include "Outbreak/UI/OBHUD.h"
+#include "Outbreak/UI/InGameHUD.h"
 #include "Outbreak/Util/Define.h"
 #include "Outbreak/Util/EnumHelper.h"
 
@@ -268,7 +268,7 @@ void UEquipmentController::UnEquipCurrentEquipment()
 void UEquipmentController::OnAmmoChangedHandler(const int32 InCurrentAmmoInMag, const int32 InCurrentTotalAmmo)
 {
 	CurrentAmmoInMag = InCurrentAmmoInMag;
-	if (AOBHUD* Hud = CachedOwner->GetHud())
+	if (AInGameHUD* Hud = CachedOwner->GetHud())
 	{
 		Hud->DisplayAmmo(InCurrentAmmoInMag, InCurrentTotalAmmo);
 	}

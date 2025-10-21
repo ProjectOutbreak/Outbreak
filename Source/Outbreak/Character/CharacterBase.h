@@ -6,6 +6,8 @@
 #include "Outbreak/Util/Define.h"
 #include "CharacterBase.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnAttackHitSignature, AActor*, HitActor, const FHitResult&, HitResult);
+
 UCLASS(Abstract)
 class OUTBREAK_API ACharacterBase : public ACharacter
 {
@@ -16,44 +18,35 @@ class OUTBREAK_API ACharacterBase : public ACharacter
 // --------------------
 public:
 	ACharacterBase();
-	virtual float TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
-	UFUNCTION()
-	virtual void OnRep_CurrentHealth();
+	virtual float TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+	virtual void BeginPlay() override;
+	
+	void ApplyToxicDamage(float DamagePerSecond, float Duration);
 
 protected:
-	virtual void BeginPlay() override;
 	virtual void InitCharacterData();
 	virtual void SetupCollision();
 	virtual void SetupMovement();
-	virtual void SetPhysicalAsset(ECharacterType InCharacterType, ECharacterBodyType InBodyType);
-	virtual bool IsDead() const;
-
-	UFUNCTION()
-	virtual void OnRep_Die();
-
 	virtual float GetDamageMultiplier(EPhysicalSurface SurfaceType);
-	virtual void ApplyDamage(int32 DamageAmount);
+	
+	void ApplyDamage(int32 DamageAmount);
+	bool IsDead() const;
+	void ApplyToxicTick();
+	void ClearToxicEffect();
 
 private:
 	void Die();
+	void OnRagdoll();
 	
 // --------------------
 // Variables
 // --------------------
 public:
-	float AttackDamageMultiplier = 1.0f;
+	FOnAttackHitSignature OnAttackHit;
 	
 protected:
-	UPROPERTY(ReplicatedUsing = OnRep_Die)
-	uint8 bIsDead = false;
-	
 	ECharacterType CharacterType = ECharacterType::None;
-	
-	UPROPERTY(ReplicatedUsing = OnRep_CurrentHealth)
-	int32 CurrentHealth = 100;
-
 	int32 CurrentExtraHealth = 0;
 
 	// TODO : Hit Damage Multiplier Data Table
@@ -61,5 +54,24 @@ protected:
 	float BodyDamageMultiplier = 1.0f;
 	float LimbsDamageMultiplier = 0.7f;
 
-	float CurrentAnimationSectionLength = 0.0f;
+	FTimerHandle ToxicTickTimerHandle;
+	FTimerHandle ToxicDurationTimerHandle;
+	float ToxicDamagePerTick = 0.0f;
+
+protected:
+	// RepNotify
+	UFUNCTION()
+	virtual void OnRep_Die();
+	UFUNCTION()
+	virtual void OnRep_CurrentHealth();
+	UFUNCTION()
+	void OnRep_IsToxic();
+	
+	UPROPERTY(ReplicatedUsing = OnRep_Die)
+	uint8 bIsDead : 1 = 0;
+	UPROPERTY(ReplicatedUsing = OnRep_CurrentHealth)
+	int32 CurrentHealth = 100;
+	UPROPERTY(ReplicatedUsing = OnRep_IsToxic)
+	bool bIsToxic = false;
+	// ~RepNotify
 };

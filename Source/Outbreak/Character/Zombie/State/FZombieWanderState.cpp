@@ -3,6 +3,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "Outbreak/Character/Zombie/CharacterZombie.h"
+#include "Outbreak/Component/ZombieAIComponent.h"
 #include "Outbreak/Util/Define.h"
 
 FZombieWanderState::FZombieWanderState(const TSharedPtr<TStateMachine<EZombieStateType, ACharacterPlayer>>& InFsm,
@@ -10,7 +11,7 @@ FZombieWanderState::FZombieWanderState(const TSharedPtr<TStateMachine<EZombieSta
 {
 }
 
-void FZombieWanderState::Enter(EZombieStateType PreviousState, TObjectPtr<ACharacterPlayer> TargetPlayer)
+void FZombieWanderState::Enter(const EZombieStateType PreviousState, const TObjectPtr<ACharacterPlayer> TargetPlayer)
 {
 	Super::Enter(PreviousState, TargetPlayer);
 	
@@ -23,7 +24,7 @@ void FZombieWanderState::Enter(EZombieStateType PreviousState, TObjectPtr<AChara
 	StartWandering();
 }
 
-void FZombieWanderState::Execute(EZombieStateType CurrentState, float DeltaTime)
+void FZombieWanderState::Execute(const EZombieStateType CurrentState, const float DeltaTime)
 {
 	Super::Execute(CurrentState, DeltaTime);
 
@@ -45,7 +46,7 @@ void FZombieWanderState::Execute(EZombieStateType CurrentState, float DeltaTime)
 	}
 }
 
-void FZombieWanderState::Exit(EZombieStateType NextState, TObjectPtr<ACharacterPlayer> TargetPlayer)
+void FZombieWanderState::Exit(const EZombieStateType NextState, const TObjectPtr<ACharacterPlayer> TargetPlayer)
 {
 	Super::Exit(NextState, TargetPlayer);
 

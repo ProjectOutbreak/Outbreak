@@ -6,9 +6,6 @@
 #include "Outbreak/Character/Zombie/CharacterZombie.h"
 #include "SpecialZombie.generated.h"
 
-/**
- * 
- */
 UCLASS()
 class OUTBREAK_API ASpecialZombie : public ACharacterZombie
 {
@@ -18,7 +15,8 @@ public:
 	ASpecialZombie();
 	
 protected:
-	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+	virtual void OnRep_Die() override;
 
 protected:
 	UPROPERTY(VisibleAnywhere)
