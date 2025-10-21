@@ -20,7 +20,6 @@ ACharacterBase::ACharacterBase()
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = true;
 	bUseControllerRotationRoll = false;
-	FootStepComponent = CreateDefaultSubobject<UFootStepComponent>(TEXT("FootStepComponent"));
 }
 
 void ACharacterBase::BeginPlay()
@@ -182,6 +181,9 @@ void ACharacterBase::SetupCollision()
 void ACharacterBase::SetupMovement()
 {
 	UCharacterMovementComponent* MovementComp = GetCharacterMovement();
+	FootStepComponent = NewObject<UFootStepComponent>(this, TEXT("FootStepComponent"));
+
+	if (FootStepComponent)  FootStepComponent->RegisterComponent();
 	if (!MovementComp) return;
 	
 	MovementComp->JumpZVelocity = 500.f;
