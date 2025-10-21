@@ -2,7 +2,7 @@
 
 
 #include "TimeManager.h"
-#include "Outbreak/Game/Framework/OBGameInstance.h"
+#include "Outbreak/Game/Framework/OutBreakGameInstance.h"
 
 ATimeManager::ATimeManager()
 {
@@ -14,7 +14,7 @@ void ATimeManager::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (const UOBGameInstance* GI = GetWorld() ? GetWorld()->GetGameInstance<UOBGameInstance>() : nullptr)
+	if (const UOutbreakGameInstance* GI = GetWorld() ? GetWorld()->GetGameInstance<UOutbreakGameInstance>() : nullptr)
 	{
 		ApplyTimePreset(GI->GetSelectedTimePreset());
 	}
@@ -90,7 +90,7 @@ void ATimeManager::ApplyPresetFromGameInstance()
 {
 	if (UWorld* World = GetWorld())
 	{
-		if (const UOBGameInstance* OB = World->GetGameInstance<UOBGameInstance>())
+		if (const UOutbreakGameInstance* OB = World->GetGameInstance<UOutbreakGameInstance>())
 		{
 			ApplyTimePreset(OB->GetSelectedTimePreset());
 		}

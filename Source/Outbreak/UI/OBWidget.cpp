@@ -8,8 +8,8 @@
 #include "Components/ComboBoxString.h"
 #include "Engine/TextureRenderTarget2D.h"
 #include "Outbreak/Util/GraphicOptionHelper.h"
-#include "Outbreak/Game/Controller/OBPlayerController.h"
-#include "Outbreak/Game/Framework/OutBreakGameState.h"
+#include "Outbreak/Game/Controller/InGamePlayerController.h"
+#include "Outbreak/Game/Framework/InGameState.h"
 #include "Outbreak/Game/Graphics/GraphicsSettingsLibrary.h"
 
 void UOBWidget::NativeConstruct()
@@ -75,7 +75,7 @@ void UOBWidget::NativeConstruct()
 void UOBWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
-	if (const AOutBreakGameState* GS = GetWorld()->GetGameState<AOutBreakGameState>())
+	if (const AInGameState* GS = GetWorld()->GetGameState<AInGameState>())
 	{
 		SetMatchTimeText(GS->GetMatchTime());
 		SetCurrentPhaseText(GS->GetCurrentPhase());
@@ -220,7 +220,7 @@ void UOBWidget::OnResumeClicked()
 {
 	if (APlayerController* PC = GetOwningPlayer())
 	{
-		if (AOBPlayerController* OBPC = Cast<AOBPlayerController>(PC))
+		if (AInGamePlayerController* OBPC = Cast<AInGamePlayerController>(PC))
 		{
 			OBPC->TogglePauseMenu();
 		}

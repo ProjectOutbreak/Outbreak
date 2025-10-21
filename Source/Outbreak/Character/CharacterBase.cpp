@@ -1,49 +1,44 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "CharacterBase.h"
+#include "AIController.h"
+#include "BrainComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Engine/DamageEvents.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Outbreak/Util/Define.h"
-#include "Outbreak/Util/EnumHelper.h"
-#include "PhysicsEngine/PhysicsAsset.h"
-
 #include "Net/UnrealNetwork.h"
+#include "Outbreak/Public/Utilities/DebugHelper.h"
+#include "Outbreak/UI/InGameHUD.h"
 #include "Outbreak/Component/FootStepComponent.h"
-#include "Outbreak/Game/Controller/OBPlayerController.h"
-#include "Outbreak/UI/OBHUD.h"
 
-// Sets default values
 ACharacterBase::ACharacterBase()
 {
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 	bReplicates = true;
 	
-	// Pawn
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = true;
 	bUseControllerRotationRoll = false;
-
-	// Capsule
-	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
-	GetCapsuleComponent()->SetCollisionProfileName(TEXT("Pawn"));
-
-	// Movement
-	GetCharacterMovement()->bOrientRotationToMovement = false;
-	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f);
-	GetCharacterMovement()->JumpZVelocity = 700.f;
-	GetCharacterMovement()->AirControl = 0.35f;
-	GetCharacterMovement()->MaxWalkSpeed = 500.f;
-	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
-	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
-
-	// Mesh
-	GetMesh()->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, -100.0f), FRotator(0.0f, -90.0f, 0.0f));
-	GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
-	GetMesh()->SetCollisionProfileName(TEXT("CharacterMesh"));
-	GetMesh()->SetHiddenInGame(false);
-
 	FootStepComponent = CreateDefaultSubobject<UFootStepComponent>(TEXT("FootStepComponent"));
+}
+
+void ACharacterBase::BeginPlay()
+{
+	Super::BeginPlay();
+	
+	InitCharacterData();
+	SetupCollision();
+	SetupMovement();
+}
+
+void ACharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ACharacterBase, CurrentHealth);
+	DOREPLIFETIME(ACharacterBase, bIsDead);
+	DOREPLIFETIME(ACharacterBase, bIsToxic);
 }
 
 float ACharacterBase::TakeDamage(const float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -60,11 +55,6 @@ float ACharacterBase::TakeDamage(const float Damage, FDamageEvent const& DamageE
 		if (PhysMat)
 		{
 			DamageAmount *= GetDamageMultiplier(PhysMat->SurfaceType);
-			UE_LOG(LogTemp, Log, TEXT("[%s] Hit PhysMat: %s, Damage : %d"), CURRENT_CONTEXT, PhysMat ? *PhysMat->GetName() : TEXT("None"), DamageAmount);
-		}
-		else
-		{
-			UE_LOG(LogTemp, Log, TEXT("[%s] No PhysMat found, Damage : %d"), CURRENT_CONTEXT, DamageAmount);
 		}
 	}
 	
@@ -77,49 +67,16 @@ void ACharacterBase::OnRep_CurrentHealth()
 {
 	if (APlayerController* PC = Cast<APlayerController>(GetController()))
 	{
-		if (AOBHUD* HUD = Cast<AOBHUD>(PC->GetHUD()))
+		if (AInGameHUD* HUD = Cast<AInGameHUD>(PC->GetHUD()))
 		{
 			HUD->DisplayCurrentHealth(CurrentHealth);
 		}
 	}
 }
 
-void ACharacterBase::BeginPlay()
-{
-	Super::BeginPlay();
-	
-	InitCharacterData();
-	SetupCollision();
-	SetupMovement();
-}
-
 void ACharacterBase::InitCharacterData()
 {
 	// Implement in derived classes
-}
-
-void ACharacterBase::SetPhysicalAsset(const ECharacterType InCharacterType, const ECharacterBodyType InBodyType)
-{
-	
-	const FString BasePath = TEXT("/Script/Engine.PhysicsAsset'/Game/Art/Characters");
-	const FString CharacterTypeString = EnumHelper::EnumToString(InCharacterType);
-	const FString BodyTypeString = EnumHelper::EnumToString(InBodyType);
-	const FString AssetName = FString::Printf(TEXT("PA_%s_%s"), *CharacterTypeString, *BodyTypeString);
-
-	const FString FullPath = FString::Printf(TEXT("%s/%ss/Meshes/%s.%s'"), *BasePath, *CharacterTypeString, *AssetName, *AssetName);
-
-	const TObjectPtr<USkeletalMeshComponent> MeshComponent = GetMesh();
-
-	if (const TObjectPtr<UPhysicsAsset> PhysicsAsset = LoadObject<UPhysicsAsset>(nullptr, *FullPath))
-	{
-		MeshComponent->SetPhysicsAsset(nullptr);
-		MeshComponent->SetPhysicsAsset(PhysicsAsset);
-		MeshComponent->RecreatePhysicsState();
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[%s] Failed to load Physics Asset: %s"), CURRENT_CONTEXT, *FullPath);
-	}
 }
 
 bool ACharacterBase::IsDead() const
@@ -137,15 +94,35 @@ void ACharacterBase::Die()
 		return;
 
 	bIsDead = true;
-	
+
 	OnRep_Die();
+}
+
+void ACharacterBase::OnRagdoll()
+{
+	const FVector LastVelocity = GetCharacterMovement()->Velocity;
+
+	if (const AAIController* AIController = Cast<AAIController>(GetController()))
+	{
+		if (UBrainComponent* BrainComponent = AIController->GetBrainComponent())
+		{
+			BrainComponent->StopLogic("Death");
+		}
+	}
+
+	GetCharacterMovement()->DisableMovement();
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	GetMesh()->SetSimulatePhysics(true);
+	GetMesh()->SetCollisionProfileName(TEXT("Ragdoll"));
+	GetMesh()->AddImpulse(LastVelocity, NAME_None, true);
+
+	SetLifeSpan(10.0f);
 }
 
 void ACharacterBase::OnRep_Die()
 {
-	GetCharacterMovement()->DisableMovement();
-	GetCharacterMovement()->StopMovementImmediately();
-	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	OnRagdoll();
 }
 
 float ACharacterBase::GetDamageMultiplier(const EPhysicalSurface SurfaceType)
@@ -165,10 +142,10 @@ float ACharacterBase::GetDamageMultiplier(const EPhysicalSurface SurfaceType)
 
 void ACharacterBase::ApplyDamage(int32 DamageAmount)
 {
-	if (!HasAuthority())
-	{
-		return;
-	}
+	if (!HasAuthority()) return;
+
+	const FString DebugMsg = FString::Printf(TEXT("Actor %s taking %d damage"), *GetName(), DamageAmount);
+	PRINT_WITH_CURRENT_CONTEXT(*DebugMsg);
 	
 	const int32 DamageAbsorbedByExtraHealth = FMath::Min(DamageAmount, CurrentExtraHealth);
 	CurrentExtraHealth -= DamageAbsorbedByExtraHealth;
@@ -187,17 +164,26 @@ void ACharacterBase::ApplyDamage(int32 DamageAmount)
 
 void ACharacterBase::SetupCollision()
 {
-	GetCapsuleComponent()->SetCollisionProfileName(TEXT("Pawn"));
+	UCapsuleComponent* CapsuleComp = GetCapsuleComponent();
+	if (!CapsuleComp) return;
+	
+	CapsuleComp->SetCollisionProfileName(TEXT("Pawn"));
+	CapsuleComp->InitCapsuleSize(42.f, 96.0f);
 
-	GetMesh()->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, -100.0f), FRotator(0.0f, -90.0f, 0.0f));
-	GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
+	USkeletalMeshComponent* SkeletalMeshComp = GetMesh();
+	if (!SkeletalMeshComp) return;
+	
+	SkeletalMeshComp->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, -100.0f), FRotator(0.0f, -90.0f, 0.0f));
+	SkeletalMeshComp->SetAnimationMode(EAnimationMode::AnimationBlueprint);
+	SkeletalMeshComp->SetCollisionProfileName(TEXT("CharacterMesh"));
+	SkeletalMeshComp->SetHiddenInGame(false);
 }
 
 void ACharacterBase::SetupMovement()
 {
-	auto* MovementComp = GetCharacterMovement();
-	MovementComp->bOrientRotationToMovement = false;
-	MovementComp->RotationRate = FRotator(0.0f, 500.0f, 0.0f);
+	UCharacterMovementComponent* MovementComp = GetCharacterMovement();
+	if (!MovementComp) return;
+	
 	MovementComp->JumpZVelocity = 500.f;
 	MovementComp->AirControl = 0.35f;
 	MovementComp->MaxWalkSpeed = 500.f;
@@ -214,6 +200,57 @@ void ACharacterBase::SetupMovement()
 	MovementComp->bImpartBaseVelocityZ = false;
 }
 
+void ACharacterBase::ApplyToxicDamage(float DamagePerSecond, float Duration)
+{
+	if (!HasAuthority())
+		return;
+
+	GetWorldTimerManager().ClearTimer(ToxicTickTimerHandle);
+	GetWorldTimerManager().ClearTimer(ToxicDurationTimerHandle);
+
+	ToxicDamagePerTick = DamagePerSecond;
+
+	GetWorldTimerManager().SetTimer(ToxicTickTimerHandle, this, &ACharacterBase::ApplyToxicTick, 1.0f, true);
+	GetWorldTimerManager().SetTimer(ToxicDurationTimerHandle, this, &ACharacterBase::ClearToxicEffect, Duration, false);
+    
+	if (!bIsToxic)
+	{
+		bIsToxic = true;
+		OnRep_IsToxic();
+	}
+}
+
+void ACharacterBase::OnRep_IsToxic()
+{
+	if (bIsToxic)
+	{
+		// TODO : Visual, Audio Effect
+	}
+	else
+	{
+		// TODO : Clear Visual, Audio Effect
+	}
+}
+
+void ACharacterBase::ApplyToxicTick()
+{
+	ApplyDamage(ToxicDamagePerTick);
+}
+
+void ACharacterBase::ClearToxicEffect()
+{
+	GetWorldTimerManager().ClearTimer(ToxicTickTimerHandle);
+	GetWorldTimerManager().ClearTimer(ToxicDurationTimerHandle);
+
+	ToxicDamagePerTick = 0.f;
+	
+	if (bIsToxic)
+	{
+		bIsToxic = false;
+		OnRep_IsToxic();
+	}
+}
+
 void ACharacterBase::TriggerFootStepLeft()
 {
 	if (FootStepComponent) FootStepComponent->HandleFootStep(TEXT("ik_foot_l"));
@@ -222,13 +259,4 @@ void ACharacterBase::TriggerFootStepLeft()
 void ACharacterBase::TriggerFootStepRight()
 {
 	if (FootStepComponent) FootStepComponent->HandleFootStep(TEXT("ik_foot_r"));
-}
-
-void ACharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	DOREPLIFETIME(ACharacterBase, CurrentHealth);
-	DOREPLIFETIME(ACharacterBase, bIsDead);
-
 }

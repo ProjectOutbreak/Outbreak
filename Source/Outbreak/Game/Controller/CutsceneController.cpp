@@ -2,14 +2,14 @@
 
 
 #include "CutsceneController.h"
-#include "Outbreak/UI/OBHUD.h"
+#include "Outbreak/UI/InGameHUD.h"
 #include "LevelSequenceActor.h"
 #include "LevelSequencePlayer.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Outbreak/Character/Player/CharacterPlayer.h"
-#include "Outbreak/Game/Framework/OutBreakGameState.h"
+#include "Outbreak/Game/Framework/InGameState.h"
 
 void UCutsceneController::Init(UWorld* InWorld)
 {
@@ -29,7 +29,7 @@ void UCutsceneController::PlayCutscene(ULevelSequence* Sequence)
 	{
 		if (APlayerController* PC = UGameplayStatics::GetPlayerController(WorldRef, 0))
 		{
-			if (AOBHUD* HUD = Cast<AOBHUD>(PC->GetHUD()))
+			if (AInGameHUD* HUD = Cast<AInGameHUD>(PC->GetHUD()))
 			{
 				HUD->SetCutsceneMode(true);
 			}
@@ -76,7 +76,7 @@ void UCutsceneController::OnCutSceneFinished()
 
 	if (APlayerController* PC2 = UGameplayStatics::GetPlayerController(WorldRef, 0))
 	{
-		if (AOBHUD* HUD = Cast<AOBHUD>(PC2->GetHUD()))
+		if (AInGameHUD* HUD = Cast<AInGameHUD>(PC2->GetHUD()))
 		{
 			HUD->SetCutsceneMode(false);
 		}

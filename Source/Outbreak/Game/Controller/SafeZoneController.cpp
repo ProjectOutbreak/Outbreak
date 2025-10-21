@@ -8,7 +8,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/Character.h"
 #include "Outbreak/Game/Framework/InGameMode.h"
-#include "Outbreak/Game/Framework/OutBreakGameState.h"
+#include "Outbreak/Game/Framework/InGameState.h"
+#include "Outbreak/Manager/SoundManager.h"
 
 ASafeZoneController::ASafeZoneController()
 {
@@ -80,7 +81,7 @@ void ASafeZoneController::OnEndZoneEnter(UPrimitiveComponent* OverlappedComp, AA
 			{
 				if (InGameModeRef && InGameModeRef->IsMatchInProgress())
 				{
-					if (AOutBreakGameState* GS = GetWorld()->GetGameState<AOutBreakGameState>())
+					if (AInGameState* GS = GetWorld()->GetGameState<AInGameState>())
 					{
 						if (GS->SpawnerInstance)
 						{

@@ -14,6 +14,17 @@
 #define ECC_Footstep ECollisionChannel::ECC_GameTraceChannel1
 
 UENUM()
+enum class EAbilityType : uint8
+{
+	None,
+	DamageEnhance,
+	Vibration,
+	ToxicAura,
+	ToxicAttack,
+	SelfDestruct,
+};
+
+UENUM()
 enum class EMedicineType : uint8
 {
 	None,
@@ -154,19 +165,18 @@ UENUM(BlueprintType)
 enum class EZombieSubType : uint8
 {
 	None,
-	Walker      UMETA(DisplayName = "걷는 좀비"),
-	Runner      UMETA(DisplayName = "뛰는 좀비"),
-	Fat         UMETA(DisplayName = "뚱뚱 좀비"),
+	Walker      UMETA(DisplayName = "워커"),
+	Runner      UMETA(DisplayName = "러너"),
+	Bloater     UMETA(DisplayName = "블로터"),
 	Soldier     UMETA(DisplayName = "군인 좀비"),
     
-	GymRat      UMETA(DisplayName = "헬창 좀비"),
-	Radioactive UMETA(DisplayName = "방사능 좀비"),
-	Ghost       UMETA(DisplayName = "유체화 좀비"),
+	GymRat      UMETA(DisplayName = "헬창"),
+	Toxic       UMETA(DisplayName = "톡식"),
+	Popper      UMETA(DisplayName = "파퍼"),
+	Boomer 		UMETA(DisplayName = "부머"),
+	Goo			UMETA(DisplayName = "구"),
 	Shield      UMETA(DisplayName = "방패 좀비"),
-	Berserker   UMETA(DisplayName = "광분화 좀비"),
-    
-    // TODO : Boss Zombie Manage
-	Boss_0,
+	Berserker   UMETA(DisplayName = "버서커"),
 };
 
 UENUM()

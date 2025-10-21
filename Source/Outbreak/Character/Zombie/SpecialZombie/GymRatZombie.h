@@ -6,9 +6,6 @@
 #include "SpecialZombie.h"
 #include "GymRatZombie.generated.h"
 
-/*
- * 
- */
 UCLASS()
 class OUTBREAK_API AGymRatZombie : public ASpecialZombie
 {
@@ -19,9 +16,16 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void OnRep_Die() override;
 
 private:
-	// TODO : modify magic number
-	float BodyScale = 1.5f;
-	
+	void AttachVibrationEffect();
+	void ReleaseVibrationEffect();
+
+private:
+	UPROPERTY()
+	TObjectPtr<class UNiagaraSystem> VibrationEffect;
+
+	UPROPERTY()
+	TObjectPtr<class UNiagaraComponent> VibrationEffectComponent;
 };

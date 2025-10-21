@@ -2,37 +2,34 @@
 
 
 #include "InGameMode.h"
-
-#include "OutBreakGameState.h"
-#include "OutBreakPlayerState.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerController.h"
 #include "Containers/Set.h"
-#include "Outbreak/Character/Player/CharacterPlayer.h"
-#include "Outbreak/Game/Controller/OBPlayerController.h"
+#include "Outbreak/Manager/CharacterSpawnManager.h"
 #include "Outbreak/Manager/SoundManager.h"
-#include "Outbreak/UI/OBHUD.h"
 
 
 AInGameMode::AInGameMode()
 {
-	DefaultPawnClass = ACharacterPlayer::StaticClass();
-	PlayerControllerClass = AOBPlayerController::StaticClass();
-	HUDClass = AOBHUD::StaticClass();
-	GameStateClass = AOutBreakGameState::StaticClass();
-	PlayerStateClass = AOutBreakPlayerState::StaticClass();
-
-	bUseSeamlessTravel = true;
+	// bUseSeamlessTravel = true;
 }
+
 void AInGameMode::BeginPlay()
 {
 	Super::BeginPlay();
+	
 	StartMatch();
 	if (USoundManager* SM = GetGameInstance()->GetSubsystem<USoundManager>())
 	{
 		SM->StartMainBgmShuffle(false, 0.6f);
 	}
 	UE_LOG(LogTemp, Warning, TEXT("게임 시작됨"));
+	
+	StartMatch();
+	
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	SpawnManager = GetWorld()->SpawnActor<ACharacterSpawnManager>(SpawnManagerClass, SpawnParams);
 }
 
 void AInGameMode::ProceedToNextLevel() const
