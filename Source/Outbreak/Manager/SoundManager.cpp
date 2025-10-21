@@ -3,7 +3,7 @@
 
 #include "SoundManager.h"
 #include "Components/AudioComponent.h"
-#include "Outbreak/Game/Framework/OBGameInstance.h"
+#include "Outbreak/Game/Framework/OutBreakGameInstance.h"
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundBase.h"
 
@@ -12,7 +12,7 @@ void USoundManager::Initialize(FSubsystemCollectionBase& Collection)
 	Super::Initialize(Collection);
 	if (UWorld* World = GetWorld())
 	{
-		OBGameInstance = World->GetGameInstance<UOBGameInstance>();
+		OBGameInstance = World->GetGameInstance<UOutbreakGameInstance>();
 	}
 }
 

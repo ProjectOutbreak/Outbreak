@@ -3,8 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Engine/StreamableManager.h"
-#include "Outbreak/Game/Framework/OBGameInstance.h"
+#include "Outbreak/Game/Framework/OutBreakGameInstance.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "SoundManager.generated.h"
 
@@ -37,5 +36,5 @@ private:
 	float BgmVolume = 0.5f;
 	int32 LastBgmIndex = INDEX_NONE;
 
-	UPROPERTY() TObjectPtr<UOBGameInstance> OBGameInstance;
+	UPROPERTY() TObjectPtr<UOutbreakGameInstance> OBGameInstance;
 };
