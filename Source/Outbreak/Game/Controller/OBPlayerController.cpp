@@ -351,3 +351,40 @@ void AOBPlayerController::ToggleFireMode()
 
 	ControlledCharacter->HandleToggleFireMode();
 }
+void AOBPlayerController::PerformInteract()
+{
+
+	FVector CameraLocation;
+	FRotator CameraRotation;
+	GetPlayerViewPoint(CameraLocation, CameraRotation);
+	
+	FVector TraceEnd = CameraLocation + (CameraRotation.Vector() * InteractionDistance);
+
+	FHitResult HitResult;
+	FCollisionQueryParams Params;
+
+
+	APawn* MyPawn = GetPawn();
+	if (MyPawn)
+	{
+		Params.AddIgnoredActor(MyPawn);
+	}
+	
+	bool bHit = GetWorld()->LineTraceSingleByChannel(
+		HitResult,
+		CameraLocation,
+		TraceEnd,
+		ECC_Visibility,
+		Params
+	);
+	
+	if (bHit)
+	{
+		AActor* HitActor = HitResult.GetActor();
+		
+		if (HitActor && HitActor->Implements<UInteractInterface>())
+		{
+			IInteractInterface::Execute_Interact(HitActor, MyPawn);
+		}
+	}
+}
