@@ -15,12 +15,12 @@ ADoorBase::ADoorBase()
 	DoorFrame = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("DoorFrameMesh"));
 	DoorMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("DoorMesh"));
 	DoorTimelineComp = CreateDefaultSubobject<UTimelineComponent>(TEXT("DoorTimelineComp"));
-
+	DoorMesh ->SetMobility(EComponentMobility::Movable);
 	DoorFrame->SetupAttachment(RootComponent);
+	DoorFrame->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	DoorMesh->AttachToComponent(DoorFrame, FAttachmentTransformRules::KeepRelativeTransform);
 }
 
-// Called when the game starts or when spawned
 void ADoorBase::BeginPlay()
 {
 	Super::BeginPlay();

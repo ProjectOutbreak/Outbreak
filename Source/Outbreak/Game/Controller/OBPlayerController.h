@@ -110,7 +110,6 @@ private:
 	
 	bool bMenuOpen = false;
 	
-	UPROPERTY()
 	TScriptInterface<IInteractInterface> FocusedInteractable;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Interaction")

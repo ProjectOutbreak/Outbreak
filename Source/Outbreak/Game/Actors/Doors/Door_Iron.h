@@ -13,5 +13,8 @@ UCLASS()
 class OUTBREAK_API ADoor_Iron : public ADoorBase
 {
 	GENERATED_BODY()
+// 멤버 함수
+public:
+	ADoor_Iron();
 	
 };

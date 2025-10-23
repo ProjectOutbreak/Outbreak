@@ -41,10 +41,8 @@ public:
 	TObjectPtr<UCurveFloat> DoorTimelineFloatCurve;
 
 protected:
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	TObjectPtr<UStaticMeshComponent> DoorMesh;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	
 	TObjectPtr<UStaticMeshComponent> DoorFrame;
     
 	TObjectPtr<UTimelineComponent> DoorTimelineComp;
@@ -53,9 +51,6 @@ protected:
 	bool bIsDestroyable = false;
 	int HP = 100;
 	EDoorStatus CurrentStatus = EDoorStatus::Close;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	class UBoxComponent* DoorProxVolume;
 	
 private:
 	FOnTimelineFloat UpdateFunctionFloat;
