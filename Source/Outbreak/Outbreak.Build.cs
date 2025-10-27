@@ -30,7 +30,7 @@ public class Outbreak : ModuleRules
 			"Niagara"
 		});
 
-		PrivateDependencyModuleNames.AddRange(new string[] { "Paper2D" });
+		PrivateDependencyModuleNames.AddRange(new string[] { "Paper2D", "AnimGraphRuntime" });
 
 		// Uncomment if you are using Slate UI
 		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });

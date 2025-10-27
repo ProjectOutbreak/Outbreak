@@ -25,13 +25,17 @@ public:
 	ACharacterPlayer();
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+	virtual void PostInitializeComponents() override;
+
 	void ChangePlayerControl();
 	void HandleUse() const { EquipmentController->HandleUse(); }
 	void HandleEndUse() const { EquipmentController->HandleEndUse(); }
 	void HandleReload() const { EquipmentController->HandleReload(); }
 	void HandleEquipBySlot(const int32 SlotNumber) const { EquipmentController->EquipBySlot(SlotNumber); }
 	void HandleToggleFireMode() const { EquipmentController->HandleToggleFireMode(); }
-	TObjectPtr<class AOBHUD> GetHud() const { return CachedHUD; }
+	TObjectPtr<class AInGameHUD> GetHud() const { return CachedHUD; }
+
+	void UpdateToxicAuraEffect(float Intensity);
 	
 protected:
 	virtual void BeginPlay() override;
@@ -56,10 +60,10 @@ public:
 	
 protected:
 	UPROPERTY()
-	TObjectPtr<class AOBPlayerController> CachedPC;
+	TObjectPtr<class AInGamePlayerController> CachedPC;
 	
 	UPROPERTY()
-	TObjectPtr<class AOBHUD> CachedHUD;
+	TObjectPtr<class AInGameHUD> CachedHUD;
 	
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<class USpringArmComponent> CameraBoom;
@@ -94,10 +98,21 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Minimap")
 	TObjectPtr<UTextRenderComponent> PlayerNameText;
 
+	// VFX
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<class UPostProcessComponent> PostProcessComponent;
+
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UMaterialInterface> ToxicAuraPostProcessMaterial;
+
 	// TODO : for test. delete later
 	UPROPERTY()
 	TObjectPtr<class AWeaponBase> SpawnedWeapon;
 	UPROPERTY()
 	TSubclassOf<class AM4> WeaponToSpawn;
+
+private:
+	UPROPERTY()
+	TObjectPtr<UMaterialInstanceDynamic> ToxicAuraMID;
 
 };

@@ -24,6 +24,5 @@ protected:
 protected:
 	TObjectPtr<ACharacterZombie> Owner;
 	TObjectPtr<ACharacterPlayer> CurrentTargetPlayer;
-	float CurrentAnimationLength = 0.0f;
 	float RotationSpeed = 180.0f;
 };

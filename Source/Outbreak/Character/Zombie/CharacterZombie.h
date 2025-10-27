@@ -3,11 +3,11 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "Outbreak/Character/CharacterBase.h"
-#include "Outbreak/Character/Player/CharacterPlayer.h"
-#include "Outbreak/Component/ZombieAIComponent.h"
 #include "Outbreak/Data/GameData.h"
-#include "Outbreak/Util/Define.h"
 #include "CharacterZombie.generated.h"
+
+class ACharacterPlayer;
+class AZombieAIComponent;
 
 UCLASS()
 class OUTBREAK_API ACharacterZombie : public ACharacterBase
@@ -20,35 +20,34 @@ class OUTBREAK_API ACharacterZombie : public ACharacterBase
 public:
 	ACharacterZombie();
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-	virtual void OnAttackEnd();
-	FZombieData* GetZombieData() { return &ZombieData; }
-	void PlayAnimation(EZombieStateType InStateType);
-	TObjectPtr<AZombieAIComponent> GetZombieAI() const { return ZombieAI; }
-	float GetCurrentAnimationSectionLength() const { return CurrentAnimationSectionLength; }
-
-	UFUNCTION(NetMulticast,Reliable)
-	void Multicast_PlayAnimation(EZombieStateType InStateType);
+	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+	virtual void BeginPlay() override;
+	virtual void PostInitializeComponents() override;
+	
+	FORCEINLINE FZombieData* GetZombieData() { return &ZombieData; }
+	FORCEINLINE TObjectPtr<AZombieAIComponent> GetZombieAI() const { return ZombieAI; }
+	FORCEINLINE bool GetIsAttacking() const { return bIsAttacking; }
+	FORCEINLINE void SetIsAttacking(const bool NewAttack) { bIsAttacking = NewAttack; }
+	FORCEINLINE bool GetIsScreaming() const { return bIsScreaming; }
+	FORCEINLINE void SetIsScreaming(const bool NewScream) { bIsScreaming = NewScream; }
 
 protected:
-	virtual void BeginPlay() override;
-	virtual void Tick(float DeltaTime) override;
 	virtual void InitCharacterData() override;
 	virtual void SetupCollision() override;
 	virtual void SetupMovement() override;
 	virtual void OnRep_Die() override;
 	virtual void SetMesh(ECharacterBodyType MeshType);
-	void ChangeZombieState(EZombieStateType NewState, TObjectPtr<ACharacterPlayer> TargetPlayer = nullptr);
-	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator,class AActor* DamageCauser) override;
-
-private:
-	EZombieAnimationType GetZombieAnimationTypeFromState(EZombieStateType InStateType);
 	
+	void ChangeZombieState(EZombieStateType NewState, TObjectPtr<ACharacterPlayer> TargetPlayer = nullptr) const;
+
 // --------------------
 // Variables
 // --------------------
 protected:
 	EZombieType ZombieType = EZombieType::None;
 	EZombieSubType ZombieSubType = EZombieSubType::None;
+	// TODO : modify magic number
+	float BodyScale = 1.0f;
 	
 	UPROPERTY(Replicated)
 	FZombieData ZombieData;
@@ -56,11 +55,10 @@ protected:
 	UPROPERTY()
 	AController* LastDamagePlayer;
 
-	UPROPERTY()
-	TMap<EZombieAnimationType, TObjectPtr<UAnimMontage>> AnimMontageMap;
-	TMap<EZombieAnimationType, TArray<FName>> AnimSectionMap;
-
 private:
 	UPROPERTY()
 	TObjectPtr<AZombieAIComponent> ZombieAI;
+	
+	bool bIsAttacking = false;
+	bool bIsScreaming = false;
 };

@@ -10,7 +10,6 @@ ARunnerZombie::ARunnerZombie()
 void ARunnerZombie::BeginPlay()
 {
 	SetMesh();
-	SetPhysicalAsset(ECharacterType::Zombie, ECharacterBodyType::Normal);
 	
 	Super::BeginPlay();
 }

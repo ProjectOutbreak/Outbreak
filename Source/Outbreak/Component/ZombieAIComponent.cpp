@@ -27,6 +27,15 @@ AZombieAIComponent::AZombieAIComponent()
 	AIPerception->SetDominantSense(SightConfig->GetSenseImplementation());
 }
 
+void AZombieAIComponent::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+#if WITH_EDITOR
+	SetFolderPath(TEXT("AIComponents"));
+#endif
+}
+
 void AZombieAIComponent::BeginPlay()
 {
 	Super::BeginPlay();

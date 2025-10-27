@@ -7,6 +7,7 @@
 #include "Components/SceneCaptureComponent2D.h"
 #include "Engine/TextureRenderTarget2D.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/PostProcessComponent.h"
 #include "Components/TextRenderComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -14,16 +15,27 @@
 #include "Net/UnrealNetwork.h"
 #include "Outbreak/Component/EquipmentController.h"
 #include "Outbreak/Data/PlayerControlData.h"
-#include "Outbreak/Game/Controller/OBPlayerController.h"
+#include "Outbreak/Game/Controller/InGamePlayerController.h"
 #include "Outbreak/Game/Equipment/Weapon/M4.h"
 #include "Outbreak/Game/Equipment/Weapon/WeaponBase.h"
-#include "Outbreak/Game/Framework/OBGameMode.h"
-#include "Outbreak/Game/Framework/OutBreakGameState.h"
+#include "Outbreak/Game/Framework/InGameMode.h"
+#include "Outbreak/Game/Framework/InGameState.h"
 #include "Outbreak/Manager/CharacterSpawnManager.h"
-#include "Outbreak/UI/OBHUD.h"
+#include "Outbreak/Public/Utilities/DebugHelper.h"
+#include "Outbreak/UI/InGameHUD.h"
 
 ACharacterPlayer::ACharacterPlayer()
 {
+	PostProcessComponent = CreateDefaultSubobject<UPostProcessComponent>(TEXT("PostProcessComponent"));
+	PostProcessComponent->SetupAttachment(RootComponent);
+	PostProcessComponent->bEnabled = true;
+	
+	static ConstructorHelpers::FObjectFinder<UMaterialInterface> ToxicAuraMaterialRef(TEXT("/Game/Art/VFX/PostProcess/M_ToxicAura.M_ToxicAura"));
+	if (ToxicAuraMaterialRef.Succeeded())
+	{
+		ToxicAuraPostProcessMaterial = ToxicAuraMaterialRef.Object;
+	}
+	
 	// TODO : for test. delete later
 	static ConstructorHelpers::FClassFinder<AM4> WeaponClassRef(TEXT("/Game/Blueprints/BP_M4.BP_M4_C"));
 	if (WeaponClassRef.Class)
@@ -84,6 +96,7 @@ ACharacterPlayer::ACharacterPlayer()
 	PlayerNameText->bVisibleInSceneCaptureOnly = true;
 	
 	// ----- Mesh
+	GetMesh()->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, -100.0f), FRotator(0.0f, -90.0f, 0.0f));
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh> DefaultMesh(TEXT("/Game/Art/Characters/Mannequin_UE4/Meshes/SK_Mannequin.SK_Mannequin"));
 	if (DefaultMesh.Succeeded())
 	{
@@ -120,13 +133,22 @@ void ACharacterPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	DOREPLIFETIME(ACharacterPlayer, PlayerType);
 }
 
+void ACharacterPlayer::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+#if WITH_EDITOR
+	SetFolderPath(TEXT("Players"));
+#endif
+}
+
 void ACharacterPlayer::InitCharacterData()
 {
 	Super::InitCharacterData();
 	
 	if (HasAuthority())
 	{
-		const AOBGameMode * GameMode = Cast<AOBGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+		const AInGameMode* GameMode = Cast<AInGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 		if (!GameMode)
 		{
 			UE_LOG(LogTemp, Error, TEXT("[%s] GameMode is null!"), CURRENT_CONTEXT);
@@ -148,25 +170,42 @@ void ACharacterPlayer::InitCharacterData()
 	CurrentExtraHealth = 0;
 }
 
+void ACharacterPlayer::UpdateToxicAuraEffect(float Intensity)
+{
+	if (!ToxicAuraPostProcessMaterial) return;
+
+	if (!ToxicAuraMID)
+	{
+		ToxicAuraMID = UMaterialInstanceDynamic::Create(ToxicAuraPostProcessMaterial, this);
+	}
+
+	ToxicAuraMID->SetScalarParameterValue("EffectIntensity", Intensity);
+	PostProcessComponent->Settings.AddBlendable(ToxicAuraMID, FMath::Clamp(Intensity, 0.0f, 1.0f));
+}
+
 void ACharacterPlayer::BeginPlay()
 {
 	Super::BeginPlay();
-	CachedPC = Cast<AOBPlayerController>(GetController());
-	if (!CachedPC)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[%s] Failed to cast AOBPlayerController"), CURRENT_CONTEXT);
-		return; 
-	}
-
-	CachedHUD = Cast<AOBHUD>(CachedPC->GetHUD());
-	if (!CachedHUD)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[%s] Failed to cast AOBHUD"), CURRENT_CONTEXT);
-	}
 	
 	if (IsLocallyControlled())
 	{
+		const FString DebugMsg = FString::Printf(TEXT("Player Name : %s"), *GetName());
+		PRINT_WITH_CURRENT_CONTEXT(DebugMsg);
+		
 		SetPlayerControl(CurrentCharacterControlType);
+		
+		CachedPC = Cast<AInGamePlayerController>(GetController());
+		if (!CachedPC)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("[%s] Failed to cast AOBPlayerController"), CURRENT_CONTEXT);
+			return; 
+		}
+
+		CachedHUD = Cast<AInGameHUD>(CachedPC->GetHUD());
+		if (!CachedHUD)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("[%s] Failed to cast AOBHUD"), CURRENT_CONTEXT);
+		}
 	}
 
 	// TODO : For Test. Remove later.
@@ -282,7 +321,9 @@ void ACharacterPlayer::SetupMovement()
 {
 	Super::SetupMovement();
 
-	auto* MovementComp = GetCharacterMovement();
+	UCharacterMovementComponent* MovementComp = GetCharacterMovement();
+	MovementComp->bOrientRotationToMovement = false;
+	MovementComp->RotationRate = FRotator(0.0f, 500.0f, 0.0f);
 	MovementComp->MaxStepHeight = 50.f;
 	MovementComp->SetWalkableFloorAngle(55.f);
 	MovementComp->bUseControllerDesiredRotation = true;

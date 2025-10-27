@@ -9,32 +9,6 @@
 #include "Outbreak/Util/DataTableHelper.h"
 #include "Outbreak/Util/EnumHelper.h"
 
-ACharacterSpawnManager::ACharacterSpawnManager()
-{
-	static ConstructorHelpers::FObjectFinder<UDataTable> ZombieDataTableAsset(TEXT("/Script/Engine.DataTable'/Game/Data/ZombieDataTable.ZombieDataTable'"));
-	if (ZombieDataTableAsset.Succeeded())
-	{
-		ZombieDataTable = ZombieDataTableAsset.Object;
-	}
-	static ConstructorHelpers::FObjectFinder<UDataTable> PlayerDataTableAsset(TEXT("/Script/Engine.DataTable'/Game/Data/PlayerDataTable.PlayerDataTable'"));
-	if (PlayerDataTableAsset.Succeeded())
-	{
-		PlayerDataTable = PlayerDataTableAsset.Object;
-	}
-
-	static ConstructorHelpers::FObjectFinder<UDataTable> SpawnSettingDataTableAsset(TEXT("/Script/Engine.DataTable'/Game/Data/DT_SpawnerSetting.DT_SpawnerSetting'"));
-	if (SpawnSettingDataTableAsset.Succeeded())
-	{
-		SpawnerSettingDataTable = SpawnSettingDataTableAsset.Object;
-	}
-
-	static ConstructorHelpers::FObjectFinder<UDataTable> WaveDataTableAsset(TEXT("/Script/Engine.DataTable'/Game/Data/DT_Waves.DT_Waves'"));
-	if (WaveDataTableAsset.Succeeded())
-	{
-		WaveDataTable = WaveDataTableAsset.Object;
-	}
-}
-
 void ACharacterSpawnManager::BeginPlay()
 {
 	Super::BeginPlay();
@@ -44,11 +18,6 @@ void ACharacterSpawnManager::BeginPlay()
 
 	UpdateSettingData();
 	UpdateWaveData();
-}
-
-void ACharacterSpawnManager::Tick(float DeltaSeconds)
-{
-	Super::Tick(DeltaSeconds);
 }
 
 void ACharacterSpawnManager::SetSettingId(const FName InSettingId)
@@ -334,7 +303,7 @@ void ACharacterSpawnManager::SpawnEnemies()
 		const int32 SpawnMax = FMath::Clamp(EnemyData.SpawnMax, EnemyData.SpawnMin, SettingData->MaxEnemies);
 		const int32 SpawnAmount = GetRandomSpawnCount(SpawnMin, SpawnMax);
 
-		for (int i = 0; i < SpawnAmount - 1; i++)
+		for (int i = 0; i < SpawnAmount; i++)
 		{
 			if (SettingData->MaxEnemies <= SpawnedEnemies)
 				return;
