@@ -4,8 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
-#include "Outbreak/Util/Define.h"
-#include "OBPlayerController.generated.h"
 class IInteractInterface;
 #include "InGamePlayerController.generated.h"
 
