@@ -19,6 +19,15 @@ ADoorBase::ADoorBase()
 	DoorFrame->SetupAttachment(RootComponent);
 	DoorFrame->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	DoorMesh->AttachToComponent(DoorFrame, FAttachmentTransformRules::KeepRelativeTransform);
+
+	static ConstructorHelpers::FObjectFinder<UCurveFloat> DoorTimeLineCompAsset(
+	TEXT("/Script/Engine.CurveFloat'/Game/Blueprints/Components/Door/DoorCurveFloat.DoorCurveFloat'")
+	);
+
+	if (DoorTimeLineCompAsset.Succeeded())
+	{
+		DoorTimelineFloatCurve = DoorTimeLineCompAsset.Object;
+	}
 }
 
 void ADoorBase::BeginPlay()
