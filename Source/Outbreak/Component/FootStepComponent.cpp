@@ -4,7 +4,6 @@
 #include "FootStepComponent.h"
 #include "Outbreak/Character/CharacterBase.h"
 #include "Outbreak/Manager/SoundManager.h"
-#include "DrawDebugHelpers.h"
 #include "Kismet/GameplayStatics.h"
 
 UFootStepComponent::UFootStepComponent()
@@ -40,22 +39,7 @@ void UFootStepComponent::HandleFootStep(const FName& SocketName)
 	QueryParams.bReturnPhysicalMaterial = true;
 	QueryParams.AddIgnoredActor(OwningCharacter);
 
-	// 라인 트레이스 실행
 	const bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, ECC_Footstep, QueryParams);
-
-	// --- 디버그 드로잉 코드 시작 ---
-	// 트레이스가 무언가에 맞았다면 초록색 선과 히트 지점에 구체를 그림
-	if (bHit)
-	{
-		DrawDebugLine(GetWorld(), TraceStart, HitResult.ImpactPoint, FColor::Green, false, 5.0f, 0, 1.0f);
-		DrawDebugSphere(GetWorld(), HitResult.ImpactPoint, 5.0f, 12, FColor::Green, false, 5.0f);
-	}
-	// 트레이스가 아무것에도 맞지 않았다면 빨간색 선을 전체 경로에 그림
-	else
-	{
-		DrawDebugLine(GetWorld(), TraceStart, TraceEnd, FColor::Red, false, 5.0f, 0, 1.0f);
-	}
-	// --- 디버그 드로잉 코드 끝 ---
 
 	if (bHit)
 	{
