@@ -25,7 +25,7 @@ AM4::AM4()
 	{
 		ReloadEmptyAnim = ReloadEmptyAnimRef.Object;
 	}
-	static ConstructorHelpers::FObjectFinder<USoundBase> FireSoundRef(TEXT("/Game/Audio/SFX/Cues/SC_M4_Shot.SC_M4_Shot"));
+	static ConstructorHelpers::FObjectFinder<USoundBase> FireSoundRef(TEXT("/Game/Audio/SFX/Cues/Equipment/SC_M4_Shot.SC_M4_Shot"));
 	if (FireSoundRef.Succeeded())
 	{
 		FireSound = FireSoundRef.Object;
