@@ -8,6 +8,7 @@
 
 class ACharacterPlayer;
 class AZombieAIComponent;
+class USoundCue;
 
 UCLASS()
 class OUTBREAK_API ACharacterZombie : public ACharacterBase
@@ -58,6 +59,8 @@ protected:
 private:
 	UPROPERTY()
 	TObjectPtr<AZombieAIComponent> ZombieAI;
+
+	TObjectPtr<USoundCue> DeadSoundCue;
 	
 	bool bIsAttacking = false;
 	bool bIsScreaming = false;
