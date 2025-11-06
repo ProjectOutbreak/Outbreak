@@ -59,20 +59,10 @@ void ACharacterZombie::InitCharacterData()
 		if (!Data) return;
 		
 		ZombieData = *Data;
+		ApplyZombieData();
 	}
 	
-	CurrentHealth = ZombieData.MaxHealth;
 	CurrentExtraHealth = 0;
-}
-
-void ACharacterZombie::BeginPlay()
-{
-	Super::BeginPlay();
-
-	if (HasAuthority())
-	{
-		SetActorScale3D(FVector(BodyScale, BodyScale, BodyScale));
-	}
 }
 
 void ACharacterZombie::PostInitializeComponents()
@@ -178,4 +168,15 @@ void ACharacterZombie::SetMesh(const ECharacterBodyType MeshType)
 	{
 		GetMesh()->SetSkeletalMesh(ZombieMesh);
 	}
+}
+
+void ACharacterZombie::OnRep_ZombieData()
+{
+	ApplyZombieData();
+}
+
+void ACharacterZombie::ApplyZombieData()
+{
+	CurrentHealth = ZombieData.MaxHealth;
+	SetActorScale3D(FVector(ZombieData.BodyScale));
 }

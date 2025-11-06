@@ -24,7 +24,6 @@ public:
 	ACharacterZombie();
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
-	virtual void BeginPlay() override;
 	virtual void PostInitializeComponents() override;
 	
 	FORCEINLINE FZombieData* GetZombieData() { return &ZombieData; }
@@ -41,6 +40,10 @@ protected:
 	virtual void SetupMovement() override;
 	virtual void OnRep_Die() override;
 	virtual void SetMesh(ECharacterBodyType MeshType);
+
+	UFUNCTION()
+	void OnRep_ZombieData();
+	void ApplyZombieData();
 	
 // --------------------
 // Variables
@@ -48,11 +51,9 @@ protected:
 protected:
 	EZombieType ZombieType = EZombieType::None;
 	EZombieSubType ZombieSubType = EZombieSubType::None;
-	// TODO : modify magic number
-	float BodyScale = 1.0f;
 
 	// Replicated Variables
-	UPROPERTY(Replicated)
+	UPROPERTY(ReplicatedUsing = OnRep_ZombieData)
 	FZombieData ZombieData;
 	UPROPERTY(Replicated)
 	bool bIsAttacking = false;
