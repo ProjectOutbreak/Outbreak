@@ -20,7 +20,6 @@ public:
 	void TogglePauseMenu();
 
 protected:
-	virtual void BeginPlay() override;
 	virtual void AcknowledgePossession(class APawn* InPawn) override;
 	virtual void SetupInputComponent() override;
 

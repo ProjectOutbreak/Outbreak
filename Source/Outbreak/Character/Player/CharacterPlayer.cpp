@@ -129,8 +129,8 @@ void ACharacterPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(ACharacterPlayer, PlayerData);
-	DOREPLIFETIME(ACharacterPlayer, PlayerType);
+	DOREPLIFETIME(ThisClass, PlayerData);
+	DOREPLIFETIME(ThisClass, PlayerType);
 }
 
 void ACharacterPlayer::PostInitializeComponents()
@@ -194,22 +194,18 @@ void ACharacterPlayer::BeginPlay()
 		
 		SetPlayerControl(CurrentCharacterControlType);
 		
-		CachedPC = Cast<AInGamePlayerController>(GetController());
-		if (!CachedPC)
+		if (const AInGamePlayerController* PC = Cast<AInGamePlayerController>(GetController()))
 		{
-			UE_LOG(LogTemp, Warning, TEXT("[%s] Failed to cast AOBPlayerController"), CURRENT_CONTEXT);
-			return; 
-		}
-
-		CachedHUD = Cast<AInGameHUD>(CachedPC->GetHUD());
-		if (!CachedHUD)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("[%s] Failed to cast AOBHUD"), CURRENT_CONTEXT);
+			CachedHUD = Cast<AInGameHUD>(PC->GetHUD());
+			if (!CachedHUD)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("[%s] Failed to cast HUD"), CURRENT_CONTEXT);
+			}
 		}
 	}
 
 	// TODO : For Test. Remove later.
-	if (IsValid(WeaponToSpawn))
+	if (HasAuthority() && IsValid(WeaponToSpawn))
 	{
 		const FVector SpawnLocation = GetActorLocation();
 		const FRotator SpawnRotation = GetActorRotation();

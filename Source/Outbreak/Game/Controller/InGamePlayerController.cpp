@@ -78,17 +78,6 @@ AInGamePlayerController::AInGamePlayerController()
 	}
 }
 
-void AInGamePlayerController::BeginPlay()
-{
-	Super::BeginPlay();
-
-	if (IsLocalController())
-	{
-		const FString DebugMsg = FString::Printf(TEXT("Is Server: %s"), HasAuthority() ? TEXT("True") : TEXT("False"));
-		PRINT_WITH_CURRENT_CONTEXT(DebugMsg);
-	}
-}
-
 void AInGamePlayerController::AcknowledgePossession(APawn* InPawn)
 {
 	Super::AcknowledgePossession(InPawn);
