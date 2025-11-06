@@ -6,8 +6,11 @@
 #include "Outbreak/Data/GameData.h"
 #include "CharacterZombie.generated.h"
 
+class AAIController;
 class ACharacterPlayer;
 class AZombieAIComponent;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnZombieDeathSignature, AActor*, DeadActor);
 
 UCLASS()
 class OUTBREAK_API ACharacterZombie : public ACharacterBase
@@ -25,11 +28,12 @@ public:
 	virtual void PostInitializeComponents() override;
 	
 	FORCEINLINE FZombieData* GetZombieData() { return &ZombieData; }
-	FORCEINLINE TObjectPtr<AZombieAIComponent> GetZombieAI() const { return ZombieAI; }
 	FORCEINLINE bool GetIsAttacking() const { return bIsAttacking; }
 	FORCEINLINE void SetIsAttacking(const bool NewAttack) { bIsAttacking = NewAttack; }
 	FORCEINLINE bool GetIsScreaming() const { return bIsScreaming; }
 	FORCEINLINE void SetIsScreaming(const bool NewScream) { bIsScreaming = NewScream; }
+
+	FOnZombieDeathSignature OnDeathDelegate;
 
 protected:
 	virtual void InitCharacterData() override;
@@ -38,8 +42,6 @@ protected:
 	virtual void OnRep_Die() override;
 	virtual void SetMesh(ECharacterBodyType MeshType);
 	
-	void ChangeZombieState(EZombieStateType NewState, TObjectPtr<ACharacterPlayer> TargetPlayer = nullptr) const;
-
 // --------------------
 // Variables
 // --------------------

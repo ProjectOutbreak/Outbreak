@@ -28,8 +28,7 @@ void FZombieWanderState::Execute(const EZombieStateType CurrentState, const floa
 {
 	Super::Execute(CurrentState, DeltaTime);
 
-	const TObjectPtr<AZombieAIComponent> ZombieAI = Owner->GetZombieAI();
-	EPathFollowingStatus::Type MoveStatus = ZombieAI->GetMoveStatus();
+	EPathFollowingStatus::Type MoveStatus = AIController->GetMoveStatus();
 	WanderTimer -= DeltaTime;
 	if (WanderTimer <= 0.0f || MoveStatus == EPathFollowingStatus::Type::Idle)
 	{
@@ -50,28 +49,22 @@ void FZombieWanderState::Exit(const EZombieStateType NextState, const TObjectPtr
 {
 	Super::Exit(NextState, TargetPlayer);
 
-	const TObjectPtr<AZombieAIComponent> ZombieAI = Owner->GetZombieAI();
-	ZombieAI->StopMovement();
+	AIController->StopMovement();
 }
 
 void FZombieWanderState::StartWandering()
 {
-	if (!Owner)
-		return;
-    
 	FVector RandomLocation;
 	if (FindRandomWanderLocation(RandomLocation))
 	{
-		const TObjectPtr<AZombieAIComponent> ZombieAI = Owner->GetZombieAI();
-		ZombieAI->MoveToLocation(RandomLocation, -1.0f, true);
+		AIController->MoveToLocation(RandomLocation, -1.0f, true);
 	}
 }
 
 bool FZombieWanderState::FindRandomWanderLocation(FVector& OutLocation)
 {
-	const TObjectPtr<AZombieAIComponent> ZombieAI = Owner->GetZombieAI();
-	UNavigationSystemV1* NavSystem = UNavigationSystemV1::GetCurrent(ZombieAI->GetWorld());
-	if (!Owner || !NavSystem)
+	UNavigationSystemV1* NavSystem = UNavigationSystemV1::GetCurrent(Owner->GetWorld());
+	if (!NavSystem)
 		return false;
     
 	FVector OriginPosition = Owner->GetActorLocation();

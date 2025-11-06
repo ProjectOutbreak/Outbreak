@@ -20,9 +20,9 @@ public:
 protected:
 	void RotateTowardsTarget(float DeltaTime) const;
 
-
 protected:
 	TObjectPtr<ACharacterZombie> Owner;
 	TObjectPtr<ACharacterPlayer> CurrentTargetPlayer;
+	TObjectPtr<AAIController> AIController;
 	float RotationSpeed = 180.0f;
 };

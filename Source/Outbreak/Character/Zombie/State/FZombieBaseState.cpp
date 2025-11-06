@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "FZombieBaseState.h"
+#include "AIController.h"
 #include "Outbreak/Character/Player/CharacterPlayer.h"
 #include "Outbreak/Character/Zombie/CharacterZombie.h"
 #include "Outbreak/Util/Define.h"
@@ -8,12 +9,12 @@
 FZombieBaseState::FZombieBaseState(const TSharedPtr<TStateMachine<EZombieStateType, ACharacterPlayer>>& InFsm, 	const EZombieStateType InStateKey, ACharacterZombie* InOwner): TState(InFsm, InStateKey)
 {
 	Owner = InOwner;
+	AIController = Cast<AAIController>(InOwner->GetController());
 }
 
 void FZombieBaseState::Enter(EZombieStateType PreviousState, const TObjectPtr<ACharacterPlayer> TargetPlayer)
 {
-	if (!TargetPlayer)
-		return;
+	if (!TargetPlayer) return;
 	
 	CurrentTargetPlayer = TargetPlayer;
 }

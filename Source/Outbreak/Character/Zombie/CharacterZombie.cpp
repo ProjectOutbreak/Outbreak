@@ -69,10 +69,6 @@ void ACharacterZombie::BeginPlay()
 
 	if (HasAuthority())
 	{
-		ZombieAI = Cast<AZombieAIComponent>(GetController());
-		if (!ZombieAI) return;
-		
-		ZombieAI->InitializeZombieAI(this);
 		SetActorScale3D(FVector(BodyScale, BodyScale, BodyScale));
 	}
 }
@@ -125,22 +121,14 @@ void ACharacterZombie::SetupMovement()
 	MovementComp->JumpZVelocity = 0.0f;
 }
 
-void ACharacterZombie::ChangeZombieState(const EZombieStateType NewState, TObjectPtr<ACharacterPlayer> TargetPlayer) const
-{
-	if (HasAuthority() && ZombieAI->StateMachine.IsValid())
-	{
-		ZombieAI->StateMachine->ChangeState(NewState, TargetPlayer);
-	}
-}
-
 void ACharacterZombie::OnRep_Die()
 {
 	Super::OnRep_Die();
 
-	ChangeZombieState(EZombieStateType::Die);
-	
 	if (HasAuthority())
 	{
+		OnDeathDelegate.Broadcast(this);
+		
 		if (AController* Killer = LastDamagePlayer)
 		{
 			if (AInGamePlayerState* PS = Cast<AInGamePlayerState>(Killer->PlayerState))

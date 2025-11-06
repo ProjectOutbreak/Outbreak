@@ -1,7 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "ZombieAIComponent.h"
-
 #include "Outbreak/Character/Zombie/CharacterZombie.h"
 #include "Outbreak/Character/Zombie/State/FZombieAlertState.h"
 #include "Outbreak/Character/Zombie/State/FZombieAttackState.h"
@@ -10,6 +9,7 @@
 #include "Outbreak/Character/Zombie/State/FZombieIdleState.h"
 #include "Outbreak/Character/Zombie/State/FZombieWanderState.h"
 #include "Outbreak/Util/Define.h"
+#include "Utilities/DebugHelper.h"
 
 AZombieAIComponent::AZombieAIComponent()
 {
@@ -18,7 +18,7 @@ AZombieAIComponent::AZombieAIComponent()
 	AIPerception = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("AIPerception"));
 	SetPerceptionComponent(*AIPerception);
 
-	SightConfig = CreateDefaultSubobject<UAISenseConfig_Sight>(TEXT("Sight Config"));
+	SightConfig = CreateDefaultSubobject<UAISenseConfig_Sight>(TEXT("SightConfig"));
 	SightConfig->DetectionByAffiliation.bDetectEnemies = true;
 	SightConfig->DetectionByAffiliation.bDetectFriendlies = false;
 	SightConfig->DetectionByAffiliation.bDetectNeutrals = false;
@@ -43,6 +43,22 @@ void AZombieAIComponent::BeginPlay()
 	AIPerception->OnTargetPerceptionUpdated.AddDynamic(this, &AZombieAIComponent::OnTargetPerceptionUpdated);
 }
 
+void AZombieAIComponent::OnPossess(APawn* InPawn)
+{
+	Super::OnPossess(InPawn);
+
+	OwnerZombie = Cast<ACharacterZombie>(InPawn);
+	if (!OwnerZombie)
+	{
+		PRINT_WITH_CURRENT_CONTEXT("Pawn is not ACharacterZombie");
+		return;
+	}
+	SetupAIPerception();
+	SetupStateMachine();
+	
+	OwnerZombie->OnDeathDelegate.AddDynamic(this, &AZombieAIComponent::HandleOwnerDeath);
+}
+
 void AZombieAIComponent::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -53,10 +69,34 @@ void AZombieAIComponent::Tick(float DeltaTime)
 	}
 }
 
-void AZombieAIComponent::InitializeZombieAI(ACharacterZombie* InZombie)
+void AZombieAIComponent::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 {
-	OwnerZombie = InZombie;
+	if (Stimulus.WasSuccessfullySensed())
+	{
+		const TObjectPtr<ACharacterPlayer> TargetPlayer = Cast<ACharacterPlayer>(Actor);
+		CurrentTargetCharacter = TargetPlayer;
 
+		EZombieStateType CurrentState = EZombieStateType::None;
+		if (StateMachine.IsValid())
+		{
+			CurrentState = StateMachine->GetCurrentState();
+		}
+		
+		if (CurrentState == EZombieStateType::Idle || CurrentState == EZombieStateType::Wander)
+		{
+			StateMachine->ChangeState(EZombieStateType::Alert, TargetPlayer);
+		}
+	}
+	else
+	{
+		StateMachine->ChangeState(EZombieStateType::Wander);
+	}
+}
+
+void AZombieAIComponent::SetupAIPerception()
+{
+	if (!OwnerZombie || !SightConfig) return;
+	
 	const auto* Data = OwnerZombie->GetZombieData();
 	SightConfig->SightRadius = Data->SightRadius;
 	SightConfig->LoseSightRadius = Data->LoseSightRadius;
@@ -65,6 +105,11 @@ void AZombieAIComponent::InitializeZombieAI(ACharacterZombie* InZombie)
 	SightConfig->SetMaxAge(10.0f);
 
 	AIPerception->ConfigureSense(*SightConfig);
+}
+
+void AZombieAIComponent::SetupStateMachine()
+{
+	if (!OwnerZombie) return;
 	
 	StateMachine = MakeShared<FZombieStateMachine>();
 	StateMachine->AddState(EZombieStateType::Idle, MakeShared<FZombieIdleState>(StateMachine, OwnerZombie));
@@ -72,35 +117,15 @@ void AZombieAIComponent::InitializeZombieAI(ACharacterZombie* InZombie)
 	StateMachine->AddState(EZombieStateType::Alert, MakeShared<FZombieAlertState>(StateMachine, OwnerZombie));
 	StateMachine->AddState(EZombieStateType::Chase, MakeShared<FZombieChaseState>(StateMachine, OwnerZombie));
 	StateMachine->AddState(EZombieStateType::Attack, MakeShared<FZombieAttackState>(StateMachine, OwnerZombie));
-	// StateMachine->AddState(EZombieStateType::Stun, MakeShared<FZombieStunState>(StateMachine, Owner));
 	StateMachine->AddState(EZombieStateType::Die, MakeShared<FZombieDieState>(StateMachine, OwnerZombie));
 	
 	StateMachine->ChangeState(EZombieStateType::Idle);
 }
 
-EZombieStateType AZombieAIComponent::GetCurrentState() const
+void AZombieAIComponent::HandleOwnerDeath(AActor* DeadActor)
 {
 	if (StateMachine.IsValid())
 	{
-		return StateMachine->GetCurrentState();
-	}
-	return EZombieStateType::None;
-}
-
-void AZombieAIComponent::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
-{
-	if (Stimulus.WasSuccessfullySensed())
-	{
-		const TObjectPtr<ACharacterPlayer> TargetPlayer = Cast<ACharacterPlayer>(Actor);
-		CurrentTargetCharacter = TargetPlayer;
-		
-		if (GetCurrentState() == EZombieStateType::Idle || GetCurrentState() == EZombieStateType::Wander)
-		{
-			StateMachine->ChangeState(EZombieStateType::Alert, TargetPlayer);
-		}
-	}
-	else
-	{
-		StateMachine->ChangeState(EZombieStateType::Wander);
+		StateMachine->ChangeState(EZombieStateType::Die);
 	}
 }

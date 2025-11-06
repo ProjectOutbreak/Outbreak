@@ -8,7 +8,7 @@ void FZombieIdleState::Enter(const EZombieStateType PreviousState, const TObject
 {
 	Super::Enter(PreviousState, TargetPlayer);
 	
-	Owner->GetZombieAI()->StopMovement();
+	Owner->GetController()->StopMovement();
 
 	IdleTime = FMath::RandRange(MinIdleTime, MaxIdleTime);
 	IdleTimer = 0.0f;
