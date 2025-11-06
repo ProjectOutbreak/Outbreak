@@ -50,17 +50,16 @@ protected:
 	EZombieSubType ZombieSubType = EZombieSubType::None;
 	// TODO : modify magic number
 	float BodyScale = 1.0f;
-	
+
+	// Replicated Variables
 	UPROPERTY(Replicated)
 	FZombieData ZombieData;
+	UPROPERTY(Replicated)
+	bool bIsAttacking = false;
+	UPROPERTY(Replicated)
+	bool bIsScreaming = false;
+	// ~Replicated Variables
 
 	UPROPERTY()
 	AController* LastDamagePlayer;
-
-private:
-	UPROPERTY()
-	TObjectPtr<AZombieAIComponent> ZombieAI;
-	
-	bool bIsAttacking = false;
-	bool bIsScreaming = false;
 };

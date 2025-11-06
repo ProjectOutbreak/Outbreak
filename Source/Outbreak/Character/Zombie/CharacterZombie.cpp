@@ -38,7 +38,9 @@ void ACharacterZombie::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(ACharacterZombie, ZombieData);
+	DOREPLIFETIME(ThisClass, ZombieData);
+	DOREPLIFETIME(ThisClass, bIsAttacking);
+	DOREPLIFETIME(ThisClass, bIsScreaming);
 }
 
 void ACharacterZombie::InitCharacterData()
