@@ -21,7 +21,7 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-	virtual void OnPossess(class APawn* PossessedPawn) override;
+	virtual void AcknowledgePossession(class APawn* InPawn) override;
 	virtual void SetupInputComponent() override;
 
 private:

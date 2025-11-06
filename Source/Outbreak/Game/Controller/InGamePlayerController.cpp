@@ -89,15 +89,11 @@ void AInGamePlayerController::BeginPlay()
 	}
 }
 
-void AInGamePlayerController::OnPossess(class APawn* PossessedPawn)
+void AInGamePlayerController::AcknowledgePossession(APawn* InPawn)
 {
-	Super::OnPossess(PossessedPawn);
+	Super::AcknowledgePossession(InPawn);
 
-	ControlledCharacter = Cast<ACharacterPlayer>(PossessedPawn);
-	if (!ControlledCharacter)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[%s] PossessedPawn is not a CharacterPlayer!"), CURRENT_CONTEXT);
-	}
+	ControlledCharacter = Cast<ACharacterPlayer>(InPawn);
 }
 
 void AInGamePlayerController::SetupInputComponent()
