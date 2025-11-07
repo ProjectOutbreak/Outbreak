@@ -78,7 +78,7 @@ void ACharacterZombie::SetupCollision()
 {
 	Super::SetupCollision();
 
-	GetCapsuleComponent()->InitCapsuleSize(10.f, 96.0f);
+	GetCapsuleComponent()->InitCapsuleSize(DefaultCapsuleRadius, DefaultCapsuleHalfHeight);
 	
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	GetMesh()->SetCollisionObjectType(ECollisionChannel::ECC_Pawn);
@@ -178,5 +178,11 @@ void ACharacterZombie::OnRep_ZombieData()
 void ACharacterZombie::ApplyZombieData()
 {
 	CurrentHealth = ZombieData.MaxHealth;
-	SetActorScale3D(FVector(ZombieData.BodyScale));
+	GetMesh()->SetRelativeScale3D(FVector(ZombieData.BodyScale));
+
+	const float NewRadius = DefaultCapsuleRadius * ZombieData.BodyScale;
+	const float NewHeight = DefaultCapsuleHalfHeight * ZombieData.BodyScale;
+    
+	GetCapsuleComponent()->SetCapsuleRadius(NewRadius);
+	GetCapsuleComponent()->SetCapsuleHalfHeight(NewHeight);
 }

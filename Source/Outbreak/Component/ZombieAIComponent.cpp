@@ -62,6 +62,8 @@ void AZombieAIComponent::OnPossess(APawn* InPawn)
 void AZombieAIComponent::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (!HasAuthority()) return;
 	
 	if (StateMachine.IsValid())
 	{
@@ -71,6 +73,8 @@ void AZombieAIComponent::Tick(float DeltaTime)
 
 void AZombieAIComponent::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 {
+	if (!HasAuthority()) return;
+	
 	if (Stimulus.WasSuccessfullySensed())
 	{
 		const TObjectPtr<ACharacterPlayer> TargetPlayer = Cast<ACharacterPlayer>(Actor);

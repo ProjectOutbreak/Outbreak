@@ -51,6 +51,8 @@ protected:
 protected:
 	EZombieType ZombieType = EZombieType::None;
 	EZombieSubType ZombieSubType = EZombieSubType::None;
+	float DefaultCapsuleRadius = 10.0f;
+	float DefaultCapsuleHalfHeight = 96.0f;
 
 	// Replicated Variables
 	UPROPERTY(ReplicatedUsing = OnRep_ZombieData)
