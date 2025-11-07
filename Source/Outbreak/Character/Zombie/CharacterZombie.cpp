@@ -5,6 +5,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
+#include "Sound/SoundCue.h"
 #include "Outbreak/Component/ZombieAIComponent.h"
 #include "Outbreak/Game/Framework/InGameMode.h"
 #include "Outbreak/Game/Framework/InGameState.h"
@@ -31,6 +32,11 @@ ACharacterZombie::ACharacterZombie()
 	if (AnimInstanceClassRef.Class)
 	{
 		GetMesh()->SetAnimInstanceClass(AnimInstanceClassRef.Class);
+	}
+	static ConstructorHelpers::FObjectFinder<USoundCue> DeadSoundCueFinder(TEXT("/Game/Audio/SFX/Cues/Zombies/SC_ZombieDead.SC_ZombieDead"));
+	if (DeadSoundCueFinder.Succeeded())
+	{
+		DeadSoundCue = DeadSoundCueFinder.Object;
 	}
 }
 
@@ -117,6 +123,12 @@ void ACharacterZombie::OnRep_Die()
 {
 	Super::OnRep_Die();
 
+
+	if (DeadSoundCue)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, DeadSoundCue, GetActorLocation());
+	}
+	
 	if (HasAuthority())
 	{
 		OnDeathDelegate.Broadcast(this);

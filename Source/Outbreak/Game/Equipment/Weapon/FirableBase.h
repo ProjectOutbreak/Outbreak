@@ -62,6 +62,9 @@ protected:
 	UPROPERTY()
 	TObjectPtr<UAnimSequence> ReloadEmptyAnim;
 	
+	UPROPERTY()
+	TObjectPtr<USoundBase> FireSound;
+	
 	FFirableData FirableData;
 	EFirableType FirableType;
 	int32 CurrentAmmoInMag = 30;

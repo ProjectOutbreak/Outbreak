@@ -1,0 +1,59 @@
+#pragma once
+
+#include "CoreMinimal.h"
+#include "GameFramework/Actor.h"
+#include "Components/TimelineComponent.h"
+#include "Outbreak/Game/Interface/InteractInterface.h"
+#include "DoorBase.generated.h"
+
+UENUM(BlueprintType)
+enum class EDoorStatus : uint8
+{
+	Open,
+	Close,
+	None
+};
+
+UCLASS()
+class OUTBREAK_API ADoorBase : public AActor, public IInteractInterface
+{
+	GENERATED_BODY()
+
+public:
+	ADoorBase();
+
+public:
+	virtual void Interact_Implementation(APawn* InstigatorPawn) override;
+	bool IsOpen() const;
+
+protected:
+	virtual void BeginPlay() override;
+
+private:
+	UFUNCTION()
+	void UpdateTimeline(float Output);
+
+public:
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UCurveFloat> DoorTimelineFloatCurve;
+
+protected:
+	UPROPERTY()
+	TObjectPtr<UStaticMeshComponent> DoorMesh;
+	
+	UPROPERTY()
+	TObjectPtr<UStaticMeshComponent> DoorFrame;
+    
+	UPROPERTY()
+	TObjectPtr<UTimelineComponent> DoorTimelineComp;
+    
+	bool bIsCanInteract = true;
+	bool bIsDestroyable = false;
+	int HP = 100;
+	EDoorStatus CurrentStatus = EDoorStatus::Close;
+	
+private:
+	FOnTimelineFloat UpdateFunctionFloat;
+	FRotator InitialRotation;
+	FRotator TargetRotation;
+};

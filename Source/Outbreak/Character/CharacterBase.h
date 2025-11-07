@@ -23,7 +23,9 @@ public:
 	virtual void BeginPlay() override;
 	
 	void ApplyToxicDamage(float DamagePerSecond, float Duration);
-
+	
+	UFUNCTION(BlueprintCallable) void TriggerFootStepLeft();
+	UFUNCTION(BlueprintCallable) void TriggerFootStepRight();
 protected:
 	virtual void InitCharacterData();
 	virtual void SetupCollision();
@@ -74,4 +76,6 @@ protected:
 	UPROPERTY(ReplicatedUsing = OnRep_IsToxic)
 	bool bIsToxic = false;
 	// ~RepNotify
+
+	UPROPERTY() TObjectPtr<class UFootStepComponent> FootStepComponent;
 };

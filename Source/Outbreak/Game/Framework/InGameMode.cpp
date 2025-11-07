@@ -1,10 +1,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+
 #include "InGameMode.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerController.h"
 #include "Containers/Set.h"
 #include "Outbreak/Manager/CharacterSpawnManager.h"
+#include "Outbreak/Manager/SoundManager.h"
+
 
 AInGameMode::AInGameMode()
 {
@@ -15,6 +18,11 @@ void AInGameMode::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	StartMatch();
+	if (USoundManager* SM = GetGameInstance()->GetSubsystem<USoundManager>())
+	{
+		SM->StartMainBgmShuffle(false, 0.6f);
+	}
 	UE_LOG(LogTemp, Warning, TEXT("게임 시작됨"));
 	
 	StartMatch();

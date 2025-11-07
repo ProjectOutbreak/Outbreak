@@ -19,13 +19,19 @@ public:
 
 	//-----Variables-----//
 	TArray<TSoftObjectPtr<UClass>> ClassesToPreload;
+	TArray<TSoftObjectPtr<USoundBase>> SoundsToPreload;
 	
-	UPROPERTY()
-	TSubclassOf<UUserWidget> CachedWidgetClass = nullptr;
+	UPROPERTY()	TSubclassOf<UUserWidget> CachedWidgetClass = nullptr;
+	UPROPERTY() TArray<TObjectPtr<USoundBase>> CachedBgmSounds;
+	TMap<EPhysicalSurface, TObjectPtr<USoundBase>> CachedFootstepSounds;
 	
 protected:
 	UPROPERTY()
 	ETimePreset SelectedTimePreset = ETimePreset::RandomOne;
+	
+private:
+	FStreamableManager StreamableManager;
+
 public:
 	//-----Function-----//
 	virtual void Init() override;
@@ -33,11 +39,11 @@ public:
 	UFUNCTION()	void AddAssetsPath();
 	UFUNCTION()	void BeginLoading();
 	UFUNCTION()	void OnAssetsLoaded();
-	UFUNCTION()	TSubclassOf<UUserWidget> GetCachedWidgetClass() const { return CachedWidgetClass; }
 	UFUNCTION()	void SetSelectedTimePreset(ETimePreset InPreset) {SelectedTimePreset = InPreset;}
 	UFUNCTION()	ETimePreset GetSelectedTimePreset() const { return SelectedTimePreset; }
 	UFUNCTION()	void ApplySelectedTimePreset(); // 테스트용
 
-private:
-	FStreamableManager StreamableManager;	
+	UFUNCTION()	TSubclassOf<UUserWidget> GetCachedWidgetClass() const { return CachedWidgetClass; }
+	const TArray<TObjectPtr<USoundBase>>& GetCachedBgmList() const { return CachedBgmSounds; }
+	const TMap<EPhysicalSurface, TObjectPtr<USoundBase>>& GetCachedFootStepSounds() const { return CachedFootstepSounds; }
 };

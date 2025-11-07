@@ -11,6 +11,7 @@
 #define LOG_CALL_WARNING_NUM(Number) UE_LOG(LogTemp, Warning, TEXT("[%s] Called %d"), CURRENT_CONTEXT, Number)
 #define LOG_CALL_ERROR() UE_LOG(LogTemp, Error, TEXT("[%s] Called"), CURRENT_CONTEXT)
 #define LOG_CALL_ERROR_NUM(Number) UE_LOG(LogTemp, Error, TEXT("[%s] Called %d"), CURRENT_CONTEXT, Number)
+#define ECC_Footstep ECollisionChannel::ECC_GameTraceChannel1
 
 UENUM()
 enum class EAbilityType : uint8

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+class IInteractInterface;
 #include "InGamePlayerController.generated.h"
 
 UCLASS()
@@ -20,8 +21,10 @@ public:
 	void TogglePauseMenu();
 
 protected:
+	virtual void Tick(float DeltaTime) override;
 	virtual void AcknowledgePossession(class APawn* InPawn) override;
 	virtual void SetupInputComponent() override;
+	void PerformInteract();
 
 private:
 	void FirstPersonMove(const struct FInputActionValue& Value);
@@ -34,6 +37,8 @@ private:
 	void Crouch();
 	void StopCrouch();
 	void ChangePlayerControl();
+	void GetInteractableObject();
+
 	void Use();
 	void EndUse();
 	void Reload();
@@ -73,6 +78,11 @@ private:
 	UPROPERTY()
 	TObjectPtr<class UInputAction> EndUseAction;
 
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<class UInputAction> InteractAction;
+	
+
+
 	UPROPERTY()
 	TObjectPtr<class UInputAction> ReloadAction;
 
@@ -97,4 +107,9 @@ private:
 	float CrouchSpeed = 200.f;
 	
 	bool bMenuOpen = false;
+	
+	TScriptInterface<IInteractInterface> FocusedInteractable;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Interaction")
+	float InteractionDistance;
 };

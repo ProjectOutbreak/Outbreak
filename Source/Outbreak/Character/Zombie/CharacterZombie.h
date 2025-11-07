@@ -9,6 +9,7 @@
 class AAIController;
 class ACharacterPlayer;
 class AZombieAIComponent;
+class USoundCue;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnZombieDeathSignature, AActor*, DeadActor);
 
@@ -65,4 +66,7 @@ protected:
 
 	UPROPERTY()
 	AController* LastDamagePlayer;
+
+private:
+	TObjectPtr<USoundCue> DeadSoundCue;
 };

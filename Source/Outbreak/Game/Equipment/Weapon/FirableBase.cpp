@@ -68,6 +68,11 @@ void AFirableBase::ProcessFire()
 	
 	OnAmmoChanged.Broadcast(CurrentAmmoInMag, CurrentTotalAmmo);
 
+	if (FireSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), FireSound, GetActorLocation());
+	}
+	
 	AController* OwnerController = GetInstigatorController();
 	if (!OwnerController) return;
 

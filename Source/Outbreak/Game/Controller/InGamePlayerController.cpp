@@ -6,11 +6,15 @@
 #include "Outbreak/UI/InGameHUD.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Outbreak/Character/Player/CharacterPlayer.h"
+#include "Outbreak/Game/Interface/InteractInterface.h"
 #include "Outbreak/UI/OBWidget.h"
-#include "Utilities/DebugHelper.h"
+#include "DrawDebugHelpers.h"
 
 AInGamePlayerController::AInGamePlayerController()
 {
+	PrimaryActorTick.bCanEverTick = true;
+	InteractionDistance = 250.0f;
+	
 	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionFirstPersonMoveRef(TEXT("/Game/Inputs/Actions/IA_FirstPersonMove.IA_FirstPersonMove"));
 	if (InputActionFirstPersonMoveRef.Object)
 	{
@@ -51,6 +55,11 @@ AInGamePlayerController::AInGamePlayerController()
 	{
 		ToggleMenuAction = InputActionToggleMenuRef.Object;
 	}
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionInteractRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Inputs/IA_DoorInteract.IA_DoorInteract'"));
+	if (InputActionInteractRef.Object)
+	{
+		InteractAction = InputActionInteractRef.Object;
+	}
 	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionFireRef(TEXT("/Game/Inputs/Actions/IA_Use.IA_Use"));
 	if (InputActionFireRef.Object)
 	{
@@ -76,6 +85,12 @@ AInGamePlayerController::AInGamePlayerController()
 	{
 		ToggleFireModeAction = InputActionToggleFireModeRef.Object;
 	}
+}
+
+
+void AInGamePlayerController::Tick(float DeltaTime)
+{
+	GetInteractableObject();
 }
 
 void AInGamePlayerController::AcknowledgePossession(APawn* InPawn)
@@ -106,6 +121,7 @@ void AInGamePlayerController::SetupInputComponent()
 	EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Started, this, &AInGamePlayerController::Reload);
 	EnhancedInputComponent->BindAction(SelectEquipmentAction, ETriggerEvent::Triggered, this, &AInGamePlayerController::SelectEquipment);
 	EnhancedInputComponent->BindAction(ToggleFireModeAction, ETriggerEvent::Started, this, &AInGamePlayerController::ToggleFireMode);
+	EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Triggered, this, &AInGamePlayerController::PerformInteract);
 }
 
 void AInGamePlayerController::FirstPersonMove(const FInputActionValue& Value)
@@ -114,7 +130,6 @@ void AInGamePlayerController::FirstPersonMove(const FInputActionValue& Value)
 
 	const FVector2D MovementVector = Value.Get<FVector2D>();
 	
-	// if (ControlledCharacter->CanMove())
 	if (ControlledCharacter && MovementVector != FVector2D::ZeroVector)
 	{
 
@@ -210,7 +225,6 @@ void AInGamePlayerController::ChangePlayerControl()
 	ControlledCharacter->ChangePlayerControl();
 }
 
-
 void AInGamePlayerController::TogglePauseMenu()
 {
 	bMenuOpen = !bMenuOpen;
@@ -254,6 +268,41 @@ void AInGamePlayerController::TogglePauseMenu()
 	}
 }
 
+void AInGamePlayerController::GetInteractableObject()
+{
+	
+	FVector CameraLocation;
+	FRotator CameraRotation;
+	GetPlayerViewPoint(CameraLocation, CameraRotation);
+	FVector TraceEnd = CameraLocation + (CameraRotation.Vector() * InteractionDistance);
+    
+	FHitResult HitResult;
+	FCollisionQueryParams Params;
+	if (GetPawn())
+	{
+		Params.AddIgnoredActor(GetPawn());
+	}
+
+	bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, CameraLocation, TraceEnd, ECC_Visibility, Params);
+
+	TScriptInterface<IInteractInterface> CurrentHitObject = bHit ? HitResult.GetActor() : nullptr;
+
+	if (CurrentHitObject != FocusedInteractable)
+	{
+		if (FocusedInteractable)
+		{
+			FocusedInteractable->Execute_EndFocus(FocusedInteractable.GetObject());
+		}
+
+		if (CurrentHitObject)
+		{
+			CurrentHitObject->Execute_BeginFocus(CurrentHitObject.GetObject());
+		}
+
+		FocusedInteractable = CurrentHitObject;
+	}
+}
+
 void AInGamePlayerController::Use()
 {
 	if (!ControlledCharacter) return;
@@ -288,4 +337,41 @@ void AInGamePlayerController::ToggleFireMode()
 	if (!ControlledCharacter) return;
 
 	ControlledCharacter->HandleToggleFireMode();
+}
+void AInGamePlayerController::PerformInteract()
+{
+
+	FVector CameraLocation;
+	FRotator CameraRotation;
+	GetPlayerViewPoint(CameraLocation, CameraRotation);
+	
+	FVector TraceEnd = CameraLocation + (CameraRotation.Vector() * InteractionDistance);
+
+	FHitResult HitResult;
+	FCollisionQueryParams Params;
+
+
+	APawn* MyPawn = GetPawn();
+	if (MyPawn)
+	{
+		Params.AddIgnoredActor(MyPawn);
+	}
+	
+	bool bHit = GetWorld()->LineTraceSingleByChannel(
+		HitResult,
+		CameraLocation,
+		TraceEnd,
+		ECC_Visibility,
+		Params
+	);
+	
+	if (bHit)
+	{
+		AActor* HitActor = HitResult.GetActor();
+		
+		if (HitActor && HitActor->Implements<UInteractInterface>())
+		{
+			IInteractInterface::Execute_Interact(HitActor, MyPawn);
+		}
+	}
 }
