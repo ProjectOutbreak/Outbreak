@@ -10,6 +10,7 @@
 #include "Net/UnrealNetwork.h"
 #include "Outbreak/Public/Utilities/DebugHelper.h"
 #include "Outbreak/UI/InGameHUD.h"
+#include "Outbreak/Component/FootStepComponent.h"
 
 ACharacterBase::ACharacterBase()
 {
@@ -180,6 +181,9 @@ void ACharacterBase::SetupCollision()
 void ACharacterBase::SetupMovement()
 {
 	UCharacterMovementComponent* MovementComp = GetCharacterMovement();
+	FootStepComponent = NewObject<UFootStepComponent>(this, TEXT("FootStepComponent"));
+
+	if (FootStepComponent)  FootStepComponent->RegisterComponent();
 	if (!MovementComp) return;
 	
 	MovementComp->JumpZVelocity = 500.f;
@@ -247,4 +251,14 @@ void ACharacterBase::ClearToxicEffect()
 		bIsToxic = false;
 		OnRep_IsToxic();
 	}
+}
+
+void ACharacterBase::TriggerFootStepLeft()
+{
+	if (FootStepComponent) FootStepComponent->HandleFootStep(TEXT("ik_foot_l"));
+}
+
+void ACharacterBase::TriggerFootStepRight()
+{
+	if (FootStepComponent) FootStepComponent->HandleFootStep(TEXT("ik_foot_r"));
 }

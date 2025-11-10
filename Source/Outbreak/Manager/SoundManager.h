@@ -3,40 +3,38 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Outbreak/Game/Framework/OutBreakGameInstance.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "SoundManager.generated.h"
 
-/**
-if (UAudioManager* AudioManager = GetGameInstance()->GetSubsystem<UAudioManager>())
-{
-	AudioManager->PlaySoundAtLocation(YourSound, GetActorLocation());
-}
- */
+
 UCLASS()
 class OUTBREAK_API USoundManager : public UGameInstanceSubsystem
 {
 	GENERATED_BODY()
-
+	
+	//-----Function-----//
 public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	virtual void Deinitialize() override;
 
-	void PlaySoundAtLocation(USoundBase* Sound, const FVector& Location, float VolumeMultiplier = 1.0f, float PitchMultiplier = 1.0f);
-	void PlaySound2D(USoundBase* Sound, float VolumeMultiplier = 1.0f, float PitchMultiplier = 1.0f);
-	void StopAllSounds();
-	void SetBGMVolume(float InVolume);
-	float GetBgmVolume() const { return BGMVolume; }
-	void SetSFXVolume(float InVolume);
-	float GetSFXVolume() const { return SFXVolume; }
+	UFUNCTION() void StartMainBgmShuffle(bool bRestartIfPlaying = false, float FadeInTimme = 0.5f);
+	void PlayFootStepSound(EPhysicalSurface InSurfaceType, FVector InLocation);
+	
+private:
+	void PlayNextBgm(float FadeInTime);
+	void PlayBgmInternal(USoundBase* Sound, float FadeInTime);
 
+	UFUNCTION() void OnMusicFinished();
 
-	UPROPERTY()
-	UAudioComponent* BGMComponent;
+	//-----Variables-----//
 
-	void PlayPersistentBGM(USoundBase* BGM);
+public:
+	UPROPERTY() UAudioComponent* BgmComponent = nullptr;
 
 private:
-	float BGMVolume = 0.5f;
-	float SFXVolume = 0.5f;
-	
+	float BgmVolume = 0.5f;
+	int32 LastBgmIndex = INDEX_NONE;
+
+	UPROPERTY() TObjectPtr<UOutbreakGameInstance> OBGameInstance;
 };

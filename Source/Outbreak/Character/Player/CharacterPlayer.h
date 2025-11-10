@@ -9,6 +9,7 @@
 #include "Outbreak/Character/CharacterBase.h"
 #include "Outbreak/Component/EquipmentController.h"
 #include "Outbreak/Data/GameData.h"
+#include "Outbreak/Game/Interface/InteractInterface.h"
 #include "Outbreak/Util/Define.h"
 #include "CharacterPlayer.generated.h"
 
@@ -23,8 +24,9 @@ class OUTBREAK_API ACharacterPlayer : public ACharacterBase, public IGenericTeam
 public:
 	ACharacterPlayer();
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
 	virtual void PostInitializeComponents() override;
-	
+
 	void ChangePlayerControl();
 	void HandleUse() const { EquipmentController->HandleUse(); }
 	void HandleEndUse() const { EquipmentController->HandleEndUse(); }
@@ -108,8 +110,9 @@ protected:
 	TObjectPtr<class AWeaponBase> SpawnedWeapon;
 	UPROPERTY()
 	TSubclassOf<class AM4> WeaponToSpawn;
-	
+
 private:
 	UPROPERTY()
 	TObjectPtr<UMaterialInstanceDynamic> ToxicAuraMID;
+
 };
