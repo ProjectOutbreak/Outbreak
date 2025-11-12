@@ -192,12 +192,4 @@ void ACharacterZombie::OnRep_ZombieData()
 void ACharacterZombie::ApplyZombieData()
 {
 	CurrentHealth = ZombieData.MaxHealth;
-	GetMesh()->SetRelativeScale3D(FVector(ZombieData.BodyScale));
-
-	const float NewRadius = DefaultCapsuleRadius * ZombieData.BodyScale;
-	const float NewHeight = DefaultCapsuleHalfHeight * ZombieData.BodyScale;
-    
-	GetCapsuleComponent()->SetCapsuleRadius(NewRadius);
-	GetCapsuleComponent()->SetCapsuleHalfHeight(NewHeight);
-	GetMesh()->SetRelativeLocation(FVector(0.f, 0.f, -GetCapsuleComponent()->GetScaledCapsuleHalfHeight()));
 }

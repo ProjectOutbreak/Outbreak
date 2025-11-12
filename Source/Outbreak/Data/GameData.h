@@ -104,9 +104,6 @@ struct FCharacterBaseData : public FTableRowBase
 
 	UPROPERTY(EditAnywhere)
 	int32 MaxExtraHealth = 0;
-	
-	UPROPERTY(EditAnywhere)
-	float BodyScale = 1.0f;
 };
 
 USTRUCT()
