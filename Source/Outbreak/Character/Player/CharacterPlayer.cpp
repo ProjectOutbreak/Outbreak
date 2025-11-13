@@ -161,9 +161,7 @@ void ACharacterPlayer::InitCharacterData()
 			return;
 		}
 
-		const FPlayerData* Data = SpawnManager->GetPlayerData(PlayerType);
-		PlayerData = *Data;
-		SpawnManager->Activate(this);
+		PlayerData = *SpawnManager->GetPlayerData(PlayerType);
 	}
 	
 	CurrentHealth = PlayerData.MaxHealth;
