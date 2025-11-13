@@ -16,8 +16,6 @@ void FZombieAttackState::Execute(const EZombieStateType CurrentState, const floa
 {
 	Super::Execute(CurrentState, DeltaTime);
 	
-	RotateTowardsTarget(DeltaTime);
-
 	if (IsOutOfAttackRange())
 	{
 		ChangeState(EZombieStateType::Alert);

@@ -16,8 +16,6 @@
 
 ACharacterZombie::ACharacterZombie()
 {
-	GetMesh()->SetRelativeLocation(FVector(0.f, 0.f, -GetCapsuleComponent()->GetScaledCapsuleHalfHeight()));
-
 	CharacterType = ECharacterType::Zombie;
 	AIControllerClass = AZombieAIComponent::StaticClass();
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
@@ -103,10 +101,9 @@ void ACharacterZombie::SetupMovement()
 {
 	Super::SetupMovement();
 
-	bUseControllerRotationYaw = false;
-	
 	UCharacterMovementComponent* MovementComp = GetCharacterMovement();
-	MovementComp->bOrientRotationToMovement = true;
+	MovementComp->bOrientRotationToMovement = false;
+	MovementComp->bUseControllerDesiredRotation = true;
 	MovementComp->RotationRate = FRotator(0.0f, 360.0f, 0.0f);
 	MovementComp->MaxAcceleration = 1024.0f;
 	MovementComp->AvoidanceConsiderationRadius = 500.0f;

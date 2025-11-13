@@ -26,6 +26,10 @@
 
 ACharacterPlayer::ACharacterPlayer()
 {
+	bUseControllerRotationPitch = false;
+	bUseControllerRotationYaw = true;
+	bUseControllerRotationRoll = false;
+	
 	PostProcessComponent = CreateDefaultSubobject<UPostProcessComponent>(TEXT("PostProcessComponent"));
 	PostProcessComponent->SetupAttachment(RootComponent);
 	PostProcessComponent->bEnabled = true;

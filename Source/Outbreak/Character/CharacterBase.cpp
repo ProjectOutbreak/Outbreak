@@ -16,10 +16,14 @@ ACharacterBase::ACharacterBase()
 {
 	PrimaryActorTick.bCanEverTick = false;
 	bReplicates = true;
-	
-	bUseControllerRotationPitch = false;
-	bUseControllerRotationYaw = true;
-	bUseControllerRotationRoll = false;
+
+	if (GetMesh())
+	{
+		GetMesh()->SetRelativeLocationAndRotation(
+			FVector(0.0f, 0.0f, -GetCapsuleComponent()->GetScaledCapsuleHalfHeight()),
+			FRotator(0.0f, -90.0f, 0.0f)
+		);
+	}
 }
 
 void ACharacterBase::BeginPlay()
@@ -172,7 +176,6 @@ void ACharacterBase::SetupCollision()
 	USkeletalMeshComponent* SkeletalMeshComp = GetMesh();
 	if (!SkeletalMeshComp) return;
 	
-	SkeletalMeshComp->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, -100.0f), FRotator(0.0f, -90.0f, 0.0f));
 	SkeletalMeshComp->SetAnimationMode(EAnimationMode::AnimationBlueprint);
 	SkeletalMeshComp->SetCollisionProfileName(TEXT("CharacterMesh"));
 	SkeletalMeshComp->SetHiddenInGame(false);

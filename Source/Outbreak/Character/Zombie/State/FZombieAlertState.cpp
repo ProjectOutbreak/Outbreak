@@ -16,8 +16,6 @@ void FZombieAlertState::Execute(const EZombieStateType CurrentState, const float
 {
 	Super::Execute(CurrentState, DeltaTime);
 
-	RotateTowardsTarget(DeltaTime);
-	
 	Timer += DeltaTime;
 	if (Timer >= AlertAnimationLength)
 	{

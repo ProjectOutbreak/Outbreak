@@ -83,6 +83,8 @@ void AZombieAIComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
 void AZombieAIComponent::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 {
 	if (!HasAuthority()) return;
+
+	if (CurrentTargetPlayer) return;
 	
 	if (Stimulus.WasSuccessfullySensed())
 	{

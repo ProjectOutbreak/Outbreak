@@ -18,7 +18,6 @@ public:
 	virtual void Exit(EZombieStateType NextState) override;
 
 protected:
-	void RotateTowardsTarget(float DeltaTime) const;
 	TObjectPtr<ACharacterPlayer> GetTarget() const;
 
 	TObjectPtr<ACharacterZombie> Owner;

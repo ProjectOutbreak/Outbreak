@@ -42,6 +42,7 @@ void FZombieChaseState::Enter(const EZombieStateType PreviousState)
 	{
 		const float AcceptanceRadius = Owner->GetZombieData()->AttackRange;
 		AIController->MoveToActor(GetTarget(), AcceptanceRadius, true);
+		AIController->SetFocus(GetTarget());
 	}
 	else if (CurrentChaseType == EChaseType::Arc)
 	{
