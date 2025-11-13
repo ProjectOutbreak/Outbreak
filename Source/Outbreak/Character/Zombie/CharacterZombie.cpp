@@ -18,8 +18,6 @@ ACharacterZombie::ACharacterZombie()
 {
 	GetMesh()->SetRelativeLocation(FVector(0.f, 0.f, -GetCapsuleComponent()->GetScaledCapsuleHalfHeight()));
 
-	PrimaryActorTick.bCanEverTick = false;
-	
 	CharacterType = ECharacterType::Zombie;
 	AIControllerClass = AZombieAIComponent::StaticClass();
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;

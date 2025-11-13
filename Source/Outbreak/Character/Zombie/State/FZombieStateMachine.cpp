@@ -1,12 +1,14 @@
 ﻿#include "FZombieStateMachine.h"
+#include "Utilities/DebugHelper.h"
 
-void FZombieStateMachine::ChangeState(const EZombieStateType Key, const TObjectPtr<ACharacterPlayer> Context)
+void FZombieStateMachine::ChangeState(const EZombieStateType Key)
 {
 	if (IsInState(EZombieStateType::Die))
 	{
-		UE_LOG(LogTemp, Log, TEXT("[%s] Zombie is dead, cannot change state."), CURRENT_CONTEXT);
+		const FString DebugMsg = FString::Printf(TEXT("Zombie is dead, cannot change state."));
+		PRINT_WITH_CURRENT_CONTEXT(DebugMsg);
 		return;
 	}
 	
-	TStateMachine::ChangeState(Key, Context);
+	TStateMachine::ChangeState(Key);
 }

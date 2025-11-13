@@ -21,10 +21,13 @@ class OUTBREAK_API AZombieAIComponent : public AAIController
 public:
 	AZombieAIComponent();
 	virtual void PostInitializeComponents() override;
-	virtual void BeginPlay() override;
 	virtual void OnPossess(APawn* InPawn) override;
+	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual FGenericTeamId GetGenericTeamId() const override { return TeamId; }
+
+	FORCEINLINE TObjectPtr<ACharacterPlayer> GetTarget() const { return CurrentTargetPlayer; }
 
 private:
 	// Setup Functions
@@ -53,6 +56,6 @@ protected:
 	FGenericTeamId TeamId = 1;
 
 private:
-	UPROPERTY()
-	TObjectPtr<ACharacterPlayer> CurrentTargetCharacter;
+	UPROPERTY(Replicated)
+	TObjectPtr<ACharacterPlayer> CurrentTargetPlayer;
 };

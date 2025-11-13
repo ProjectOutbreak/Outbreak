@@ -6,14 +6,11 @@
 #include "Outbreak/Component/ZombieAIComponent.h"
 #include "Outbreak/Util/Define.h"
 
-FZombieWanderState::FZombieWanderState(const TSharedPtr<TStateMachine<EZombieStateType, ACharacterPlayer>>& InFsm,
-	ACharacterZombie* InOwner): FZombieBaseState(InFsm, EZombieStateType::Wander, InOwner)
-{
-}
+FZombieWanderState::FZombieWanderState(const TSharedPtr<TStateMachine<EZombieStateType>>& InFsm, ACharacterZombie* InOwner): FZombieBaseState(InFsm, EZombieStateType::Wander, InOwner) { }
 
-void FZombieWanderState::Enter(const EZombieStateType PreviousState, const TObjectPtr<ACharacterPlayer> TargetPlayer)
+void FZombieWanderState::Enter(const EZombieStateType PreviousState)
 {
-	Super::Enter(PreviousState, TargetPlayer);
+	Super::Enter(PreviousState);
 	
 	if (Owner && Owner->GetCharacterMovement())
 	{
@@ -45,9 +42,9 @@ void FZombieWanderState::Execute(const EZombieStateType CurrentState, const floa
 	}
 }
 
-void FZombieWanderState::Exit(const EZombieStateType NextState, const TObjectPtr<ACharacterPlayer> TargetPlayer)
+void FZombieWanderState::Exit(const EZombieStateType NextState)
 {
-	Super::Exit(NextState, TargetPlayer);
+	Super::Exit(NextState);
 
 	AIController->StopMovement();
 }

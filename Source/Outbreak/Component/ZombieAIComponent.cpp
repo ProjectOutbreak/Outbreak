@@ -1,6 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "ZombieAIComponent.h"
+
+#include "Net/UnrealNetwork.h"
 #include "Outbreak/Character/Zombie/CharacterZombie.h"
 #include "Outbreak/Character/Zombie/State/FZombieAlertState.h"
 #include "Outbreak/Character/Zombie/State/FZombieAttackState.h"
@@ -71,6 +73,13 @@ void AZombieAIComponent::Tick(float DeltaTime)
 	}
 }
 
+void AZombieAIComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ThisClass, CurrentTargetPlayer);
+}
+
 void AZombieAIComponent::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 {
 	if (!HasAuthority()) return;
@@ -78,7 +87,7 @@ void AZombieAIComponent::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus St
 	if (Stimulus.WasSuccessfullySensed())
 	{
 		const TObjectPtr<ACharacterPlayer> TargetPlayer = Cast<ACharacterPlayer>(Actor);
-		CurrentTargetCharacter = TargetPlayer;
+		CurrentTargetPlayer = TargetPlayer;
 
 		EZombieStateType CurrentState = EZombieStateType::None;
 		if (StateMachine.IsValid())
@@ -88,12 +97,13 @@ void AZombieAIComponent::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus St
 		
 		if (CurrentState == EZombieStateType::Idle || CurrentState == EZombieStateType::Wander)
 		{
-			StateMachine->ChangeState(EZombieStateType::Alert, TargetPlayer);
+			StateMachine->ChangeState(EZombieStateType::Alert);
 		}
 	}
 	else
 	{
 		StateMachine->ChangeState(EZombieStateType::Wander);
+		CurrentTargetPlayer = nullptr;
 	}
 }
 

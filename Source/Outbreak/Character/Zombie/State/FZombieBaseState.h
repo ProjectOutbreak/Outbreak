@@ -7,22 +7,21 @@
 #include "Outbreak/Character/Zombie/CharacterZombie.h"
 #include "Outbreak/Core/TStateMachine.h"
 
-class OUTBREAK_API FZombieBaseState : public TState<EZombieStateType, ACharacterPlayer>
+class OUTBREAK_API FZombieBaseState : public TState<EZombieStateType>
 {
 public:
 	using Super = FZombieBaseState;
 	
-	FZombieBaseState(const TSharedPtr<TStateMachine<EZombieStateType, ACharacterPlayer>>& InFsm, const EZombieStateType InStateKey, ACharacterZombie* InOwner);
-	virtual void Enter(EZombieStateType PreviousState, TObjectPtr<ACharacterPlayer> TargetPlayer) override;
+	FZombieBaseState(const TSharedPtr<TStateMachine<EZombieStateType>>& InFsm, const EZombieStateType InStateKey, ACharacterZombie* InOwner);
+	virtual void Enter(EZombieStateType PreviousState) override;
 	virtual void Execute(EZombieStateType CurrentState, float DeltaTime) override;
-	virtual void Exit(EZombieStateType NextState, TObjectPtr<ACharacterPlayer> TargetPlayer) override;
+	virtual void Exit(EZombieStateType NextState) override;
 
 protected:
 	void RotateTowardsTarget(float DeltaTime) const;
+	TObjectPtr<ACharacterPlayer> GetTarget() const;
 
-protected:
 	TObjectPtr<ACharacterZombie> Owner;
-	TObjectPtr<ACharacterPlayer> CurrentTargetPlayer;
-	TObjectPtr<AAIController> AIController;
+	TObjectPtr<AZombieAIComponent> AIController;
 	float RotationSpeed = 180.0f;
 };

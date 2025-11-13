@@ -1,11 +1,11 @@
 ﻿#include "FZombieAttackState.h"
 #include "Outbreak/Character/Zombie/CharacterZombie.h"
 
-FZombieAttackState::FZombieAttackState(const TSharedPtr<TStateMachine<EZombieStateType, ACharacterPlayer>>& InFsm, ACharacterZombie* InOwner): FZombieBaseState(InFsm, EZombieStateType::Attack, InOwner) { }
+FZombieAttackState::FZombieAttackState(const TSharedPtr<TStateMachine<EZombieStateType>>& InFsm, ACharacterZombie* InOwner): FZombieBaseState(InFsm, EZombieStateType::Attack, InOwner) { }
 
-void FZombieAttackState::Enter(const EZombieStateType PreviousState, const TObjectPtr<ACharacterPlayer> TargetPlayer)
+void FZombieAttackState::Enter(const EZombieStateType PreviousState)
 {
-	FZombieBaseState::Enter(PreviousState, TargetPlayer);
+	Super::Enter(PreviousState);
 
 	if (!Owner->HasAuthority()) return;
 
@@ -14,19 +14,19 @@ void FZombieAttackState::Enter(const EZombieStateType PreviousState, const TObje
 
 void FZombieAttackState::Execute(const EZombieStateType CurrentState, const float DeltaTime)
 {
-	FZombieBaseState::Execute(CurrentState, DeltaTime);
+	Super::Execute(CurrentState, DeltaTime);
 	
 	RotateTowardsTarget(DeltaTime);
 
 	if (IsOutOfAttackRange())
 	{
-		ChangeState(EZombieStateType::Alert, CurrentTargetPlayer);
+		ChangeState(EZombieStateType::Alert);
 	}
 }
 
-void FZombieAttackState::Exit(const EZombieStateType NextState, const TObjectPtr<ACharacterPlayer> TargetPlayer)
+void FZombieAttackState::Exit(const EZombieStateType NextState)
 {
-	FZombieBaseState::Exit(NextState, TargetPlayer);
+	Super::Exit(NextState);
 
 	if (!Owner->HasAuthority()) return;
 
@@ -35,11 +35,12 @@ void FZombieAttackState::Exit(const EZombieStateType NextState, const TObjectPtr
 
 bool FZombieAttackState::IsOutOfAttackRange()
 {
-	if (!CurrentTargetPlayer) return true;
+	TObjectPtr<ACharacterPlayer> CurrentTarget = GetTarget();
+	if (!CurrentTarget) return true;
 	
 	const FZombieData* ZombieData = Owner->GetZombieData();
 	const float AttackRange = ZombieData->AttackRange;
-	const float DistanceToTarget = FVector::Dist(Owner->GetActorLocation(), CurrentTargetPlayer->GetActorLocation());
+	const float DistanceToTarget = FVector::Dist(Owner->GetActorLocation(), CurrentTarget->GetActorLocation());
 	
 	if (DistanceToTarget > AttackRange) return true;
 	

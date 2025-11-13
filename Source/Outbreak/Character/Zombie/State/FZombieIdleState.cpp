@@ -2,11 +2,11 @@
 #include "Outbreak/Character/Zombie/CharacterZombie.h"
 #include "Outbreak/Component/ZombieAIComponent.h"
 
-FZombieIdleState::FZombieIdleState(const TSharedPtr<TStateMachine<EZombieStateType, ACharacterPlayer>>& InFsm, ACharacterZombie* InOwner): FZombieBaseState(InFsm, EZombieStateType::Idle, InOwner) { }
+FZombieIdleState::FZombieIdleState(const TSharedPtr<TStateMachine<EZombieStateType>>& InFsm, ACharacterZombie* InOwner): FZombieBaseState(InFsm, EZombieStateType::Idle, InOwner) { }
 
-void FZombieIdleState::Enter(const EZombieStateType PreviousState, const TObjectPtr<ACharacterPlayer> TargetPlayer)
+void FZombieIdleState::Enter(const EZombieStateType PreviousState)
 {
-	Super::Enter(PreviousState, TargetPlayer);
+	Super::Enter(PreviousState);
 	
 	Owner->GetController()->StopMovement();
 
@@ -26,8 +26,8 @@ void FZombieIdleState::Execute(const EZombieStateType CurrentState, const float 
 	}
 }
 
-void FZombieIdleState::Exit(const EZombieStateType NextState, const TObjectPtr<ACharacterPlayer> TargetPlayer)
+void FZombieIdleState::Exit(const EZombieStateType NextState)
 {
-	Super::Exit(NextState, TargetPlayer);
+	Super::Exit(NextState);
 	
 }

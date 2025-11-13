@@ -7,11 +7,11 @@
 class OUTBREAK_API FZombieAttackState : public FZombieBaseState
 {
 public:
-	FZombieAttackState(const TSharedPtr<TStateMachine<EZombieStateType, ACharacterPlayer>>& InFsm, ACharacterZombie* InOwner);
+	FZombieAttackState(const TSharedPtr<TStateMachine<EZombieStateType>>& InFsm, ACharacterZombie* InOwner);
 
-	virtual void Enter(EZombieStateType PreviousState, TObjectPtr<ACharacterPlayer> TargetPlayer = nullptr) override;
+	virtual void Enter(EZombieStateType PreviousState) override;
 	virtual void Execute(EZombieStateType CurrentState, float DeltaTime) override;
-	virtual void Exit(EZombieStateType NextState, TObjectPtr<ACharacterPlayer> TargetPlayer = nullptr) override;
+	virtual void Exit(EZombieStateType NextState) override;
 
 protected:
 	bool IsOutOfAttackRange();
