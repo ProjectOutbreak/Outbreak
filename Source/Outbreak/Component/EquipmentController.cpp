@@ -7,6 +7,7 @@
 #include "Outbreak/Game/Equipment/Weapon/WeaponBase.h"
 #include "Outbreak/Game/Equipment/Weapon/ThrowableBase.h"
 #include "Outbreak/Game/Equipment/Medicine/MedicineBase.h"
+#include "Outbreak/Game/Equipment/Weapon/MeleeBase.h"
 #include "Outbreak/UI/InGameHUD.h"
 #include "Outbreak/Util/Define.h"
 #include "Outbreak/Util/EnumHelper.h"
@@ -234,7 +235,22 @@ void UEquipmentController::Equip(const TObjectPtr<AEquipmentBase>& Equipment)
 
 	if (IsValid(CurrentEquippedItem) && IsValid(CachedOwner))
 	{
-		CurrentEquippedItem->AttachToComponent(CachedOwner->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("ik_hand_gun"));
+		FName SocketName = TEXT("Weapon_M4");
+
+		switch (CurrentEquippedItem->GetEquipmentType())
+		{
+			case EEquipmentType::SecondaryWeapon:
+				SocketName = TEXT("Weapon_Knife");
+				break;
+			case EEquipmentType::ThrowableWeapon:
+				SocketName = TEXT("Weapon_Throwable");
+				break;
+			case EEquipmentType::PrimaryWeapon:
+			default:
+				SocketName = TEXT("Weapon_M4");
+				break;
+		}
+		CurrentEquippedItem->AttachToComponent(CachedOwner->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, SocketName);
 		CurrentEquippedItem->SetActorHiddenInGame(false);
 
 		// TODO : below if statement should be removed
@@ -259,6 +275,10 @@ void UEquipmentController::UnEquipCurrentEquipment()
 		if (AFirableBase* OldFirableWeapon = Cast<AFirableBase>(CurrentEquippedItem))
 		{
 			OldFirableWeapon->OnAmmoChanged.RemoveDynamic(this, &UEquipmentController::OnAmmoChangedHandler);
+		}
+		if (AMeleeBase* OldMeleeWeapon = Cast<AMeleeBase>(CurrentEquippedItem))
+		{
+			OldMeleeWeapon->ResetAttack();
 		}
 	}
 	

@@ -73,7 +73,7 @@ enum class EWeaponType : uint8
 	Melee,
 };
 
-UENUM()
+UENUM(BlueprintType)
 enum class EEquipmentType : uint8
 {
 	None,

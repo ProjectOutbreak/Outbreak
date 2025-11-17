@@ -330,6 +330,11 @@ void AInGamePlayerController::SelectEquipment(const FInputActionValue& Value)
 	const int32 SlotIndex = FMath::RoundToInt(SlotNumber);
 
 	UE_LOG(LogTemp, Log, TEXT("[%s] Select Equipment Slot: %d"), CURRENT_CONTEXT, SlotIndex);
+	
+	if (ControlledCharacter)
+	{
+		ControlledCharacter->HandleEquipBySlot(SlotIndex);
+	}
 }
 
 void AInGamePlayerController::ToggleFireMode()
