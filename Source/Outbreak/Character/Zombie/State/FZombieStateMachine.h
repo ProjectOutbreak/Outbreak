@@ -4,8 +4,8 @@
 
 enum class EZombieStateType : uint8;
 
-class FZombieStateMachine : public TStateMachine<EZombieStateType, ACharacterPlayer>
+class FZombieStateMachine : public TStateMachine<EZombieStateType>
 {
 public:
-	virtual void ChangeState(EZombieStateType Key, TObjectPtr<ACharacterPlayer> Context = nullptr) override;
+	virtual void ChangeState(EZombieStateType Key) override;
 };

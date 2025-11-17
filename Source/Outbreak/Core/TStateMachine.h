@@ -4,14 +4,14 @@
 #include "CoreMinimal.h"
 #include "TState.h"
 
-template<typename T, typename ContextType = UObject>
+template<typename T>
 class TStateMachine
 {
 public:
 	TStateMachine() = default;
 	virtual ~TStateMachine() { StateMap.Empty(); }
 	
-	virtual void AddState(T Key, TSharedPtr<TState<T, ContextType>> State)
+	virtual void AddState(T Key, TSharedPtr<TState<T>> State)
 	{
 		if (StateMap.Contains(Key))
 		{
@@ -22,7 +22,7 @@ public:
 		StateMap.Add(Key, State);
 	}
 
-	virtual void ChangeState(T Key, TObjectPtr<ContextType> Context = nullptr)
+	virtual void ChangeState(T Key)
 	{ 
 		if (CurrentKey == Key) return;
 		
@@ -33,13 +33,13 @@ public:
 		}
 		if (CurrentState.IsValid())
 		{
-			CurrentState->Exit(Key, Context);
+			CurrentState->Exit(Key);
 			PreviousState = CurrentState;
 			PreviousKey = CurrentKey;
 		}
 		CurrentKey = Key;
 		CurrentState = StateMap[Key];
-		CurrentState->Enter(PreviousKey, Context);
+		CurrentState->Enter(PreviousKey);
 	}
 
 	virtual void Release()
@@ -63,7 +63,7 @@ public:
 		return T();
 	}
 
-	virtual TSharedPtr<TState<T, ContextType>> GetState(const T& Key) const
+	virtual TSharedPtr<TState<T>> GetState(const T& Key) const
 	{
 		if (StateMap.Contains(Key))
 		{
@@ -78,9 +78,9 @@ public:
 	}
 
 private:
-	TMap<T, TSharedPtr<TState<T, ContextType>>> StateMap;
+	TMap<T, TSharedPtr<TState<T>>> StateMap;
 	T CurrentKey;
 	T PreviousKey;
-	TSharedPtr<TState<T, ContextType>> CurrentState;
-	TSharedPtr<TState<T, ContextType>> PreviousState;
+	TSharedPtr<TState<T>> CurrentState;
+	TSharedPtr<TState<T>> PreviousState;
 };

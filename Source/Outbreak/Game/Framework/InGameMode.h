@@ -16,11 +16,15 @@ class OUTBREAK_API AInGameMode : public AGameMode
 public:
 	AInGameMode();
 	virtual void BeginPlay() override;
+	virtual void OnPostLogin(AController* NewPlayer) override;
 
 	UFUNCTION()
 	void ProceedToNextLevel() const;
 
 	FORCEINLINE TObjectPtr<class ACharacterSpawnManager> GetSpawnManager() const { return SpawnManager; }
+
+protected:
+	void ActivateSpawnManagerForPlayer(APlayerController* PlayerToTarget);
 
 private:
 	UPROPERTY(EditAnywhere)

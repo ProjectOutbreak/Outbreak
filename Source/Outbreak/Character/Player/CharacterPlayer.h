@@ -60,9 +60,6 @@ public:
 	
 protected:
 	UPROPERTY()
-	TObjectPtr<class AInGamePlayerController> CachedPC;
-	
-	UPROPERTY()
 	TObjectPtr<class AInGameHUD> CachedHUD;
 	
 	UPROPERTY(EditAnywhere)

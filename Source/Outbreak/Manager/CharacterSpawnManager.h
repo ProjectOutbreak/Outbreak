@@ -17,7 +17,8 @@ class OUTBREAK_API ACharacterSpawnManager : public AActor
 // --------------------
 // Functions
 // --------------------
-public:	
+public:
+	ACharacterSpawnManager();
 	FZombieData* GetZombieData(const EZombieSubType Type);
 	FPlayerData* GetPlayerData(const EPlayerType Type);
 	
@@ -26,6 +27,8 @@ public:
 
 	void Activate(const TObjectPtr<ACharacterPlayer>& InTarget);
 	void Deactivate();
+
+	bool IsActivated() const { return bIsActivated; }
 	
 protected:
 	virtual void BeginPlay() override;

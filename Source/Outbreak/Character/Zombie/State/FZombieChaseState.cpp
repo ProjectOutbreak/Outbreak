@@ -7,21 +7,20 @@
 #include "Outbreak/Component/ZombieAIComponent.h"
 #include "Outbreak/Util/Define.h"
 
-FZombieChaseState::FZombieChaseState(const TSharedPtr<TStateMachine<EZombieStateType, ACharacterPlayer>>& InFsm, ACharacterZombie* InOwner): FZombieBaseState(InFsm, EZombieStateType::Chase, InOwner) { }
+FZombieChaseState::FZombieChaseState(const TSharedPtr<TStateMachine<EZombieStateType>>& InFsm, ACharacterZombie* InOwner): FZombieBaseState(InFsm, EZombieStateType::Chase, InOwner) { }
 
-void FZombieChaseState::Enter(const EZombieStateType PreviousState, const TObjectPtr<ACharacterPlayer> TargetPlayer)
+void FZombieChaseState::Enter(const EZombieStateType PreviousState)
 {
-	Super::Enter(PreviousState, TargetPlayer);
+	Super::Enter(PreviousState);
 
 	const TObjectPtr<UCharacterMovementComponent> MovementComp = Owner->GetCharacterMovement();
 	const FZombieData* ZombieData = Owner->GetZombieData();
-	const TObjectPtr<AZombieAIComponent> ZombieAI = Owner->GetZombieAI();
 	
-	if (!TargetPlayer|| !MovementComp || !ZombieData || !ZombieAI) return;
+	if (!GetTarget() || !MovementComp || !ZombieData || !AIController) return;
 	
 	MovementComp->MaxWalkSpeed = ZombieData->MaxRunSpeed;
 
-	if (const TObjectPtr<UPathFollowingComponent> PathFollowingComp = ZombieAI->GetPathFollowingComponent())
+	if (const TObjectPtr<UPathFollowingComponent> PathFollowingComp = AIController->GetPathFollowingComponent())
 	{
 		PathFollowingComp->SetBlockDetectionState(true);
 		PathFollowingComp->SetBlockDetection(BlockDetectionDistance, BlockDetectionInterval, BlockDetectionSampleCount);
@@ -29,11 +28,11 @@ void FZombieChaseState::Enter(const EZombieStateType PreviousState, const TObjec
 		{
 			if (Result.IsSuccess())
 			{
-				Fsm->ChangeState(EZombieStateType::Attack, CurrentTargetPlayer);
+				Fsm->ChangeState(EZombieStateType::Attack);
 			}
 			// else if (Result.IsFailure())
 			// {
-				// Fsm->ChangeState(EZombieStateType::Alert, CurrentTargetPlayer);
+				// Fsm->ChangeState(EZombieStateType::Alert);
 			// }
 		});
 	}
@@ -42,7 +41,8 @@ void FZombieChaseState::Enter(const EZombieStateType PreviousState, const TObjec
 	if (CurrentChaseType == EChaseType::Straight)
 	{
 		const float AcceptanceRadius = Owner->GetZombieData()->AttackRange;
-		ZombieAI->MoveToActor(CurrentTargetPlayer, AcceptanceRadius, true);
+		AIController->MoveToActor(GetTarget(), AcceptanceRadius, true);
+		AIController->SetFocus(GetTarget());
 	}
 	else if (CurrentChaseType == EChaseType::Arc)
 	{
@@ -55,19 +55,21 @@ void FZombieChaseState::Execute(const EZombieStateType CurrentState, const float
 {
 	Super::Execute(CurrentState, DeltaTime);
 
-	if (!Owner || !CurrentTargetPlayer)
+	const TObjectPtr<ACharacterPlayer> CurrentTarget = GetTarget();
+
+	if (!Owner || !CurrentTarget)
 	{
-		Fsm->ChangeState(EZombieStateType::Alert, nullptr);
+		Fsm->ChangeState(EZombieStateType::Alert);
 		return;
 	}
     
 	const FVector ZombieLocation = Owner->GetActorLocation();
-	const FVector PlayerLocation = CurrentTargetPlayer->GetActorLocation();
+	const FVector PlayerLocation = CurrentTarget->GetActorLocation();
 	const float DistanceToPlayer = FVector::Dist(ZombieLocation, PlayerLocation);
 
 	if (DistanceToPlayer <= Owner->GetZombieData()->AttackRange)
 	{
-		Fsm->ChangeState(EZombieStateType::Attack, CurrentTargetPlayer);
+		Fsm->ChangeState(EZombieStateType::Attack);
 		return;
 	}
 
@@ -77,10 +79,7 @@ void FZombieChaseState::Execute(const EZombieStateType CurrentState, const float
 		if (UpdateTimer >= UpdateInterval)
 		{
 			UpdateTimer = 0.0f;
-
-			const TObjectPtr<AZombieAIComponent> ZombieAI = Owner->GetZombieAI();
-			if (!ZombieAI) return;
-
+			
 			const FVector DirectionToPlayer = (PlayerLocation - ZombieLocation).GetSafeNormal();
 			const FVector RightVector = FVector::CrossProduct(DirectionToPlayer, FVector::UpVector);
 			const FVector FinalDirection = (DirectionToPlayer + (RightVector * FlankDirection * ArcWeight)).GetSafeNormal();
@@ -88,20 +87,15 @@ void FZombieChaseState::Execute(const EZombieStateType CurrentState, const float
 			const float MoveDistance = 500.0f;
 			const FVector NextDestination = ZombieLocation + FinalDirection * MoveDistance;
             
-			ZombieAI->MoveToLocation(NextDestination, 100.f, true);
+			AIController->MoveToLocation(NextDestination, 100.f, true);
 		}
 	}
 }
 
-void FZombieChaseState::Exit(const EZombieStateType NextState, const TObjectPtr<ACharacterPlayer> TargetPlayer)
+void FZombieChaseState::Exit(const EZombieStateType NextState)
 {
-	Super::Exit(NextState, TargetPlayer);
-	
-	const TObjectPtr<AZombieAIComponent> ZombieAI = Owner->GetZombieAI();
-	ZombieAI->GetPathFollowingComponent()->OnRequestFinished.Remove(DelegateHandle);
+	Super::Exit(NextState);
 
-	if (Owner && Owner->GetZombieAI())
-	{
-		Owner->GetZombieAI()->StopMovement();
-	}
+	AIController->GetPathFollowingComponent()->OnRequestFinished.Remove(DelegateHandle);
+	AIController->StopMovement();
 }

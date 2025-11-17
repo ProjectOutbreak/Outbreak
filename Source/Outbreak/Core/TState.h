@@ -3,16 +3,16 @@
 #pragma once
 #include "CoreMinimal.h"
 
-template <typename T, typename ContextType>
+template <typename T>
 class TStateMachine;
 
-template <typename T, typename ContextType = UObject>
+template <typename T>
 class TState
 {
 public:
 	virtual ~TState() = default;
 
-	TState(TSharedPtr<TStateMachine<T, ContextType>> InFsm, T InStateKey)
+	TState(TSharedPtr<TStateMachine<T>> InFsm, T InStateKey)
 	{
 		if (!InFsm)
 		{
@@ -25,9 +25,8 @@ public:
 	/*
 	 * Called when the state is entered.
 	 * @param PreviousState The state that was active before this one.
-	 * @param Context Optional context object that can be passed to the state.
 	 */
-	virtual void Enter(T PreviousState, TObjectPtr<ContextType> Context = nullptr) = 0;
+	virtual void Enter(T PreviousState) = 0;
 
 	/*
 	 * Called every frame while the state is active.
@@ -39,9 +38,8 @@ public:
 	/*
 	 * Called when the state is exited.
 	 * @param NextState The state that will be active next.
-	 * @param Context Optional context object that can be passed to the state.
 	 */
-	virtual void Exit(T NextState, TObjectPtr<ContextType> Context = nullptr) = 0;
+	virtual void Exit(T NextState) = 0;
 
 	/*
 	 * Return the name of the state.
@@ -52,10 +50,10 @@ public:
 	}
 
 protected:
-	TSharedPtr<TStateMachine<T, ContextType>> Fsm;
+	TSharedPtr<TStateMachine<T>> Fsm;
 	T StateKey;
-	virtual void ChangeState(T Key, TObjectPtr<ContextType> Context = nullptr)
+	virtual void ChangeState(T Key)
 	{
-		Fsm->ChangeState(Key, Context);
+		Fsm->ChangeState(Key);
 	}
 };
