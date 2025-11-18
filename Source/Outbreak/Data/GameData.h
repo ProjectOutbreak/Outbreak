@@ -220,16 +220,22 @@ struct FThrowableData : public FWeaponData
 	GENERATED_BODY()
 	
 	UPROPERTY(EditAnywhere)
-	int32 MaxCount = 0;
+	int32 MaxCount = 3;
 
 	UPROPERTY(EditAnywhere)
-	float ThrowForce = 0.0f;
+	float ThrowForce = 1000.0f;
 
 	UPROPERTY(EditAnywhere)
-	float ExplosionRadius = 0.0f;
+	float ExplosionRadius = 500.0f;
 
 	UPROPERTY(EditAnywhere)
-	float FuseTime = 0.0f;
+	float FuseTime = 3.0f;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UAnimMontage> ThrowMontage;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class AThrowableProjectile> ProjectileClass;
 };
 
 USTRUCT()

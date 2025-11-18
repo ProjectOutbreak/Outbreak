@@ -243,7 +243,7 @@ void UEquipmentController::Equip(const TObjectPtr<AEquipmentBase>& Equipment)
 				SocketName = TEXT("Weapon_Knife");
 				break;
 			case EEquipmentType::ThrowableWeapon:
-				SocketName = TEXT("Weapon_Throwable");
+				SocketName = TEXT("Weapon_Granade");
 				break;
 			case EEquipmentType::PrimaryWeapon:
 			default:

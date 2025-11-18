@@ -112,6 +112,11 @@ protected:
     TObjectPtr<class AWeaponBase> KnifeWeapon;
     UPROPERTY()
     TSubclassOf<class AKnife> KnifeToSpawn;
+	
+	UPROPERTY()
+	TObjectPtr<class AWeaponBase> GranadeWeapon;
+	UPROPERTY()
+	TSubclassOf<class AGranade> GranadeToSpawn;
 
 private:
 	UPROPERTY()

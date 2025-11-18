@@ -18,6 +18,7 @@
 #include "Outbreak/Game/Controller/InGamePlayerController.h"
 #include "Outbreak/Game/Equipment/Weapon/M4.h"
 #include "Outbreak/Game/Equipment/Weapon/Knife.h"
+#include "Outbreak/Game/Equipment/Weapon/Granade.h"
 #include "Outbreak/Game/Equipment/Weapon/WeaponBase.h"
 #include "Outbreak/Game/Framework/InGameMode.h"
 #include "Outbreak/Game/Framework/InGameState.h"
@@ -42,15 +43,20 @@ ACharacterPlayer::ACharacterPlayer()
 	}
 	
 	// TODO : for test. delete later
-	static ConstructorHelpers::FClassFinder<AM4> WeaponClassRef(TEXT("/Game/Blueprints/BP_M4.BP_M4_C"));
+	static ConstructorHelpers::FClassFinder<AM4> WeaponClassRef(TEXT("/Game/Blueprints/Equipment/BP_M4.BP_M4_C"));
 	if (WeaponClassRef.Class)
 	{
 		WeaponToSpawn = WeaponClassRef.Class;
 	}
-	static ConstructorHelpers::FClassFinder<AKnife> KnifeClassRef(TEXT("/Game/Blueprints/BP_Knife.BP_Knife_C"));
+	static ConstructorHelpers::FClassFinder<AKnife> KnifeClassRef(TEXT("/Game/Blueprints/Equipment/BP_Knife.BP_Knife_C"));
 	if (KnifeClassRef.Class)
 	{
 		KnifeToSpawn = KnifeClassRef.Class;
+	}
+	static ConstructorHelpers::FClassFinder<AGranade> GranadeClassRef(TEXT("/Game/Blueprints/Equipment/BP_Granade.BP_Granade_C"));
+	if (GranadeClassRef.Class)
+	{
+		GranadeToSpawn = GranadeClassRef.Class;
 	}
 	
 	CharacterType = ECharacterType::Player;
@@ -213,7 +219,7 @@ void ACharacterPlayer::BeginPlay()
 	}
 
 	// TODO : For Test. Remove later.
-	if (HasAuthority() && IsValid(WeaponToSpawn) && IsValid(KnifeToSpawn))
+	if (HasAuthority() && IsValid(WeaponToSpawn) && IsValid(KnifeToSpawn) && IsValid(GranadeToSpawn))
 	{
 		const FVector SpawnLocation = GetActorLocation();
 		const FRotator SpawnRotation = GetActorRotation();
@@ -224,11 +230,13 @@ void ACharacterPlayer::BeginPlay()
 
 		SpawnedWeapon = GetWorld()->SpawnActor<AWeaponBase>(WeaponToSpawn, SpawnLocation, SpawnRotation, SpawnParams);
 		KnifeWeapon = GetWorld()->SpawnActor<AWeaponBase>(KnifeToSpawn, SpawnLocation, SpawnRotation, SpawnParams);
+		GranadeWeapon = GetWorld()->SpawnActor<AWeaponBase>(GranadeToSpawn, SpawnLocation, SpawnRotation, SpawnParams);
 
-		if (IsValid(SpawnedWeapon) && IsValid(KnifeWeapon))
+		if (IsValid(SpawnedWeapon) && IsValid(KnifeWeapon) && IsValid(GranadeWeapon))
 		{
 			EquipmentController->AddEquipment(SpawnedWeapon);
 			EquipmentController->AddEquipment(KnifeWeapon);
+			EquipmentController->AddEquipment(GranadeWeapon);
 		}
 	}
 }

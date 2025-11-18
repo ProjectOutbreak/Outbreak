@@ -16,25 +16,27 @@ class OUTBREAK_API AThrowableBase : public AWeaponBase
 // --------------------	
 public:
 	AThrowableBase();
+	virtual void BeginPlay() override;
+	
+	virtual void OnEquip() override;
+	virtual void OnUse() override;
+	virtual void OnEndUse() override;
+	virtual bool CanUse() const override;
 
-	virtual void Throw();
-
-	bool CanThrow() const;
-	int32 GetCurrentCount() const { return CurrentCount; }
-	void AddCount(int32 Amount);
+	UFUNCTION(BlueprintCallable)
+	void Throw();
 
 protected:
-	virtual void SpawnProjectile();
-	virtual FVector CalculateThrowVelocity();
 
 // --------------------
 // Variables
 // --------------------
 protected:
 	FThrowableData ThrowableData;
-	EThrowableType ThrowableType;
-	int32 CurrentCount = 0;
-	// TSubclassOf<class AProjectileBase> ProjectileClass;
 
+	UPROPERTY()
+	int32 CurrentAmmo = 3;
+
+	bool bIsThrowing = false;
 	
 };
