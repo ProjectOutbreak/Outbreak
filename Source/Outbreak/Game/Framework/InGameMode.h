@@ -16,7 +16,6 @@ class OUTBREAK_API AInGameMode : public AGameMode
 public:
 	AInGameMode();
 	virtual void BeginPlay() override;
-	virtual void OnPostLogin(AController* NewPlayer) override;
 
 	UFUNCTION()
 	void ProceedToNextLevel() const;
