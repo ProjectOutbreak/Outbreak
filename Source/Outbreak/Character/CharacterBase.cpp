@@ -11,6 +11,7 @@
 #include "Outbreak/Public/Utilities/DebugHelper.h"
 #include "Outbreak/UI/InGameHUD.h"
 #include "Outbreak/Component/FootStepComponent.h"
+#include "Player/CharacterPlayer.h"
 
 ACharacterBase::ACharacterBase()
 {
@@ -68,6 +69,8 @@ float ACharacterBase::TakeDamage(const float Damage, FDamageEvent const& DamageE
 
 void ACharacterBase::OnRep_CurrentHealth()
 {
+	if (!this->IsA(ACharacterPlayer::StaticClass())) return;
+		
 	if (APlayerController* PC = Cast<APlayerController>(GetController()))
 	{
 		if (AInGameHUD* HUD = Cast<AInGameHUD>(PC->GetHUD()))
@@ -147,13 +150,14 @@ void ACharacterBase::ApplyDamage(int32 DamageAmount)
 {
 	if (!HasAuthority()) return;
 
-	const FString DebugMsg = FString::Printf(TEXT("Actor %s taking %d damage"), *GetName(), DamageAmount);
+	const FString DebugMsg = FString::Printf(TEXT("%s takes %d damage"), *GetName(), DamageAmount);
 	PRINT_WITH_CURRENT_CONTEXT(*DebugMsg);
 	
 	const int32 DamageAbsorbedByExtraHealth = FMath::Min(DamageAmount, CurrentExtraHealth);
 	CurrentExtraHealth -= DamageAbsorbedByExtraHealth;
 	const int32 RemainingDamage = DamageAmount - DamageAbsorbedByExtraHealth;
 	CurrentHealth = FMath::Max(0, CurrentHealth - RemainingDamage);
+	OnRep_CurrentHealth();
 
 	if (IsDead())
 	{
