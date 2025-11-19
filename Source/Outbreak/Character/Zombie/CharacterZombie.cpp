@@ -178,8 +178,7 @@ void ACharacterZombie::SetupMovement()
 void ACharacterZombie::OnRep_Die()
 {
 	Super::OnRep_Die();
-
-
+	
 	if (DeadSoundCue)
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, DeadSoundCue, GetActorLocation());
@@ -189,9 +188,9 @@ void ACharacterZombie::OnRep_Die()
 	{
 		OnDeathDelegate.Broadcast(this);
 		
-		if (AController* Killer = LastDamagePlayer)
+		if (LastDamagePlayer)
 		{
-			if (AInGamePlayerState* PS = Cast<AInGamePlayerState>(Killer->PlayerState))
+			if (AInGamePlayerState* PS = LastDamagePlayer->GetPlayerState<AInGamePlayerState>())
 			{
 				PS->AddZombieKill();
 			}

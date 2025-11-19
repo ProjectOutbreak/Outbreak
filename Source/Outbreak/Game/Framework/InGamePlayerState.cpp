@@ -1,6 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "InGamePlayerState.h"
 #include "Net/UnrealNetwork.h"
 #include "Outbreak/UI/InGameHUD.h"
@@ -28,6 +27,7 @@ void AInGamePlayerState::OnRep_ZombieKills()
 void AInGamePlayerState::AddZombieKill()
 {
 	ZombieKills++;
+	OnRep_ZombieKills();
 }
 
 void AInGamePlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
