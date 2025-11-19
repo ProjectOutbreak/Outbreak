@@ -34,5 +34,8 @@ protected:
 	UPROPERTY(VisibleInstanceOnly, Category = "Data")
 	FThrowableData ThrowableData;
 
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class ULegacyCameraShake> CameraShakeClass;
+
 	FTimerHandle ExplosionTimerHandle;
 };

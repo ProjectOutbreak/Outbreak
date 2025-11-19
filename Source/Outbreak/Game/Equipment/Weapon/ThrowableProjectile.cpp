@@ -1,9 +1,11 @@
 #include "ThrowableProjectile.h"
 
+#include "NiagaraFunctionLibrary.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Outbreak/Data/GameData.h"
+#include "Outbreak/Util/CameraShake.h"
 
 
 AThrowableProjectile::AThrowableProjectile()
@@ -28,6 +30,8 @@ AThrowableProjectile::AThrowableProjectile()
 	ProjectileMovementComponent->bRotationFollowsVelocity = true;
 	ProjectileMovementComponent->bShouldBounce = true;
 	ProjectileMovementComponent->Bounciness = 0.3f;
+	
+	CameraShakeClass = UCameraShake::StaticClass();
 }
 
 void AThrowableProjectile::BeginPlay()
@@ -61,7 +65,31 @@ void AThrowableProjectile::Explode()
 		GetInstigatorController(),
 		true
 		);
-	
+	if (ThrowableData.ExplosionVfx)
+	{
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+			GetWorld(),
+			ThrowableData.ExplosionVfx, 
+			GetActorLocation(),         
+			GetActorRotation(),        
+			ThrowableData.VFXScale,    
+			true,                       
+			true,                       
+			ENCPoolMethod::None,
+			true
+			);
+	}
+	if (CameraShakeClass)
+	{
+		UGameplayStatics::PlayWorldCameraShake(
+			GetWorld(),
+			CameraShakeClass,
+			GetActorLocation(),
+			ThrowableData.ExplosionRadius,          
+			ThrowableData.ExplosionRadius * 10.0f,  
+			1.0f                                    
+		);
+	}
 	DrawDebugSphere(GetWorld(), GetActorLocation(), ThrowableData.ExplosionRadius, 12, FColor::Red, false, 3.0f);
 	Destroy();
 }

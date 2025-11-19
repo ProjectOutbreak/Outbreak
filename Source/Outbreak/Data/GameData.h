@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "CoreMinimal.h"
+#include "NiagaraSystem.h"
 #include "Outbreak/Util/Define.h"
 #include "StructUtils/InstancedStruct.h"
 #include "GameData.generated.h"
@@ -231,10 +232,16 @@ struct FThrowableData : public FWeaponData
 	UPROPERTY(EditAnywhere)
 	float FuseTime = 3.0f;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Animation")
 	TObjectPtr<UAnimMontage> ThrowMontage;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "VFX")
+	TObjectPtr<UNiagaraSystem> ExplosionVfx;
+
+	UPROPERTY(EditAnywhere, Category = "VFX")
+	FVector VFXScale = FVector(1.0f);
+
+	UPROPERTY(EditAnywhere, Category = "Projectile")
 	TSubclassOf<class AThrowableProjectile> ProjectileClass;
 };
 
