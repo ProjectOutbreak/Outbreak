@@ -76,8 +76,6 @@ void AThrowableBase::Throw()
 	if (Projectile)
 	{
 		Projectile->InitializeProjectile(CameraRotation.Vector(), ThrowableData);
-		DrawDebugSphere(GetWorld(), SpawnLocation, 20.0f, 12, FColor::Red, false, 3.0f);
-		UE_LOG(LogTemp, Warning, TEXT("Grenade Spawned at: %s"), *SpawnLocation.ToString());
 	}
 	bIsThrowing = false;
 
