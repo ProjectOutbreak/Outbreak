@@ -19,6 +19,7 @@ public:
 	UEquipmentController();
 	void EquipBySlot(int32 SlotNumber);
 	void AddEquipment(const TObjectPtr<class AEquipmentBase>& Equipment);
+	void UnEquipCurrentEquipment();
 	
 	void HandleUse();
 	void HandleEndUse();
@@ -52,7 +53,7 @@ protected:
 
 private:
 	void Equip(const TObjectPtr<class AEquipmentBase>& Equipment);
-	void UnEquipCurrentEquipment();
+	
 	
 	UFUNCTION()
 	void OnReloadFinished() { bIsReload = false; }

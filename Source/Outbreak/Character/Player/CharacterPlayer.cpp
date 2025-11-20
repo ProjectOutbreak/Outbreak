@@ -238,6 +238,7 @@ void ACharacterPlayer::BeginPlay()
 			EquipmentController->AddEquipment(KnifeWeapon);
 			EquipmentController->AddEquipment(GranadeWeapon);
 		}
+		EquipmentController->UnEquipCurrentEquipment();
 	}
 }
 
