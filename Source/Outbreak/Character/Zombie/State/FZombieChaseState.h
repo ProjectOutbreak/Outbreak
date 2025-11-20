@@ -16,11 +16,11 @@ enum class EChaseType : uint8
 class OUTBREAK_API FZombieChaseState : public FZombieBaseState
 {
 public:
-	FZombieChaseState(const TSharedPtr<TStateMachine<EZombieStateType, ACharacterPlayer>>& InFsm, ACharacterZombie* InOwner);
+	FZombieChaseState(const TSharedPtr<TStateMachine<EZombieStateType>>& InFsm, ACharacterZombie* InOwner);
 
-	virtual void Enter(EZombieStateType PreviousState, TObjectPtr<ACharacterPlayer> TargetPlayer) override;
+	virtual void Enter(EZombieStateType PreviousState) override;
 	virtual void Execute(EZombieStateType CurrentState, float DeltaTime) override;
-	virtual void Exit(EZombieStateType NextState, TObjectPtr<ACharacterPlayer> TargetPlayer) override;
+	virtual void Exit(EZombieStateType NextState) override;
 
 private:
 	FDelegateHandle DelegateHandle;

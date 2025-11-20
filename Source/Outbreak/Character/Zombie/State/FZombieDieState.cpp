@@ -1,20 +1,19 @@
 ﻿#include "FZombieDieState.h"
 #include "Outbreak/Character/Zombie/CharacterZombie.h"
 
-FZombieDieState::FZombieDieState(const TSharedPtr<TStateMachine<EZombieStateType, ACharacterPlayer>>& InFsm, ACharacterZombie* InOwner): FZombieBaseState(InFsm, EZombieStateType::Die, InOwner) { }
+FZombieDieState::FZombieDieState(const TSharedPtr<TStateMachine<EZombieStateType>>& InFsm, ACharacterZombie* InOwner): FZombieBaseState(InFsm, EZombieStateType::Die, InOwner) { }
 
-void FZombieDieState::Enter(const EZombieStateType PreviousState, const TObjectPtr<ACharacterPlayer> TargetPlayer)
+void FZombieDieState::Enter(const EZombieStateType PreviousState)
 {
-	FZombieBaseState::Enter(PreviousState, TargetPlayer);
-	// TODO : Score, Exp
+	Super::Enter(PreviousState);
 }
 
 void FZombieDieState::Execute(const EZombieStateType CurrentState, const float DeltaTime)
 {
-	FZombieBaseState::Execute(CurrentState, DeltaTime);
+	Super::Execute(CurrentState, DeltaTime);
 }
 
-void FZombieDieState::Exit(const EZombieStateType NextState, const TObjectPtr<ACharacterPlayer> TargetPlayer)
+void FZombieDieState::Exit(const EZombieStateType NextState)
 {
-	FZombieBaseState::Exit(NextState, TargetPlayer);
+	Super::Exit(NextState);
 }

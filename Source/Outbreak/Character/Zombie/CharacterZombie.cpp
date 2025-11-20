@@ -16,8 +16,6 @@
 
 ACharacterZombie::ACharacterZombie()
 {
-	PrimaryActorTick.bCanEverTick = false;
-	
 	CharacterType = ECharacterType::Zombie;
 	AIControllerClass = AZombieAIComponent::StaticClass();
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
@@ -44,7 +42,9 @@ void ACharacterZombie::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(ACharacterZombie, ZombieData);
+	DOREPLIFETIME(ThisClass, ZombieData);
+	DOREPLIFETIME(ThisClass, bIsAttacking);
+	DOREPLIFETIME(ThisClass, bIsScreaming);
 }
 
 void ACharacterZombie::InitCharacterData()
@@ -63,24 +63,10 @@ void ACharacterZombie::InitCharacterData()
 		if (!Data) return;
 		
 		ZombieData = *Data;
+		ApplyZombieData();
 	}
 	
-	CurrentHealth = ZombieData.MaxHealth;
 	CurrentExtraHealth = 0;
-}
-
-void ACharacterZombie::BeginPlay()
-{
-	Super::BeginPlay();
-
-	if (HasAuthority())
-	{
-		ZombieAI = Cast<AZombieAIComponent>(GetController());
-		if (!ZombieAI) return;
-		
-		ZombieAI->InitializeZombieAI(this);
-		SetActorScale3D(FVector(BodyScale, BodyScale, BodyScale));
-	}
 }
 
 void ACharacterZombie::PostInitializeComponents()
@@ -96,7 +82,7 @@ void ACharacterZombie::SetupCollision()
 {
 	Super::SetupCollision();
 
-	GetCapsuleComponent()->InitCapsuleSize(10.f, 96.0f);
+	GetCapsuleComponent()->InitCapsuleSize(DefaultCapsuleRadius, DefaultCapsuleHalfHeight);
 	
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	GetMesh()->SetCollisionObjectType(ECollisionChannel::ECC_Pawn);
@@ -115,10 +101,9 @@ void ACharacterZombie::SetupMovement()
 {
 	Super::SetupMovement();
 
-	bUseControllerRotationYaw = false;
-	
 	UCharacterMovementComponent* MovementComp = GetCharacterMovement();
-	MovementComp->bOrientRotationToMovement = true;
+	MovementComp->bOrientRotationToMovement = false;
+	MovementComp->bUseControllerDesiredRotation = true;
 	MovementComp->RotationRate = FRotator(0.0f, 360.0f, 0.0f);
 	MovementComp->MaxAcceleration = 1024.0f;
 	MovementComp->AvoidanceConsiderationRadius = 500.0f;
@@ -131,19 +116,10 @@ void ACharacterZombie::SetupMovement()
 	MovementComp->JumpZVelocity = 0.0f;
 }
 
-void ACharacterZombie::ChangeZombieState(const EZombieStateType NewState, TObjectPtr<ACharacterPlayer> TargetPlayer) const
-{
-	if (HasAuthority() && ZombieAI->StateMachine.IsValid())
-	{
-		ZombieAI->StateMachine->ChangeState(NewState, TargetPlayer);
-	}
-}
-
 void ACharacterZombie::OnRep_Die()
 {
 	Super::OnRep_Die();
 
-	ChangeZombieState(EZombieStateType::Die);
 
 	if (DeadSoundCue)
 	{
@@ -152,6 +128,8 @@ void ACharacterZombie::OnRep_Die()
 	
 	if (HasAuthority())
 	{
+		OnDeathDelegate.Broadcast(this);
+		
 		if (AController* Killer = LastDamagePlayer)
 		{
 			if (AInGamePlayerState* PS = Cast<AInGamePlayerState>(Killer->PlayerState))
@@ -199,4 +177,14 @@ void ACharacterZombie::SetMesh(const ECharacterBodyType MeshType)
 	{
 		GetMesh()->SetSkeletalMesh(ZombieMesh);
 	}
+}
+
+void ACharacterZombie::OnRep_ZombieData()
+{
+	ApplyZombieData();
+}
+
+void ACharacterZombie::ApplyZombieData()
+{
+	CurrentHealth = ZombieData.MaxHealth;
 }

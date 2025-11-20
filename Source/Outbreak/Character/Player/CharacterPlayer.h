@@ -60,9 +60,6 @@ public:
 	
 protected:
 	UPROPERTY()
-	TObjectPtr<class AInGamePlayerController> CachedPC;
-	
-	UPROPERTY()
 	TObjectPtr<class AInGameHUD> CachedHUD;
 	
 	UPROPERTY(EditAnywhere)
@@ -110,6 +107,11 @@ protected:
 	TObjectPtr<class AWeaponBase> SpawnedWeapon;
 	UPROPERTY()
 	TSubclassOf<class AM4> WeaponToSpawn;
+	
+	UPROPERTY()
+    TObjectPtr<class AWeaponBase> KnifeWeapon;
+    UPROPERTY()
+    TSubclassOf<class AKnife> KnifeToSpawn;
 
 private:
 	UPROPERTY()

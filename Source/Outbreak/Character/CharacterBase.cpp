@@ -11,15 +11,20 @@
 #include "Outbreak/Public/Utilities/DebugHelper.h"
 #include "Outbreak/UI/InGameHUD.h"
 #include "Outbreak/Component/FootStepComponent.h"
+#include "Player/CharacterPlayer.h"
 
 ACharacterBase::ACharacterBase()
 {
 	PrimaryActorTick.bCanEverTick = false;
 	bReplicates = true;
-	
-	bUseControllerRotationPitch = false;
-	bUseControllerRotationYaw = true;
-	bUseControllerRotationRoll = false;
+
+	if (GetMesh())
+	{
+		GetMesh()->SetRelativeLocationAndRotation(
+			FVector(0.0f, 0.0f, -GetCapsuleComponent()->GetScaledCapsuleHalfHeight()),
+			FRotator(0.0f, -90.0f, 0.0f)
+		);
+	}
 }
 
 void ACharacterBase::BeginPlay()
@@ -64,6 +69,8 @@ float ACharacterBase::TakeDamage(const float Damage, FDamageEvent const& DamageE
 
 void ACharacterBase::OnRep_CurrentHealth()
 {
+	if (!this->IsA(ACharacterPlayer::StaticClass())) return;
+		
 	if (APlayerController* PC = Cast<APlayerController>(GetController()))
 	{
 		if (AInGameHUD* HUD = Cast<AInGameHUD>(PC->GetHUD()))
@@ -143,13 +150,14 @@ void ACharacterBase::ApplyDamage(int32 DamageAmount)
 {
 	if (!HasAuthority()) return;
 
-	const FString DebugMsg = FString::Printf(TEXT("Actor %s taking %d damage"), *GetName(), DamageAmount);
+	const FString DebugMsg = FString::Printf(TEXT("%s takes %d damage"), *GetName(), DamageAmount);
 	PRINT_WITH_CURRENT_CONTEXT(*DebugMsg);
 	
 	const int32 DamageAbsorbedByExtraHealth = FMath::Min(DamageAmount, CurrentExtraHealth);
 	CurrentExtraHealth -= DamageAbsorbedByExtraHealth;
 	const int32 RemainingDamage = DamageAmount - DamageAbsorbedByExtraHealth;
 	CurrentHealth = FMath::Max(0, CurrentHealth - RemainingDamage);
+	OnRep_CurrentHealth();
 
 	if (IsDead())
 	{
@@ -172,7 +180,6 @@ void ACharacterBase::SetupCollision()
 	USkeletalMeshComponent* SkeletalMeshComp = GetMesh();
 	if (!SkeletalMeshComp) return;
 	
-	SkeletalMeshComp->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, -100.0f), FRotator(0.0f, -90.0f, 0.0f));
 	SkeletalMeshComp->SetAnimationMode(EAnimationMode::AnimationBlueprint);
 	SkeletalMeshComp->SetCollisionProfileName(TEXT("CharacterMesh"));
 	SkeletalMeshComp->SetHiddenInGame(false);

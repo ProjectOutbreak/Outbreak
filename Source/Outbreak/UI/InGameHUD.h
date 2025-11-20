@@ -29,8 +29,8 @@ public:
 	UFUNCTION()
 	class UOBWidget* GetOBWidget() const { return OB_Widget;}
 protected:
-	UPROPERTY()
-	TSubclassOf<UUserWidget> WidgetClass;
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UUserWidget> InGameWidgetClass;
 
 	UPROPERTY()
 	FPlayerData PlayerData;

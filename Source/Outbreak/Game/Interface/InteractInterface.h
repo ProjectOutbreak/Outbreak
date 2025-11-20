@@ -13,9 +13,6 @@ class UInteractInterface : public UInterface
 	GENERATED_BODY()
 };
 
-/**
- * 
- */
 class OUTBREAK_API IInteractInterface
 {
 	GENERATED_BODY()

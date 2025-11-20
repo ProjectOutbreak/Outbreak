@@ -21,6 +21,7 @@ public:
 	virtual void OnEndUse() PURE_VIRTUAL(AEquipmentBase::OnEndUse, );
 	virtual bool CanUse() const PURE_VIRTUAL(AEquipmentBase::CanUse, return true;);
 
+	UFUNCTION(BlueprintCallable)
 	EEquipmentType GetEquipmentType() const { return EquipmentType; }
 	int32 GetSlotIndex() const { return SlotIndex; }
 	FString GetEquipmentName() const { return EquipmentName; }

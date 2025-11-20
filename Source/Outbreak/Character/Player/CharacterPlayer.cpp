@@ -17,6 +17,7 @@
 #include "Outbreak/Data/PlayerControlData.h"
 #include "Outbreak/Game/Controller/InGamePlayerController.h"
 #include "Outbreak/Game/Equipment/Weapon/M4.h"
+#include "Outbreak/Game/Equipment/Weapon/Knife.h"
 #include "Outbreak/Game/Equipment/Weapon/WeaponBase.h"
 #include "Outbreak/Game/Framework/InGameMode.h"
 #include "Outbreak/Game/Framework/InGameState.h"
@@ -26,6 +27,10 @@
 
 ACharacterPlayer::ACharacterPlayer()
 {
+	bUseControllerRotationPitch = false;
+	bUseControllerRotationYaw = true;
+	bUseControllerRotationRoll = false;
+	
 	PostProcessComponent = CreateDefaultSubobject<UPostProcessComponent>(TEXT("PostProcessComponent"));
 	PostProcessComponent->SetupAttachment(RootComponent);
 	PostProcessComponent->bEnabled = true;
@@ -41,6 +46,11 @@ ACharacterPlayer::ACharacterPlayer()
 	if (WeaponClassRef.Class)
 	{
 		WeaponToSpawn = WeaponClassRef.Class;
+	}
+	static ConstructorHelpers::FClassFinder<AKnife> KnifeClassRef(TEXT("/Game/Blueprints/BP_Knife.BP_Knife_C"));
+	if (KnifeClassRef.Class)
+	{
+		KnifeToSpawn = KnifeClassRef.Class;
 	}
 	
 	CharacterType = ECharacterType::Player;
@@ -129,8 +139,8 @@ void ACharacterPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(ACharacterPlayer, PlayerData);
-	DOREPLIFETIME(ACharacterPlayer, PlayerType);
+	DOREPLIFETIME(ThisClass, PlayerData);
+	DOREPLIFETIME(ThisClass, PlayerType);
 }
 
 void ACharacterPlayer::PostInitializeComponents()
@@ -161,9 +171,7 @@ void ACharacterPlayer::InitCharacterData()
 			return;
 		}
 
-		const FPlayerData* Data = SpawnManager->GetPlayerData(PlayerType);
-		PlayerData = *Data;
-		SpawnManager->Activate(this);
+		PlayerData = *SpawnManager->GetPlayerData(PlayerType);
 	}
 	
 	CurrentHealth = PlayerData.MaxHealth;
@@ -194,22 +202,18 @@ void ACharacterPlayer::BeginPlay()
 		
 		SetPlayerControl(CurrentCharacterControlType);
 		
-		CachedPC = Cast<AInGamePlayerController>(GetController());
-		if (!CachedPC)
+		if (const AInGamePlayerController* PC = Cast<AInGamePlayerController>(GetController()))
 		{
-			UE_LOG(LogTemp, Warning, TEXT("[%s] Failed to cast AOBPlayerController"), CURRENT_CONTEXT);
-			return; 
-		}
-
-		CachedHUD = Cast<AInGameHUD>(CachedPC->GetHUD());
-		if (!CachedHUD)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("[%s] Failed to cast AOBHUD"), CURRENT_CONTEXT);
+			CachedHUD = Cast<AInGameHUD>(PC->GetHUD());
+			if (!CachedHUD)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("[%s] Failed to cast HUD"), CURRENT_CONTEXT);
+			}
 		}
 	}
 
 	// TODO : For Test. Remove later.
-	if (IsValid(WeaponToSpawn))
+	if (HasAuthority() && IsValid(WeaponToSpawn) && IsValid(KnifeToSpawn))
 	{
 		const FVector SpawnLocation = GetActorLocation();
 		const FRotator SpawnRotation = GetActorRotation();
@@ -219,10 +223,12 @@ void ACharacterPlayer::BeginPlay()
 		SpawnParams.Instigator = GetInstigator();
 
 		SpawnedWeapon = GetWorld()->SpawnActor<AWeaponBase>(WeaponToSpawn, SpawnLocation, SpawnRotation, SpawnParams);
-        
-		if (IsValid(SpawnedWeapon))
+		KnifeWeapon = GetWorld()->SpawnActor<AWeaponBase>(KnifeToSpawn, SpawnLocation, SpawnRotation, SpawnParams);
+
+		if (IsValid(SpawnedWeapon) && IsValid(KnifeWeapon))
 		{
 			EquipmentController->AddEquipment(SpawnedWeapon);
+			EquipmentController->AddEquipment(KnifeWeapon);
 		}
 	}
 }
