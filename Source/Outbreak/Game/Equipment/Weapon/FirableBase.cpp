@@ -29,6 +29,8 @@ void AFirableBase::StartFire()
 {
 	if (!CanUse())
 		return;
+
+	bIsFiring = true;
 	
 	const float Interval = FloatHelper::RpmToInterval(FirableData.FireRate);
 	switch (CurrentFireType)
@@ -52,6 +54,7 @@ void AFirableBase::StartFire()
 
 void AFirableBase::StopFire()
 {
+	bIsFiring = false;
 	EquipmentMesh->Stop();
 	GetWorld()->GetTimerManager().ClearTimer(FireTimerHandle);
 }
@@ -175,4 +178,9 @@ EFireType AFirableBase::ToggleFireMode()
 	}
 	
 	return CurrentFireType;
+}
+
+bool AFirableBase::IsActive() const
+{
+	return bIsReloading || bIsFiring;
 }

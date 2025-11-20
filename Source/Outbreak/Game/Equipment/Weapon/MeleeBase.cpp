@@ -42,6 +42,11 @@ bool AMeleeBase::CanUse() const
 	return !bIsAttacking;
 }
 
+bool AMeleeBase::IsActive() const
+{
+	return bIsAttacking;
+}
+
 void AMeleeBase::OnUse()
 {
 	if (!CanUse())

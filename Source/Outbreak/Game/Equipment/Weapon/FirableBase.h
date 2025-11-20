@@ -22,6 +22,7 @@ public:
 	virtual void OnUse() override { StartFire(); }
 	virtual void OnEndUse() override { StopFire(); }
 	virtual bool CanUse() const override { return !bIsInUse && !bIsReloading && CurrentAmmoInMag > 0; }
+	virtual bool IsActive() const override;
 	virtual void StartReload(const FOnReloadFinished& DoneCallback);
 
 	bool CanReload() const { return !bIsReloading && CurrentAmmoInMag < FirableData.MagazineSize && CurrentTotalAmmo > 0; }
@@ -71,6 +72,7 @@ protected:
 	int32 CurrentTotalAmmo = 1000;
 	EFireType CurrentFireType = EFireType::Auto;
 	bool bIsReloading = false;
+	bool bIsFiring = false;
 	FTimerHandle FireTimerHandle;
 	
 	FOnReloadFinished OnReloadFinishedCallback;

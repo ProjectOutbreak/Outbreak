@@ -22,6 +22,7 @@ public:
 	virtual void OnUse() override;
 	virtual void OnEndUse() override;
 	virtual bool CanUse() const override;
+	virtual bool IsActive() const override;
 
 	UFUNCTION(BlueprintCallable)
 	void Throw();

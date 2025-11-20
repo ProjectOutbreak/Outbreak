@@ -34,6 +34,8 @@ void UEquipmentController::TickComponent(const float DeltaTime, const ELevelTick
 
 void UEquipmentController::EquipBySlot(const int32 SlotNumber)
 {
+	if (IsValid(CurrentEquippedItem) && CurrentEquippedItem->IsActive()) return;
+	
 	TObjectPtr<AEquipmentBase> TargetItem = nullptr;
 
 	switch (SlotNumber)

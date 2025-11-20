@@ -25,6 +25,11 @@ bool AThrowableBase::CanUse() const
 	return !bIsThrowing && CurrentAmmo > 0;
 }
 
+bool AThrowableBase::IsActive() const
+{
+	return bIsThrowing;
+}
+
 void AThrowableBase::OnUse()
 {
 	if (!CanUse()) return;
