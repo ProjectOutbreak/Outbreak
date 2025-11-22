@@ -38,7 +38,14 @@ protected:
 	virtual void ProcessFire();
 	virtual void FinishReload();
 
+	void ApplyDamageToTarget(AController* InstigatorController, const FHitResult& HitResult);
+
 private:
+	UFUNCTION(Server, Reliable)
+	void Server_ProcessHit(const FHitResult& HitResult);
+	UFUNCTION(NetMulticast, Unreliable)
+	void Multicast_PlayFireEffects(const FVector MuzzleLocation, const FHitResult& HitResult);
+	
 	void RecoverRecoil(float DeltaTime);
 	int32 GetReservedAmmo() const;
 	
