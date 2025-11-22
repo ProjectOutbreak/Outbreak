@@ -56,6 +56,7 @@ public:
 	
 protected:
 	virtual void BeginPlay() override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 private:
 	void Equip(const TObjectPtr<class AEquipmentBase>& Equipment);
@@ -67,6 +68,22 @@ private:
 	UFUNCTION()
 	void HandleAmmoChanged();
 
+	UFUNCTION()
+	void OnRep_CurrentEquippedItem();
+	UFUNCTION()
+	void OnRep_FirstPrimaryWeapon();
+	UFUNCTION()
+	void OnRep_SecondPrimaryWeapon();
+	UFUNCTION()
+	void OnRep_SecondaryWeapon();
+	UFUNCTION()
+	void OnRep_ThrowableWeapon();
+	UFUNCTION()
+	void OnRep_FirstMedicine();
+	UFUNCTION()
+	void OnRep_SecondMedicine();
+	
+
 // --------------------
 // Variables
 // --------------------
@@ -75,25 +92,25 @@ protected:
 	TObjectPtr<ACharacterPlayer> CachedOwner;
 	TWeakObjectPtr<AInGameHUD> CachedHUD;
 	
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, ReplicatedUsing = OnRep_CurrentEquippedItem)
 	TObjectPtr<class AEquipmentBase> CurrentEquippedItem = nullptr;
 	
-	UPROPERTY(EditAnywhere, meta = (ToolTip = "1"))
+	UPROPERTY(EditAnywhere, ReplicatedUsing = OnRep_FirstPrimaryWeapon, meta = (ToolTip = "1"))
 	TObjectPtr<class AFirableBase> FirstPrimaryWeapon = nullptr;
 	
-	UPROPERTY(EditAnywhere, meta = (ToolTip = "2"))
+	UPROPERTY(EditAnywhere, ReplicatedUsing = OnRep_SecondPrimaryWeapon, meta = (ToolTip = "2"))
 	TObjectPtr<class AFirableBase> SecondPrimaryWeapon = nullptr;
 
-	UPROPERTY(EditAnywhere, meta = (ToolTip = "3"))
+	UPROPERTY(EditAnywhere, ReplicatedUsing = OnRep_SecondaryWeapon, meta = (ToolTip = "3"))
 	TObjectPtr<class AWeaponBase> SecondaryWeapon = nullptr;
 
-	UPROPERTY(EditAnywhere, meta = (ToolTip = "4"))
+	UPROPERTY(EditAnywhere, ReplicatedUsing = OnRep_ThrowableWeapon, meta = (ToolTip = "4"))
 	TObjectPtr<class AThrowableBase> ThrowableWeapon = nullptr;
 
-	UPROPERTY(EditAnywhere, meta = (ToolTip = "5"))
+	UPROPERTY(EditAnywhere, ReplicatedUsing = OnRep_FirstMedicine, meta = (ToolTip = "5"))
 	TObjectPtr<class AMedicineBase> FirstMedicine = nullptr;
 	
-	UPROPERTY(EditAnywhere, meta = (ToolTip = "6"))
+	UPROPERTY(EditAnywhere, ReplicatedUsing = OnRep_SecondMedicine, meta = (ToolTip = "6"))
 	TObjectPtr<class AMedicineBase> SecondMedicine = nullptr;
 
 private:

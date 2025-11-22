@@ -1,6 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "EquipmentController.h"
+
+#include "Net/UnrealNetwork.h"
 #include "Outbreak/Character/Player/CharacterPlayer.h"
 #include "Outbreak/Game/Equipment/EquipmentBase.h"
 #include "Outbreak/Game/Equipment/Weapon/FirableBase.h"
@@ -17,6 +19,7 @@
 UEquipmentController::UEquipmentController()
 {
 	PrimaryComponentTick.bCanEverTick = false;
+	SetIsReplicatedByDefault(true);
 }
 
 void UEquipmentController::BeginPlay()
@@ -27,6 +30,18 @@ void UEquipmentController::BeginPlay()
 	{
 		PRINT_WITH_CURRENT_CONTEXT("Failed to cast ACharacterPlayer");
 	}
+}
+
+void UEquipmentController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(ThisClass, CurrentEquippedItem);
+	DOREPLIFETIME(ThisClass, FirstPrimaryWeapon);
+	DOREPLIFETIME(ThisClass, SecondPrimaryWeapon);
+	DOREPLIFETIME(ThisClass, SecondaryWeapon);
+	DOREPLIFETIME(ThisClass, ThrowableWeapon);
+	DOREPLIFETIME(ThisClass, FirstMedicine);
+	DOREPLIFETIME(ThisClass, SecondMedicine);
 }
 
 void UEquipmentController::EquipBySlot(const int32 SlotNumber)
@@ -309,6 +324,42 @@ void UEquipmentController::HandleAmmoChanged()
 	{
 		Hud->DisplayAmmo(CurrentMag, ReserveAmmo);
 	}
+}
+
+void UEquipmentController::OnRep_CurrentEquippedItem()
+{
+	if (IsValid(CurrentEquippedItem))
+	{
+		Equip(CurrentEquippedItem); 
+	}
+	else
+	{
+		UnEquipCurrentEquipment(); 
+	}
+}
+
+void UEquipmentController::OnRep_FirstPrimaryWeapon()
+{
+}
+
+void UEquipmentController::OnRep_SecondPrimaryWeapon()
+{
+}
+
+void UEquipmentController::OnRep_SecondaryWeapon()
+{
+}
+
+void UEquipmentController::OnRep_ThrowableWeapon()
+{
+}
+
+void UEquipmentController::OnRep_FirstMedicine()
+{
+}
+
+void UEquipmentController::OnRep_SecondMedicine()
+{
 }
 
 AInGameHUD* UEquipmentController::GetInGameHUD()
