@@ -3,15 +3,92 @@
 #include "InGamePlayerState.h"
 #include "Net/UnrealNetwork.h"
 #include "Outbreak/UI/InGameHUD.h"
+#include "Utilities/DebugHelper.h"
 
 AInGamePlayerState::AInGamePlayerState()
 {
 	ZombieKills = 0;
 }
 
+void AInGamePlayerState::AddZombieKill()
+{
+	ZombieKills++;
+	OnRep_ZombieKills();
+}
+
+int32 AInGamePlayerState::GetReserveAmmo(EFirableType Type) const
+{
+	const FAmmoCount* FoundAmmo = ReserveAmmoArray.FindByPredicate([Type](const FAmmoCount& Item){
+		return Item.Type == Type;
+	});
+
+	return FoundAmmo ? FoundAmmo->Count : 0;
+}
+
+void AInGamePlayerState::ConsumeAmmo(EFirableType Type, int32 AmountToConsume)
+{
+	if (GetLocalRole() != ROLE_Authority) return;
+
+	FAmmoCount* FoundAmmo = ReserveAmmoArray.FindByPredicate([Type](const FAmmoCount& Item){
+		return Item.Type == Type;
+	});
+
+	if (FoundAmmo)
+	{
+		FoundAmmo->Count = FMath::Max(0, FoundAmmo->Count - AmountToConsume);
+		OnPlayerAmmoChangedDelegate.Broadcast();
+		ForceNetUpdate(); 
+		OnRep_ReserveAmmoArray();
+	}
+}
+
+void AInGamePlayerState::AddAmmo(EFirableType Type, const int32 InInAmountToAdd)
+{
+	if (GetLocalRole() != ROLE_Authority) return;
+
+	FAmmoCount* FoundAmmo = ReserveAmmoArray.FindByPredicate([Type](const FAmmoCount& Item){
+	   return Item.Type == Type;
+	});
+
+	if (FoundAmmo && AmmoDataMap.Contains(Type))
+	{
+		const int32 MaxAmmo = AmmoDataMap[Type].MaxTotalAmmo;
+		
+		if (FoundAmmo->Count >= MaxAmmo) return;
+
+		const int32 OldCount = FoundAmmo->Count;
+		const int32 AmountToAdd = InInAmountToAdd == 0 ? AmmoDataMap[Type].ResupplyAmount : InInAmountToAdd;
+		FoundAmmo->Count = FMath::Min(FoundAmmo->Count + AmountToAdd, MaxAmmo);
+
+		if (FoundAmmo->Count != OldCount)
+		{
+			OnPlayerAmmoChangedDelegate.Broadcast();
+			ForceNetUpdate();
+			OnRep_ReserveAmmoArray();
+		}
+	}
+}
+
+void AInGamePlayerState::BeginPlay()
+{
+	Super::BeginPlay();
+	
+	if (HasAuthority())
+	{
+		InitializeAmmo();
+	}
+}
+
+void AInGamePlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	
+	DOREPLIFETIME(ThisClass, ZombieKills);
+	DOREPLIFETIME_CONDITION(ThisClass, ReserveAmmoArray, COND_OwnerOnly);
+}
+
 void AInGamePlayerState::OnRep_ZombieKills()
 {
-	UE_LOG(LogTemp, Log, TEXT("좀비 처치 수 변경: %d"), ZombieKills);
 	if (APlayerController* PC = GetWorld()->GetFirstPlayerController())
 	{
 		if (PC->IsLocalController() && PC->PlayerState == this)
@@ -24,15 +101,39 @@ void AInGamePlayerState::OnRep_ZombieKills()
 	}
 }
 
-void AInGamePlayerState::AddZombieKill()
+void AInGamePlayerState::OnRep_ReserveAmmoArray()
 {
-	ZombieKills++;
-	OnRep_ZombieKills();
+	OnPlayerAmmoChangedDelegate.Broadcast();
 }
 
-void AInGamePlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+void AInGamePlayerState::InitializeAmmo()
 {
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	
-	DOREPLIFETIME(AInGamePlayerState, ZombieKills);
+	ReserveAmmoArray.Empty();
+
+	if (!AmmoDataTable)
+	{
+		PRINT_WITH_CURRENT_CONTEXT("AmmoData is NULL in PlayerState!");
+		return;
+	}
+
+	const TMap<FName, uint8*>& RowMap = AmmoDataTable->GetRowMap();
+
+	for (const auto& Pair : RowMap)
+	{
+		const FAmmoData* Data = reinterpret_cast<FAmmoData*>(Pair.Value);
+
+		if (Data)
+		{
+			FAmmoCount NewAmmo;
+			NewAmmo.Type = Data->Type;
+			NewAmmo.Count = Data->InitialAmmoCount;
+            
+			ReserveAmmoArray.Add(NewAmmo);
+			AmmoDataMap.Add(Data->Type, *Data);
+		}
+	}
+
+	OnPlayerAmmoChangedDelegate.Broadcast(); 
+    
+	ForceNetUpdate();
 }

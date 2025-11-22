@@ -7,6 +7,9 @@
 #include "Outbreak/Util/Define.h"
 #include "EquipmentController.generated.h"
 
+class AInGameHUD;
+class ACharacterPlayer;
+
 UCLASS()
 class OUTBREAK_API UEquipmentController : public UActorComponent
 {
@@ -24,7 +27,8 @@ public:
 	void HandleEndUse();
 	void HandleReload();
 	void HandleToggleFireMode();
-	
+
+	// Getters
 	UFUNCTION(BlueprintCallable)
 	bool GetIsOnUse() const { return bIsOnUse; }
 	
@@ -45,27 +49,31 @@ public:
 
 	UFUNCTION(BlueprintPure)
 	AEquipmentBase* GetCurrentEquippedItem() const { return CurrentEquippedItem; }
-
+	
+	ACharacterPlayer* GetCachedOwner() const { return CachedOwner; }
+	AInGameHUD* GetInGameHUD();
+	// ~Getters
+	
 protected:
 	virtual void BeginPlay() override;
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 private:
 	void Equip(const TObjectPtr<class AEquipmentBase>& Equipment);
 	void UnEquipCurrentEquipment();
-	
+
 	UFUNCTION()
 	void OnReloadFinished() { bIsReload = false; }
 	
 	UFUNCTION()
-	void OnAmmoChangedHandler(const int32 InCurrentAmmoInMag, int32 InCurrentTotalAmmo);
-	
+	void HandleAmmoChanged();
+
 // --------------------
 // Variables
 // --------------------
 protected:
-	UPROPERTY()
-	TObjectPtr<class ACharacterPlayer> CachedOwner = nullptr;
+	UPROPERTY(Transient)
+	TObjectPtr<ACharacterPlayer> CachedOwner;
+	TWeakObjectPtr<AInGameHUD> CachedHUD;
 	
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<class AEquipmentBase> CurrentEquippedItem = nullptr;

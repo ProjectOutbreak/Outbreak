@@ -3,10 +3,10 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "WeaponBase.h"
+#include "Outbreak/Game/Framework/InGamePlayerState.h"
 #include "FirableBase.generated.h"
 
 DECLARE_DELEGATE(FOnReloadFinished);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnAmmoChanged, int32, CurrentAmmoInMag, int32, CurrentTotalAmmo);
 
 UCLASS(Abstract)
 class OUTBREAK_API AFirableBase : public AWeaponBase
@@ -18,20 +18,16 @@ class OUTBREAK_API AFirableBase : public AWeaponBase
 // --------------------	
 public:
 	AFirableBase();
-	virtual void OnEquip() override { OnAmmoChanged.Broadcast(CurrentAmmoInMag, CurrentTotalAmmo); }
+	virtual void OnEquip() override { }
 	virtual void OnUse() override { StartFire(); }
 	virtual void OnEndUse() override { StopFire(); }
 	virtual bool CanUse() const override { return !bIsInUse && !bIsReloading && CurrentAmmoInMag > 0; }
 	virtual void StartReload(const FOnReloadFinished& DoneCallback);
 
-	bool CanReload() const { return !bIsReloading && CurrentAmmoInMag < FirableData.MagazineSize && CurrentTotalAmmo > 0; }
-	bool IsReloading() const { return bIsReloading; }
-	void SetIsReloading(const bool bInIsReloading) { bIsReloading = bInIsReloading; }
+	bool CanReload() const;
 	int32 GetCurrentAmmoInMag() const { return CurrentAmmoInMag; }
-	int32 GetCurrentTotalAmmo() const { return CurrentTotalAmmo; }
 	FFirableData GetFirableData() const { return FirableData; }
 	EFireType GetCurrentFireType() const { return CurrentFireType; }
-	void SetFireType(const EFireType NewFireType) { CurrentFireType = NewFireType; }
 	EFireType ToggleFireMode();
 
 protected:
@@ -44,13 +40,13 @@ protected:
 
 private:
 	void RecoverRecoil(float DeltaTime);
+	int32 GetReservedAmmo() const;
 	
 // --------------------
 // Variables
 // --------------------
 public:
-	UPROPERTY()
-	FOnAmmoChanged OnAmmoChanged;
+	FOnPlayerAmmoChangedSignature OnPlayerAmmoChangedDelegate;
 	
 protected:
 	UPROPERTY()
@@ -66,9 +62,7 @@ protected:
 	TObjectPtr<USoundBase> FireSound;
 	
 	FFirableData FirableData;
-	EFirableType FirableType;
 	int32 CurrentAmmoInMag = 30;
-	int32 CurrentTotalAmmo = 1000;
 	EFireType CurrentFireType = EFireType::Auto;
 	bool bIsReloading = false;
 	FTimerHandle FireTimerHandle;

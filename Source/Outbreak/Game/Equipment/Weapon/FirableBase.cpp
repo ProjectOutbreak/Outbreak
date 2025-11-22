@@ -6,6 +6,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Outbreak/Character/Player/CharacterPlayer.h"
+#include "Outbreak/Game/Framework/InGamePlayerState.h"
 #include "Outbreak/Util/EnumHelper.h"
 #include "Outbreak/Util/FloatHelper.h"
 
@@ -56,7 +57,6 @@ void AFirableBase::StopFire()
 	GetWorld()->GetTimerManager().ClearTimer(FireTimerHandle);
 }
 
- 
 void AFirableBase::ProcessFire()
 {
 	CurrentAmmoInMag--;
@@ -66,7 +66,7 @@ void AFirableBase::ProcessFire()
 		StopFire();
 	}
 	
-	OnAmmoChanged.Broadcast(CurrentAmmoInMag, CurrentTotalAmmo);
+	OnPlayerAmmoChangedDelegate.Broadcast();
 
 	if (FireSound)
 	{
@@ -136,17 +136,34 @@ void AFirableBase::StartReload(const FOnReloadFinished& DoneCallback)
 	GetWorld()->GetTimerManager().SetTimer(ReloadTimerHandle, this, &AFirableBase::FinishReload, ReloadDuration, false);
 }
 
+bool AFirableBase::CanReload() const
+{
+	return !bIsReloading && CurrentAmmoInMag < FirableData.MagazineSize && GetReservedAmmo() > 0;
+}
+
 void AFirableBase::FinishReload()
 {
-	const int32 NeededAmmo = FirableData.MagazineSize - CurrentAmmoInMag;
-	const int32 AmmoToFill = FMath::Min(NeededAmmo, CurrentTotalAmmo);
+	ACharacterPlayer* OwnerCharacter = Cast<ACharacterPlayer>(GetOwner());
+	if (!OwnerCharacter) return;
+    
+	AInGamePlayerState* PS = OwnerCharacter->GetPlayerState<AInGamePlayerState>();
+	if (!PS) return;
 
+	const int32 ReserveAmmo = PS->GetReserveAmmo(FirableData.FirableType);
+
+	const int32 NeededAmmo = FirableData.MagazineSize - CurrentAmmoInMag;
+	const int32 AmmoToFill = FMath::Min(NeededAmmo, ReserveAmmo);
+	
 	CurrentAmmoInMag += AmmoToFill;
-	CurrentTotalAmmo -= AmmoToFill;
+
+	if (HasAuthority())
+	{
+		PS->ConsumeAmmo(FirableData.FirableType, AmmoToFill);
+	}
 	
 	bIsReloading = false;
 	OnReloadFinishedCallback.ExecuteIfBound();
-	OnAmmoChanged.Broadcast(CurrentAmmoInMag, CurrentTotalAmmo);
+	OnPlayerAmmoChangedDelegate.Broadcast();
 }
 
 void AFirableBase::RecoverRecoil(const float DeltaTime)
@@ -159,6 +176,19 @@ void AFirableBase::RecoverRecoil(const float DeltaTime)
 	
 	const float RecoveryAmount = (FirableData.VerticalRecoil / RecoilRecoveryTime) * DeltaTime;
 	PC->AddPitchInput(RecoveryAmount);
+}
+
+int32 AFirableBase::GetReservedAmmo() const
+{
+	const ACharacterPlayer* OwnerCharacter = Cast<ACharacterPlayer>(GetOwner());
+	if (!OwnerCharacter) return 0;
+
+	const AInGamePlayerState* PS = OwnerCharacter->GetPlayerState<AInGamePlayerState>();
+	if (!PS) return 0;
+
+	const int32 ReserveAmmo = PS->GetReserveAmmo(FirableData.FirableType);
+
+	return ReserveAmmo;
 }
 
 EFireType AFirableBase::ToggleFireMode()
