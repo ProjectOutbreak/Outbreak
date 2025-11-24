@@ -76,9 +76,6 @@ DerivedDataCache/*
 # Temp Files
 Config/DefaultEditorPerProjectUserSettings.ini
 
-# AWS SDK Files
-Source/Outbreak/ThirdParty/*
-
 # User Defined Settings
 .vscode/*
 .idea/*
