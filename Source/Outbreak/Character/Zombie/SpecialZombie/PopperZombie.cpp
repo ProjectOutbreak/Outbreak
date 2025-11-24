@@ -7,7 +7,6 @@
 APopperZombie::APopperZombie()
 {
 	ZombieSubType = EZombieSubType::Popper;
-	BodyScale = 0.7f;
 
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh> ZombieMesh(TEXT("/Game/Art/Characters/Zombies/Meshes/SKM_Zombie_Fat_002.SKM_Zombie_Fat_002"));
 	if (ZombieMesh.Succeeded())

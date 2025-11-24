@@ -75,18 +75,6 @@ void UOutbreakGameInstance::OnAssetsLoaded()
 		}
     }	
     CachedWidgetClass = WidgetClass;
-	
-    if (APlayerController* PC = GetFirstLocalPlayerController(); IsValid(PC))
-	{
-		if (ALoadingPlayerController* LoadingPc = Cast<ALoadingPlayerController>(PC))
-		{
-			const FString IsServer = PC->HasAuthority() ? TEXT("[Server]") : TEXT("[Client]");
-			const FString DebugMsg = FString::Printf(TEXT("%s Player has completed loading. Notifying GameMode..."), *IsServer);
-			PRINT_WITH_CURRENT_CONTEXT(DebugMsg);
-			
-			LoadingPc->Server_NotifyLoadingComplete();
-		}
-	}
 
 	for (const auto& SoundPtr : SoundsToPreload)
 	{
@@ -122,8 +110,20 @@ void UOutbreakGameInstance::OnAssetsLoaded()
 			}
 		}
 	}
-    UE_LOG(LogTemp, Warning, TEXT("모든 에셋 로딩 완료!"));
-	UGameplayStatics::OpenLevel(GetWorld(), "L_FirstPhase");
+	
+	// UGameplayStatics::OpenLevel(GetWorld(), "L_FirstPhase");
+	
+	if (APlayerController* PC = GetFirstLocalPlayerController(); IsValid(PC))
+	{
+		if (ALoadingPlayerController* LoadingPc = Cast<ALoadingPlayerController>(PC))
+		{
+			const FString IsServer = PC->HasAuthority() ? TEXT("[Server]") : TEXT("[Client]");
+			const FString DebugMsg = FString::Printf(TEXT("%s Player has completed loading. Notifying GameMode..."), *IsServer);
+			PRINT_WITH_CURRENT_CONTEXT(DebugMsg);
+			
+			LoadingPc->Server_NotifyLoadingComplete();
+		}
+	}
 }
 
 void UOutbreakGameInstance::ApplySelectedTimePreset()

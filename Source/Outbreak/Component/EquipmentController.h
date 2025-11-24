@@ -43,6 +43,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	int32 GetCurrentAmmoInMag() const { return CurrentAmmoInMag; }
 
+	UFUNCTION(BlueprintPure)
+	AEquipmentBase* GetCurrentEquippedItem() const { return CurrentEquippedItem; }
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;

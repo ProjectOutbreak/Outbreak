@@ -234,6 +234,21 @@ struct FThrowableData : public FWeaponData
 };
 
 USTRUCT()
+struct FMeleeData : public FWeaponData
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere)
+	float AttackRate = 1.0f;
+
+	UPROPERTY(EditAnywhere)
+	float AttackRange = 150.0f;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UAnimMontage> AttackMontage;
+};
+
+USTRUCT()
 struct FEquipmentSounds
 {
 	GENERATED_BODY()
