@@ -10,12 +10,13 @@ AThrowableBase::AThrowableBase()
 {
 	
 }
-void AThrowableBase::BeginPlay()
+
+void AThrowableBase::OnEquip()
 {
 	
 }
 
-void AThrowableBase::OnEquip()
+void AThrowableBase::OnEndUse()
 {
 	
 }
@@ -36,55 +37,61 @@ void AThrowableBase::OnUse()
 	
 	bIsThrowing = true;
 
+	Multicast_ThrowAnim(ThrowableData.ThrowMontage);
+}
+
+void AThrowableBase::Multicast_ThrowAnim_Implementation(UAnimMontage* MontageToPlay)
+{
 	if (ACharacter* Character = Cast<ACharacter>(GetOwner()))
 	{
-		if (ThrowableData.ThrowMontage)
+		if (MontageToPlay)
 		{
-			Character->PlayAnimMontage(ThrowableData.ThrowMontage);
+			Character->PlayAnimMontage(MontageToPlay);
 		}
 	}
 }
 
-void AThrowableBase::OnEndUse()
-{
-	
-}
-
 void AThrowableBase::Throw()
 {
-	if (!ThrowableData.ProjectileClass || CurrentAmmo <= 0)
+	if (CurrentAmmo <= 0)
 	{
 		bIsThrowing = false;
 		return;
 	}
 
-	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
-	if (!OwnerCharacter) return;
-
-	CurrentAmmo--;
-
-	FVector CameraLocation;
-	FRotator CameraRotation;
-	OwnerCharacter->GetController()->GetPlayerViewPoint(CameraLocation, CameraRotation);
-
-	FVector SpawnLocation = CameraLocation + (CameraRotation.Vector() * 50.0f);	FActorSpawnParameters SpawnParams;
-	SpawnParams.Owner = OwnerCharacter;
-	SpawnParams.Instigator = OwnerCharacter;
-
-	AThrowableProjectile* Projectile = GetWorld()->SpawnActor<AThrowableProjectile>(
-		ThrowableData.ProjectileClass,
-		SpawnLocation,
-		CameraRotation,
-		SpawnParams
-		);
-
-	if (Projectile)
+	if(HasAuthority())
 	{
-		Projectile->InitializeProjectile(CameraRotation.Vector(), ThrowableData);
-	}
-	bIsThrowing = false;
+		if (!ThrowableData.ProjectileClass)
+		{
+			bIsThrowing = false;
+			return;
+		}
+		ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
+		if (!OwnerCharacter) return;
 
-	
+		CurrentAmmo--;
+
+		FVector CameraLocation;
+		FRotator CameraRotation;
+		OwnerCharacter->GetController()->GetPlayerViewPoint(CameraLocation, CameraRotation);
+
+		FVector SpawnLocation = CameraLocation + (CameraRotation.Vector() * 50.0f);	FActorSpawnParameters SpawnParams;
+		SpawnParams.Owner = OwnerCharacter;
+		SpawnParams.Instigator = OwnerCharacter;
+
+		AThrowableProjectile* Projectile = GetWorld()->SpawnActor<AThrowableProjectile>(
+			ThrowableData.ProjectileClass,
+			SpawnLocation,
+			CameraRotation,
+			SpawnParams
+			);
+
+		if (Projectile)
+		{
+			Projectile->InitializeProjectile(CameraRotation.Vector(), ThrowableData);
+		}
+	}
+	bIsThrowing = false;	
 }
 
 

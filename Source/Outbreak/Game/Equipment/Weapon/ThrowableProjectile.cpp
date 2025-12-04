@@ -4,6 +4,7 @@
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Net/UnrealNetwork.h"
 #include "Outbreak/Data/GameData.h"
 #include "Outbreak/Util/CameraShake.h"
 
@@ -32,6 +33,9 @@ AThrowableProjectile::AThrowableProjectile()
 	ProjectileMovementComponent->Bounciness = 0.3f;
 	
 	CameraShakeClass = UCameraShake::StaticClass();
+
+	bReplicates = true;
+	SetReplicateMovement(true);
 }
 
 void AThrowableProjectile::BeginPlay()
@@ -65,6 +69,14 @@ void AThrowableProjectile::Explode()
 		GetInstigatorController(),
 		true
 		);
+	Multicast_ExplodeVFX();
+	
+	DrawDebugSphere(GetWorld(), GetActorLocation(), ThrowableData.ExplosionRadius, 12, FColor::Red, false, 3.0f);
+	SetLifeSpan(0.1f);
+}
+
+void AThrowableProjectile::Multicast_ExplodeVFX_Implementation()
+{
 	if (ThrowableData.ExplosionVfx)
 	{
 		UNiagaraFunctionLibrary::SpawnSystemAtLocation(
@@ -90,8 +102,14 @@ void AThrowableProjectile::Explode()
 			1.0f                                    
 		);
 	}
-	DrawDebugSphere(GetWorld(), GetActorLocation(), ThrowableData.ExplosionRadius, 12, FColor::Red, false, 3.0f);
-	Destroy();
 }
+
+void AThrowableProjectile::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AThrowableProjectile, ThrowableData);
+}
+
 
 

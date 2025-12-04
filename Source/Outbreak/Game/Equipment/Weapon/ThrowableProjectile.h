@@ -16,8 +16,13 @@ public:
 	void InitializeProjectile(const FVector& ShootDirection, const struct FThrowableData& Data);
 	void Explode();
 
+	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
+
 protected:
 	virtual void BeginPlay() override;
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void Multicast_ExplodeVFX();
 
 
 	//-----Variables-----//
@@ -31,7 +36,7 @@ protected:
 	UPROPERTY()
 	class UProjectileMovementComponent* ProjectileMovementComponent;
 
-	UPROPERTY(VisibleInstanceOnly, Category = "Data")
+	UPROPERTY(VisibleInstanceOnly, Replicated, Category = "Data")
 	FThrowableData ThrowableData;
 
 	UPROPERTY(EditDefaultsOnly)

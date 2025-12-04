@@ -16,8 +16,6 @@ class OUTBREAK_API AThrowableBase : public AWeaponBase
 // --------------------	
 public:
 	AThrowableBase();
-	virtual void BeginPlay() override;
-	
 	virtual void OnEquip() override;
 	virtual void OnUse() override;
 	virtual void OnEndUse() override;
@@ -28,6 +26,8 @@ public:
 	void Throw();
 
 protected:
+	UFUNCTION(NetMulticast, Unreliable)
+	void Multicast_ThrowAnim(UAnimMontage* MontageToPlay);
 
 // --------------------
 // Variables

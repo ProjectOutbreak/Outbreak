@@ -34,6 +34,9 @@ protected:
 	virtual void Tick(float DeltaTime) override;
 	void PerformHitDetection();
 
+	UFUNCTION(NetMulticast, Unreliable)
+	void Multicast_AttackAnim(UAnimMontage* MontageToPlay);
+
 
 protected:
 	//----- Variables -----//
