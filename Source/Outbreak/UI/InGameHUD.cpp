@@ -14,7 +14,7 @@ void AInGameHUD::BeginPlay()
     {
         if (TSubclassOf<UUserWidget> Cached = GI->GetCachedWidgetClass())
         {
-            WidgetClass = Cached;
+            InGameWidgetClass = Cached;
         }
     }
 	
@@ -24,11 +24,11 @@ void AInGameHUD::BeginPlay()
         PC = UGameplayStatics::GetPlayerController(this, 0);
     }
 
-    if (WidgetClass && PC)
+    if (InGameWidgetClass && PC)
     {
         if (!OB_Widget)
         {
-            OB_Widget = CreateWidget<UOBWidget>(PC, WidgetClass);
+            OB_Widget = CreateWidget<UOBWidget>(PC, InGameWidgetClass);
         }
 
         if (OB_Widget)

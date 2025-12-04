@@ -24,6 +24,8 @@ public:
 	
 	void ApplyToxicDamage(float DamagePerSecond, float Duration);
 	
+	bool IsDead() const;
+	
 	UFUNCTION(BlueprintCallable) void TriggerFootStepLeft();
 	UFUNCTION(BlueprintCallable) void TriggerFootStepRight();
 protected:
@@ -33,7 +35,6 @@ protected:
 	virtual float GetDamageMultiplier(EPhysicalSurface SurfaceType);
 	
 	void ApplyDamage(int32 DamageAmount);
-	bool IsDead() const;
 	void ApplyToxicTick();
 	void ClearToxicEffect();
 

@@ -26,6 +26,9 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 	virtual void PostInitializeComponents() override;
+
+	UFUNCTION(BlueprintCallable, Category="Zombie|Attack")
+	void AnimNotify_Attack();
 	
 	FORCEINLINE FZombieData* GetZombieData() { return &ZombieData; }
 	FORCEINLINE bool GetIsAttacking() const { return bIsAttacking; }
@@ -45,6 +48,9 @@ protected:
 	UFUNCTION()
 	void OnRep_ZombieData();
 	void ApplyZombieData();
+
+private:
+	void PerformAttack();
 	
 // --------------------
 // Variables

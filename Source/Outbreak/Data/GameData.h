@@ -6,6 +6,36 @@
 #include "GameData.generated.h"
 
 USTRUCT()
+struct FAmmoCount
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	EFirableType Type = EFirableType::None;
+
+	UPROPERTY()
+	int32 Count = 0;
+};
+
+USTRUCT()
+struct FAmmoData : public FTableRowBase
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere)
+	EFirableType Type = EFirableType::None;
+	
+	UPROPERTY(EditAnywhere)
+	int32 InitialAmmoCount = 0;
+
+	UPROPERTY(EditAnywhere)
+	int32 MaxTotalAmmo = 0;
+
+	UPROPERTY(EditAnywhere)
+	int32 ResupplyAmount = 0;
+};
+
+USTRUCT()
 struct FSingleEnemyData
 {
 	GENERATED_BODY()
@@ -213,6 +243,9 @@ struct FFirableData : public FWeaponData
 
 	UPROPERTY(EditAnywhere)
 	float ReloadTime = 0.0f;
+
+	UPROPERTY(EditAnywhere)
+	EFirableType FirableType = EFirableType::None;
 };
 
 USTRUCT()

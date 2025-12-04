@@ -23,28 +23,20 @@ void AInGameMode::BeginPlay()
 		SM->StartMainBgmShuffle(false, 0.6f);
 	}
 	
-	StartMatch();
-	
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	SpawnManager = GetWorld()->SpawnActor<ACharacterSpawnManager>(SpawnManagerClass, SpawnParams);
-}
-
-void AInGameMode::OnPostLogin(AController* NewPlayer)
-{
-	Super::OnPostLogin(NewPlayer);
 
 	if (SpawnManager && !SpawnManager->IsActivated())
 	{
-		FTimerHandle TimerHandle;
-		FTimerDelegate TimerDelegate;
-        
-		if (APlayerController* PC = Cast<APlayerController>(NewPlayer))
+		if (APlayerController* HostPC = UGameplayStatics::GetPlayerController(GetWorld(), 0))
 		{
-			TimerDelegate.BindUObject(this, &AInGameMode::ActivateSpawnManagerForPlayer, PC);
+			FTimerHandle TimerHandle;
+			FTimerDelegate TimerDelegate;
+          
+			TimerDelegate.BindUObject(this, &AInGameMode::ActivateSpawnManagerForPlayer, HostPC);
+			GetWorld()->GetTimerManager().SetTimer(TimerHandle, TimerDelegate, 1.0f, false);
 		}
-        
-		GetWorld()->GetTimerManager().SetTimer(TimerHandle, TimerDelegate, 1.0f, false);
 	}
 }
 
@@ -84,11 +76,6 @@ void AInGameMode::ActivateSpawnManagerForPlayer(APlayerController* PlayerToTarge
 		if (ACharacterPlayer* TargetPlayer = Cast<ACharacterPlayer>(PlayerToTarget->GetPawn()))
 		{
 			SpawnManager->Activate(TargetPlayer);
-			PRINT_WITH_CURRENT_CONTEXT("SpawnManager Activated. Target :" + TargetPlayer->GetName());
-		}
-		else
-		{
-			PRINT_WITH_CURRENT_CONTEXT("TargetPlayer is null.");
 		}
 	}
 }

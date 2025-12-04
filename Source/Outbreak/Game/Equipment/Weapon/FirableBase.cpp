@@ -6,6 +6,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Outbreak/Character/Player/CharacterPlayer.h"
+#include "Outbreak/Character/Zombie/CharacterZombie.h"
+#include "Outbreak/Game/Framework/InGamePlayerState.h"
 #include "Outbreak/Util/EnumHelper.h"
 #include "Outbreak/Util/FloatHelper.h"
 
@@ -59,7 +61,6 @@ void AFirableBase::StopFire()
 	GetWorld()->GetTimerManager().ClearTimer(FireTimerHandle);
 }
 
- 
 void AFirableBase::ProcessFire()
 {
 	CurrentAmmoInMag--;
@@ -69,13 +70,8 @@ void AFirableBase::ProcessFire()
 		StopFire();
 	}
 	
-	OnAmmoChanged.Broadcast(CurrentAmmoInMag, CurrentTotalAmmo);
+	OnPlayerAmmoChangedDelegate.Broadcast();
 
-	if (FireSound)
-	{
-		UGameplayStatics::PlaySoundAtLocation(GetWorld(), FireSound, GetActorLocation());
-	}
-	
 	AController* OwnerController = GetInstigatorController();
 	if (!OwnerController) return;
 
@@ -93,14 +89,19 @@ void AFirableBase::ProcessFire()
 	QueryParams.bReturnPhysicalMaterial = true;
 
 	const bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility, QueryParams);
-
-	DrawDebugLine(GetWorld(), Start, End, bHit ? FColor::Green : FColor::Red, false, 2.0f, 0, 0.5f);
-
-	if (bHit)
+	if (HasAuthority() || OwnerController->IsLocalPlayerController())
 	{
-		if (AActor* HitActor = HitResult.GetActor())
+		Multicast_PlayFireEffects(GetActorLocation(), HitResult);
+		if (bHit)
 		{
-			UGameplayStatics::ApplyPointDamage(HitActor, FirableData.Damage, PlayerViewPointRotation.Vector(), HitResult, OwnerController, this, nullptr);
+			if (HasAuthority())
+			{
+				ApplyDamageToTarget(OwnerController, HitResult);
+			}
+			else if (OwnerController->IsLocalPlayerController())
+			{
+				Server_ProcessHit(HitResult);
+			}
 		}
 	}
 
@@ -139,17 +140,62 @@ void AFirableBase::StartReload(const FOnReloadFinished& DoneCallback)
 	GetWorld()->GetTimerManager().SetTimer(ReloadTimerHandle, this, &AFirableBase::FinishReload, ReloadDuration, false);
 }
 
+bool AFirableBase::CanReload() const
+{
+	return !bIsReloading && CurrentAmmoInMag < FirableData.MagazineSize && GetReservedAmmo() > 0;
+}
+
 void AFirableBase::FinishReload()
 {
-	const int32 NeededAmmo = FirableData.MagazineSize - CurrentAmmoInMag;
-	const int32 AmmoToFill = FMath::Min(NeededAmmo, CurrentTotalAmmo);
+	ACharacterPlayer* OwnerCharacter = Cast<ACharacterPlayer>(GetOwner());
+	if (!OwnerCharacter) return;
+    
+	AInGamePlayerState* PS = OwnerCharacter->GetPlayerState<AInGamePlayerState>();
+	if (!PS) return;
 
+	const int32 ReserveAmmo = PS->GetReserveAmmo(FirableData.FirableType);
+
+	const int32 NeededAmmo = FirableData.MagazineSize - CurrentAmmoInMag;
+	const int32 AmmoToFill = FMath::Min(NeededAmmo, ReserveAmmo);
+	
 	CurrentAmmoInMag += AmmoToFill;
-	CurrentTotalAmmo -= AmmoToFill;
+
+	if (HasAuthority())
+	{
+		PS->ConsumeAmmo(FirableData.FirableType, AmmoToFill);
+	}
 	
 	bIsReloading = false;
 	OnReloadFinishedCallback.ExecuteIfBound();
-	OnAmmoChanged.Broadcast(CurrentAmmoInMag, CurrentTotalAmmo);
+	OnPlayerAmmoChangedDelegate.Broadcast();
+}
+
+void AFirableBase::ApplyDamageToTarget(AController* InstigatorController, const FHitResult& HitResult)
+{
+	if (!HasAuthority()) return;
+
+	if (AActor* HitActor = HitResult.GetActor())
+	{
+		if (ACharacterZombie* HitZombie = Cast<ACharacterZombie>(HitActor))
+		{
+			UGameplayStatics::ApplyPointDamage(HitZombie, FirableData.Damage, HitResult.Location, HitResult, InstigatorController, this, nullptr);
+		}
+	}
+}
+
+void AFirableBase::Server_ProcessHit_Implementation(const FHitResult& HitResult)
+{
+	ApplyDamageToTarget(GetInstigatorController(), HitResult);
+}
+
+void AFirableBase::Multicast_PlayFireEffects_Implementation(const FVector MuzzleLocation, const FHitResult& HitResult)
+{
+	if (FireSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, FireSound, MuzzleLocation);
+	}
+    
+	DrawDebugLine(GetWorld(), GetActorLocation(), HitResult.TraceEnd, HitResult.GetActor() ? FColor::Green : FColor::Red, false, 0.5f, 0, 0.5f);
 }
 
 void AFirableBase::RecoverRecoil(const float DeltaTime)
@@ -162,6 +208,19 @@ void AFirableBase::RecoverRecoil(const float DeltaTime)
 	
 	const float RecoveryAmount = (FirableData.VerticalRecoil / RecoilRecoveryTime) * DeltaTime;
 	PC->AddPitchInput(RecoveryAmount);
+}
+
+int32 AFirableBase::GetReservedAmmo() const
+{
+	const ACharacterPlayer* OwnerCharacter = Cast<ACharacterPlayer>(GetOwner());
+	if (!OwnerCharacter) return 0;
+
+	const AInGamePlayerState* PS = OwnerCharacter->GetPlayerState<AInGamePlayerState>();
+	if (!PS) return 0;
+
+	const int32 ReserveAmmo = PS->GetReserveAmmo(FirableData.FirableType);
+
+	return ReserveAmmo;
 }
 
 EFireType AFirableBase::ToggleFireMode()

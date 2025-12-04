@@ -7,6 +7,9 @@
 #include "Outbreak/Util/Define.h"
 #include "EquipmentController.generated.h"
 
+class AInGameHUD;
+class ACharacterPlayer;
+
 UCLASS()
 class OUTBREAK_API UEquipmentController : public UActorComponent
 {
@@ -19,13 +22,13 @@ public:
 	UEquipmentController();
 	void EquipBySlot(int32 SlotNumber);
 	void AddEquipment(const TObjectPtr<class AEquipmentBase>& Equipment);
-	void UnEquipCurrentEquipment();
 	
 	void HandleUse();
 	void HandleEndUse();
 	void HandleReload();
 	void HandleToggleFireMode();
-	
+
+	// Getters
 	UFUNCTION(BlueprintCallable)
 	bool GetIsOnUse() const { return bIsOnUse; }
 	
@@ -46,47 +49,68 @@ public:
 
 	UFUNCTION(BlueprintPure)
 	AEquipmentBase* GetCurrentEquippedItem() const { return CurrentEquippedItem; }
-
+	
+	ACharacterPlayer* GetCachedOwner() const { return CachedOwner; }
+	AInGameHUD* GetInGameHUD();
+	// ~Getters
+	
 protected:
 	virtual void BeginPlay() override;
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 private:
 	void Equip(const TObjectPtr<class AEquipmentBase>& Equipment);
-	
-	
+	void UnEquipCurrentEquipment();
+
 	UFUNCTION()
 	void OnReloadFinished() { bIsReload = false; }
 	
 	UFUNCTION()
-	void OnAmmoChangedHandler(const int32 InCurrentAmmoInMag, int32 InCurrentTotalAmmo);
+	void HandleAmmoChanged();
+
+	UFUNCTION()
+	void OnRep_CurrentEquippedItem();
+	UFUNCTION()
+	void OnRep_FirstPrimaryWeapon();
+	UFUNCTION()
+	void OnRep_SecondPrimaryWeapon();
+	UFUNCTION()
+	void OnRep_SecondaryWeapon();
+	UFUNCTION()
+	void OnRep_ThrowableWeapon();
+	UFUNCTION()
+	void OnRep_FirstMedicine();
+	UFUNCTION()
+	void OnRep_SecondMedicine();
 	
+
 // --------------------
 // Variables
 // --------------------
 protected:
-	UPROPERTY()
-	TObjectPtr<class ACharacterPlayer> CachedOwner = nullptr;
+	UPROPERTY(Transient)
+	TObjectPtr<ACharacterPlayer> CachedOwner;
+	TWeakObjectPtr<AInGameHUD> CachedHUD;
 	
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, ReplicatedUsing = OnRep_CurrentEquippedItem)
 	TObjectPtr<class AEquipmentBase> CurrentEquippedItem = nullptr;
 	
-	UPROPERTY(EditAnywhere, meta = (ToolTip = "1"))
+	UPROPERTY(EditAnywhere, ReplicatedUsing = OnRep_FirstPrimaryWeapon, meta = (ToolTip = "1"))
 	TObjectPtr<class AFirableBase> FirstPrimaryWeapon = nullptr;
 	
-	UPROPERTY(EditAnywhere, meta = (ToolTip = "2"))
+	UPROPERTY(EditAnywhere, ReplicatedUsing = OnRep_SecondPrimaryWeapon, meta = (ToolTip = "2"))
 	TObjectPtr<class AFirableBase> SecondPrimaryWeapon = nullptr;
 
-	UPROPERTY(EditAnywhere, meta = (ToolTip = "3"))
+	UPROPERTY(EditAnywhere, ReplicatedUsing = OnRep_SecondaryWeapon, meta = (ToolTip = "3"))
 	TObjectPtr<class AWeaponBase> SecondaryWeapon = nullptr;
 
-	UPROPERTY(EditAnywhere, meta = (ToolTip = "4"))
+	UPROPERTY(EditAnywhere, ReplicatedUsing = OnRep_ThrowableWeapon, meta = (ToolTip = "4"))
 	TObjectPtr<class AThrowableBase> ThrowableWeapon = nullptr;
 
-	UPROPERTY(EditAnywhere, meta = (ToolTip = "5"))
+	UPROPERTY(EditAnywhere, ReplicatedUsing = OnRep_FirstMedicine, meta = (ToolTip = "5"))
 	TObjectPtr<class AMedicineBase> FirstMedicine = nullptr;
 	
-	UPROPERTY(EditAnywhere, meta = (ToolTip = "6"))
+	UPROPERTY(EditAnywhere, ReplicatedUsing = OnRep_SecondMedicine, meta = (ToolTip = "6"))
 	TObjectPtr<class AMedicineBase> SecondMedicine = nullptr;
 
 private:

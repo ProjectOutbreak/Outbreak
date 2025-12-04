@@ -1,6 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "EquipmentController.h"
+
+#include "Net/UnrealNetwork.h"
 #include "Outbreak/Character/Player/CharacterPlayer.h"
 #include "Outbreak/Game/Equipment/EquipmentBase.h"
 #include "Outbreak/Game/Equipment/Weapon/FirableBase.h"
@@ -8,13 +10,16 @@
 #include "Outbreak/Game/Equipment/Weapon/ThrowableBase.h"
 #include "Outbreak/Game/Equipment/Medicine/MedicineBase.h"
 #include "Outbreak/Game/Equipment/Weapon/MeleeBase.h"
+#include "Outbreak/Game/Framework/InGamePlayerState.h"
 #include "Outbreak/UI/InGameHUD.h"
 #include "Outbreak/Util/Define.h"
 #include "Outbreak/Util/EnumHelper.h"
+#include "Utilities/DebugHelper.h"
 
 UEquipmentController::UEquipmentController()
 {
-	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bCanEverTick = false;
+	SetIsReplicatedByDefault(true);
 }
 
 void UEquipmentController::BeginPlay()
@@ -23,13 +28,20 @@ void UEquipmentController::BeginPlay()
 	CachedOwner = Cast<ACharacterPlayer>(GetOwner());
 	if (!CachedOwner)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[%s] Failed to cast ACharacterPlayer"), CURRENT_CONTEXT);
+		PRINT_WITH_CURRENT_CONTEXT("Failed to cast ACharacterPlayer");
 	}
 }
 
-void UEquipmentController::TickComponent(const float DeltaTime, const ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+void UEquipmentController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(ThisClass, CurrentEquippedItem);
+	DOREPLIFETIME(ThisClass, FirstPrimaryWeapon);
+	DOREPLIFETIME(ThisClass, SecondPrimaryWeapon);
+	DOREPLIFETIME(ThisClass, SecondaryWeapon);
+	DOREPLIFETIME(ThisClass, ThrowableWeapon);
+	DOREPLIFETIME(ThisClass, FirstMedicine);
+	DOREPLIFETIME(ThisClass, SecondMedicine);
 }
 
 void UEquipmentController::EquipBySlot(const int32 SlotNumber)
@@ -255,15 +267,20 @@ void UEquipmentController::Equip(const TObjectPtr<AEquipmentBase>& Equipment)
 		CurrentEquippedItem->AttachToComponent(CachedOwner->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, SocketName);
 		CurrentEquippedItem->SetActorHiddenInGame(false);
 
-		// TODO : below if statement should be removed
 		if (AFirableBase* NewFirableWeapon = Cast<AFirableBase>(CurrentEquippedItem))
 		{
 			CurrentFireType = NewFirableWeapon->GetCurrentFireType();
 			CurrentAmmoInMag = NewFirableWeapon->GetCurrentAmmoInMag();
-			NewFirableWeapon->OnAmmoChanged.AddDynamic(this, &UEquipmentController::OnAmmoChangedHandler);
+			NewFirableWeapon->OnPlayerAmmoChangedDelegate.AddDynamic(this, &UEquipmentController::HandleAmmoChanged);
+
+			if (AInGamePlayerState* PS = CachedOwner->GetPlayerState<AInGamePlayerState>())
+			{
+				PS->OnPlayerAmmoChangedDelegate.AddDynamic(this, &UEquipmentController::HandleAmmoChanged);
+			}
 		}
 		
 		CurrentEquippedItem->OnEquip();
+		HandleAmmoChanged();
 		UE_LOG(LogTemp, Log, TEXT("[%s] Equipped: %s"), CURRENT_CONTEXT, *CurrentEquippedItem->GetName());
 	}
 }
@@ -276,7 +293,14 @@ void UEquipmentController::UnEquipCurrentEquipment()
 		
 		if (AFirableBase* OldFirableWeapon = Cast<AFirableBase>(CurrentEquippedItem))
 		{
-			OldFirableWeapon->OnAmmoChanged.RemoveDynamic(this, &UEquipmentController::OnAmmoChangedHandler);
+			OldFirableWeapon->OnPlayerAmmoChangedDelegate.RemoveDynamic(this, &UEquipmentController::HandleAmmoChanged);
+			if (IsValid(CachedOwner))
+			{
+				if (AInGamePlayerState* PS = CachedOwner->GetPlayerState<AInGamePlayerState>())
+				{
+					PS->OnPlayerAmmoChangedDelegate.RemoveDynamic(this, &UEquipmentController::HandleAmmoChanged);
+				}
+			}
 		}
 		if (AMeleeBase* OldMeleeWeapon = Cast<AMeleeBase>(CurrentEquippedItem))
 		{
@@ -287,11 +311,76 @@ void UEquipmentController::UnEquipCurrentEquipment()
 	CurrentEquippedItem = nullptr;
 }
 
-void UEquipmentController::OnAmmoChangedHandler(const int32 InCurrentAmmoInMag, const int32 InCurrentTotalAmmo)
+void UEquipmentController::HandleAmmoChanged()
 {
-	CurrentAmmoInMag = InCurrentAmmoInMag;
-	if (AInGameHUD* Hud = CachedOwner->GetHud())
+	const AFirableBase* CurrentWeapon = Cast<AFirableBase>(CurrentEquippedItem);
+	if (!CurrentWeapon) return;
+
+	const AInGamePlayerState* PS = CachedOwner->GetPlayerState<AInGamePlayerState>();
+	if (!PS) return;
+
+	const int32 CurrentMag = CurrentWeapon->GetCurrentAmmoInMag();
+	const int32 ReserveAmmo = PS->GetReserveAmmo(CurrentWeapon->GetFirableData().FirableType);
+
+	if (AInGameHUD* Hud = GetInGameHUD())
 	{
-		Hud->DisplayAmmo(InCurrentAmmoInMag, InCurrentTotalAmmo);
+		Hud->DisplayAmmo(CurrentMag, ReserveAmmo);
 	}
+}
+
+void UEquipmentController::OnRep_CurrentEquippedItem()
+{
+	if (IsValid(CurrentEquippedItem))
+	{
+		Equip(CurrentEquippedItem); 
+	}
+	else
+	{
+		UnEquipCurrentEquipment(); 
+	}
+}
+
+void UEquipmentController::OnRep_FirstPrimaryWeapon()
+{
+}
+
+void UEquipmentController::OnRep_SecondPrimaryWeapon()
+{
+}
+
+void UEquipmentController::OnRep_SecondaryWeapon()
+{
+}
+
+void UEquipmentController::OnRep_ThrowableWeapon()
+{
+}
+
+void UEquipmentController::OnRep_FirstMedicine()
+{
+}
+
+void UEquipmentController::OnRep_SecondMedicine()
+{
+}
+
+AInGameHUD* UEquipmentController::GetInGameHUD()
+{
+	if (CachedHUD.IsValid()) return CachedHUD.Get();
+
+	const ACharacterPlayer* Character = GetCachedOwner();
+	if (!Character) return nullptr;
+
+	const APlayerController* PC = Cast<APlayerController>(Character->GetController());
+    
+	if (PC && PC->IsLocalController())
+	{
+		CachedHUD = Cast<AInGameHUD>(PC->GetHUD());
+		if (CachedHUD.IsValid())
+		{
+			return CachedHUD.Get();
+		}
+	}
+
+	return nullptr;
 }

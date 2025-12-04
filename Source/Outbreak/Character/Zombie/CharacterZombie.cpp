@@ -78,6 +78,65 @@ void ACharacterZombie::PostInitializeComponents()
 #endif
 }
 
+void ACharacterZombie::AnimNotify_Attack()
+{
+	if (HasAuthority())
+	{
+		PerformAttack();
+	}
+}
+
+void ACharacterZombie::PerformAttack()
+{
+	const FZombieData* Data = GetZombieData();
+	if (!Data) return;
+    
+	const FName AttackSocketName = TEXT("hand_r_socket");
+	FVector StartLocation = GetMesh()->GetSocketLocation(AttackSocketName);
+
+	const float TraceLength = Data->AttackRange;
+	FVector EndLocation = StartLocation + GetActorForwardVector() * TraceLength;
+
+	TArray<AActor*> ActorsToIgnore;
+	ActorsToIgnore.Add(this);
+    
+	FHitResult HitResult;
+    
+	bool bHit = UKismetSystemLibrary::SphereTraceSingle(
+		GetWorld(),
+		StartLocation,
+		EndLocation,
+		30.0f,
+		ETraceTypeQuery::TraceTypeQuery1,
+		false,
+		ActorsToIgnore,
+		EDrawDebugTrace::ForDuration,
+		HitResult,
+		true,
+		FLinearColor::Red,
+		FLinearColor::Green,
+		0.5f
+	);
+
+	if (bHit)
+	{
+		if (ACharacterPlayer* HitPlayer = Cast<ACharacterPlayer>(HitResult.GetActor()))
+		{
+			if (HitPlayer->IsDead()) return;
+
+			const float DamageAmount = Data->AttackDamage;
+          
+			UGameplayStatics::ApplyDamage(
+				HitPlayer,
+				DamageAmount,
+				GetController(),
+				this,
+				nullptr
+			);
+		}
+	}
+}
+
 void ACharacterZombie::SetupCollision()
 {
 	Super::SetupCollision();
@@ -119,8 +178,7 @@ void ACharacterZombie::SetupMovement()
 void ACharacterZombie::OnRep_Die()
 {
 	Super::OnRep_Die();
-
-
+	
 	if (DeadSoundCue)
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, DeadSoundCue, GetActorLocation());
@@ -130,9 +188,9 @@ void ACharacterZombie::OnRep_Die()
 	{
 		OnDeathDelegate.Broadcast(this);
 		
-		if (AController* Killer = LastDamagePlayer)
+		if (LastDamagePlayer)
 		{
-			if (AInGamePlayerState* PS = Cast<AInGamePlayerState>(Killer->PlayerState))
+			if (AInGamePlayerState* PS = LastDamagePlayer->GetPlayerState<AInGamePlayerState>())
 			{
 				PS->AddZombieKill();
 			}
