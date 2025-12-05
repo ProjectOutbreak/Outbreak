@@ -22,7 +22,7 @@ protected:
 	virtual void BeginPlay() override;
 
 	UFUNCTION(NetMulticast, Unreliable)
-	void Multicast_ExplodeVFX();
+	void Multicast_Explode();
 
 
 	//-----Variables-----//

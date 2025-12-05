@@ -69,14 +69,18 @@ void AThrowableProjectile::Explode()
 		GetInstigatorController(),
 		true
 		);
-	Multicast_ExplodeVFX();
+	Multicast_Explode();
 	
 	DrawDebugSphere(GetWorld(), GetActorLocation(), ThrowableData.ExplosionRadius, 12, FColor::Red, false, 3.0f);
 	SetLifeSpan(0.1f);
 }
 
-void AThrowableProjectile::Multicast_ExplodeVFX_Implementation()
+void AThrowableProjectile::Multicast_Explode_Implementation()
 {
+	if (ThrowableData.ExplosionSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, ThrowableData.ExplosionSound, GetActorLocation());
+	}
 	if (ThrowableData.ExplosionVfx)
 	{
 		UNiagaraFunctionLibrary::SpawnSystemAtLocation(

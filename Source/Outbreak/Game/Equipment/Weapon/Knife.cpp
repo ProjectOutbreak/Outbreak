@@ -19,6 +19,11 @@ AKnife::AKnife()
 			MeleeData = *Data;
 		}
 	}
+	static ConstructorHelpers::FObjectFinder<USoundBase> KnifeSoundRef(TEXT("/Game/Audio/SFX/Cues/Equipment/SC_Knife_Attack.SC_Knife_Attack"));
+	if (KnifeSoundRef.Succeeded())
+	{
+		AttackSound = KnifeSoundRef.Object;
+	}
 	EquipmentType = EEquipmentType::SecondaryWeapon;
 	
 }

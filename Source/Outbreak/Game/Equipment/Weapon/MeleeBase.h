@@ -46,6 +46,9 @@ protected:
 	FName HitStartSocketName = TEXT("Melee_Start");
 	UPROPERTY(EditDefaultsOnly)
 	FName HitEndSocketName = TEXT("Melee_End");
+
+	UPROPERTY()
+	USoundBase* AttackSound;
 	
 	bool bIsAttacking = false;
 

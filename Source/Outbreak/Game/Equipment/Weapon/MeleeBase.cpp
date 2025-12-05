@@ -57,7 +57,10 @@ void AMeleeBase::OnUse()
 
 void AMeleeBase::Multicast_AttackAnim_Implementation(UAnimMontage* MontageToPlay)
 {
-	// TODO : Add Sound
+	if (AttackSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, AttackSound, GetActorLocation());
+	}
 	if (CachedOwnerCharacter && MontageToPlay)
 	{
 		UAnimInstance* AnimInstance = CachedOwnerCharacter->GetMesh()->GetAnimInstance();

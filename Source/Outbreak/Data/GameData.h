@@ -276,6 +276,9 @@ struct FThrowableData : public FWeaponData
 
 	UPROPERTY(EditAnywhere, Category = "Projectile")
 	TSubclassOf<class AThrowableProjectile> ProjectileClass;
+
+	UPROPERTY(EditAnywhere, Category = "Sound")
+	USoundBase* ExplosionSound;
 };
 
 USTRUCT()
