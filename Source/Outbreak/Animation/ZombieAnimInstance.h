@@ -19,7 +19,10 @@ public:
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 
 	void PlayAttackMontage();
+	void OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 	void PlayScreamingMontage(FOnMontageEnded& OnMontageEndedDelegate);
+
+	bool IsAttacking() const { return bIsAttacking; }
 
 protected:
 	UPROPERTY(EditDefaultsOnly)
@@ -47,6 +50,12 @@ protected:
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly);
 	bool ShouldMove;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly);
+	bool bIsAttacking;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly);
+	float UpperBodyBlendAlpha = 0.0f;
 
 private:
 	float GroundSpeedInterpSpeed = 10.0f;

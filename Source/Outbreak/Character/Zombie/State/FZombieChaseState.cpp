@@ -3,6 +3,7 @@
 #include "FZombieChaseState.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Navigation/PathFollowingComponent.h"
+#include "Outbreak/Animation/ZombieAnimInstance.h"
 #include "Outbreak/Character/Zombie/CharacterZombie.h"
 #include "Outbreak/Component/ZombieAIComponent.h"
 #include "Outbreak/Util/Define.h"
@@ -26,27 +27,21 @@ void FZombieChaseState::Enter(const EZombieStateType PreviousState)
 		PathFollowingComp->SetBlockDetection(BlockDetectionDistance, BlockDetectionInterval, BlockDetectionSampleCount);
 		DelegateHandle = PathFollowingComp->OnRequestFinished.AddLambda([this](FAIRequestID, const FPathFollowingResult& Result)
 		{
-			if (Result.IsSuccess())
-			{
-				Fsm->ChangeState(EZombieStateType::Attack);
-			}
-			// else if (Result.IsFailure())
-			// {
-				// Fsm->ChangeState(EZombieStateType::Alert);
-			// }
+			if (Result.IsSuccess()) { }
+			else if (Result.IsFailure()) { }
 		});
 	}
 	
 	CurrentChaseType = FMath::RandBool() ? EChaseType::Arc : EChaseType::Straight;
+	UpdateTimer = 0.0f;
 	if (CurrentChaseType == EChaseType::Straight)
 	{
-		const float AcceptanceRadius = Owner->GetZombieData()->AttackRange;
+		const float AcceptanceRadius = Owner->GetZombieData()->AttackRange / 2.0f;
 		AIController->MoveToActor(GetTarget(), AcceptanceRadius, true);
 	}
 	else if (CurrentChaseType == EChaseType::Arc)
 	{
 		FlankDirection = FMath::RandBool() ? 1.0f : -1.0f;
-		UpdateTimer = 0.0f;
 	}
 	
 	AIController->SetFocus(GetTarget());
@@ -58,6 +53,9 @@ void FZombieChaseState::Execute(const EZombieStateType CurrentState, const float
 
 	const TObjectPtr<ACharacterPlayer> CurrentTarget = GetTarget();
 
+	UZombieAnimInstance* AnimInst = GetAnimInstance();
+	if (!AnimInst) return;
+	
 	if (!Owner || !CurrentTarget)
 	{
 		Fsm->ChangeState(EZombieStateType::Alert);
@@ -68,27 +66,35 @@ void FZombieChaseState::Execute(const EZombieStateType CurrentState, const float
 	const FVector PlayerLocation = CurrentTarget->GetActorLocation();
 	const float DistanceToPlayer = FVector::Dist(ZombieLocation, PlayerLocation);
 
-	if (DistanceToPlayer <= Owner->GetZombieData()->AttackRange)
+	if (DistanceToPlayer <= Owner->GetZombieData()->AttackRange - 50.0f && !AnimInst->IsAttacking())
 	{
-		Fsm->ChangeState(EZombieStateType::Attack);
+		AnimInst->PlayAttackMontage();
 		return;
 	}
 
-	if (CurrentChaseType == EChaseType::Arc)
+	if (DistanceToPlayer > Owner->GetZombieData()->AttackRange)
 	{
 		UpdateTimer += DeltaTime;
 		if (UpdateTimer >= UpdateInterval)
 		{
 			UpdateTimer = 0.0f;
-			
-			const FVector DirectionToPlayer = (PlayerLocation - ZombieLocation).GetSafeNormal();
-			const FVector RightVector = FVector::CrossProduct(DirectionToPlayer, FVector::UpVector);
-			const FVector FinalDirection = (DirectionToPlayer + (RightVector * FlankDirection * ArcWeight)).GetSafeNormal();
+
+			if (CurrentChaseType == EChaseType::Straight)
+			{
+				const float AcceptanceRadius = Owner->GetZombieData()->AttackRange / 2.0f;
+				AIController->MoveToActor(GetTarget(), AcceptanceRadius, true);	
+			}
+			else if (CurrentChaseType == EChaseType::Arc)
+			{
+				const FVector DirectionToPlayer = (PlayerLocation - ZombieLocation).GetSafeNormal();
+				const FVector RightVector = FVector::CrossProduct(DirectionToPlayer, FVector::UpVector);
+				const FVector FinalDirection = (DirectionToPlayer + (RightVector * FlankDirection * ArcWeight)).GetSafeNormal();
             
-			const float MoveDistance = 500.0f;
-			const FVector NextDestination = ZombieLocation + FinalDirection * MoveDistance;
+				const float MoveDistance = 500.0f;
+				const FVector NextDestination = ZombieLocation + FinalDirection * MoveDistance;
             
-			AIController->MoveToLocation(NextDestination, 100.f, true);
+				AIController->MoveToLocation(NextDestination, 100.f, true);
+			}
 		}
 	}
 }

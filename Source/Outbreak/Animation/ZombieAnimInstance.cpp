@@ -4,6 +4,7 @@
 #include "KismetAnimationLibrary.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Outbreak/Character/Zombie/CharacterZombie.h"
+#include "Utilities/DebugHelper.h"
 
 void UZombieAnimInstance::NativeInitializeAnimation()
 {
@@ -41,16 +42,28 @@ void UZombieAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	
 	AttackRate = OwnerZombie->GetZombieData()->AttackRate;
 	ShouldMove = GroundSpeed > 3.0f;
+
+	UpperBodyBlendAlpha = bIsAttacking ? 1.0f : 0.0f;
 }
 
 void UZombieAnimInstance::PlayAttackMontage()
 {
 	if (AttackMontages.Num() == 0) return;
-
+	
 	const int32 RandomIndex = FMath::RandRange(0, AttackMontages.Num() - 1);
 	UAnimMontage* SelectedMontage = AttackMontages[RandomIndex];
 
+	FOnMontageEnded OnAttackMontageEnded;
+	OnAttackMontageEnded.BindUObject(this, &UZombieAnimInstance::OnAttackMontageEnded);
+	
 	Montage_Play(SelectedMontage);
+	Montage_SetEndDelegate(OnAttackMontageEnded, SelectedMontage);
+	bIsAttacking = true;
+}
+
+void UZombieAnimInstance::OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+{
+	bIsAttacking = false;
 }
 
 void UZombieAnimInstance::PlayScreamingMontage(FOnMontageEnded& OnMontageEndedDelegate)
