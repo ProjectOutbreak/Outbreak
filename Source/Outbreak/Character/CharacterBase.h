@@ -23,6 +23,7 @@ public:
 	virtual void BeginPlay() override;
 	
 	void ApplyToxicDamage(float DamagePerSecond, float Duration);
+	void ApplyHeal(float HealAmount);
 	
 	bool IsDead() const;
 	

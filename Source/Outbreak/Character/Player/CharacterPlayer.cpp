@@ -19,6 +19,7 @@
 #include "Outbreak/Game/Equipment/Weapon/M4.h"
 #include "Outbreak/Game/Equipment/Weapon/Knife.h"
 #include "Outbreak/Game/Equipment/Weapon/Granade.h"
+#include "Outbreak/Game/Equipment/Medicine/FirstAidKit.h"
 #include "Outbreak/Game/Equipment/Weapon/WeaponBase.h"
 #include "Outbreak/Game/Framework/InGameMode.h"
 #include "Outbreak/Game/Framework/InGameState.h"
@@ -57,6 +58,11 @@ ACharacterPlayer::ACharacterPlayer()
 	if (GranadeClassRef.Class)
 	{
 		GranadeToSpawn = GranadeClassRef.Class;
+	}
+	static ConstructorHelpers::FClassFinder<AEquipmentBase> HealClassRef(TEXT("/Game/Blueprints/Equipment/BP_FirstAidKit.BP_FirstAidKit_C"));
+	if (HealClassRef.Class)
+	{
+		HealToSpawn = HealClassRef.Class;
 	}
 	
 	CharacterType = ECharacterType::Player;
@@ -219,7 +225,7 @@ void ACharacterPlayer::BeginPlay()
 	}
 
 	// TODO : For Test. Remove later.
-	if (HasAuthority() && IsValid(WeaponToSpawn) && IsValid(KnifeToSpawn) && IsValid(GranadeToSpawn))
+	if (HasAuthority() && IsValid(WeaponToSpawn) && IsValid(KnifeToSpawn) && IsValid(GranadeToSpawn) && IsValid(HealToSpawn))
 	{
 		const FVector SpawnLocation = GetActorLocation();
 		const FRotator SpawnRotation = GetActorRotation();
@@ -231,12 +237,14 @@ void ACharacterPlayer::BeginPlay()
 		SpawnedWeapon = GetWorld()->SpawnActor<AWeaponBase>(WeaponToSpawn, SpawnLocation, SpawnRotation, SpawnParams);
 		KnifeWeapon = GetWorld()->SpawnActor<AWeaponBase>(KnifeToSpawn, SpawnLocation, SpawnRotation, SpawnParams);
 		GranadeWeapon = GetWorld()->SpawnActor<AWeaponBase>(GranadeToSpawn, SpawnLocation, SpawnRotation, SpawnParams);
+		HealWeapon = GetWorld()->SpawnActor<AEquipmentBase>(HealToSpawn, SpawnLocation, SpawnRotation, SpawnParams);
 
-		if (IsValid(SpawnedWeapon) && IsValid(KnifeWeapon) && IsValid(GranadeWeapon))
+		if (IsValid(SpawnedWeapon) && IsValid(KnifeWeapon) && IsValid(GranadeWeapon) && IsValid(HealWeapon))
 		{
 			EquipmentController->AddEquipment(SpawnedWeapon);
 			EquipmentController->AddEquipment(KnifeWeapon);
 			EquipmentController->AddEquipment(GranadeWeapon);
+			EquipmentController->AddEquipment(HealWeapon);
 		}
 		EquipmentController->UnEquipCurrentEquipment();
 	}

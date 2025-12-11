@@ -246,6 +246,17 @@ void ACharacterBase::ApplyToxicTick()
 	ApplyDamage(ToxicDamagePerTick);
 }
 
+void ACharacterBase::ApplyHeal(float HealAmount)
+{
+	if (!HasAuthority() || IsDead()) return;
+
+	const float MaxHP = 100.0f; // TODO : PlayerData에서 가져오기
+	CurrentHealth = FMath::Clamp(CurrentHealth + HealAmount, 0.0f, MaxHP);
+
+	OnRep_CurrentHealth();
+}
+
+
 void ACharacterBase::ClearToxicEffect()
 {
 	GetWorldTimerManager().ClearTimer(ToxicTickTimerHandle);

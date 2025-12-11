@@ -201,6 +201,9 @@ struct FMedicineData : public FTableRowBase
 
 	UPROPERTY(EditAnywhere)
 	bool bCanUseOthers = true;
+
+	UPROPERTY(EditAnywhere, Category = "Animation")
+	TObjectPtr<UAnimMontage> HealMontage;
 };
 
 USTRUCT()

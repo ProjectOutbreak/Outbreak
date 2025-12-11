@@ -117,6 +117,11 @@ protected:
 	TObjectPtr<class AWeaponBase> GranadeWeapon;
 	UPROPERTY()
 	TSubclassOf<class AGranade> GranadeToSpawn;
+	
+	UPROPERTY()
+	TObjectPtr<class AEquipmentBase> HealWeapon;
+	UPROPERTY()
+	TSubclassOf<class AFirstAidKit> HealToSpawn;
 
 private:
 	UPROPERTY()

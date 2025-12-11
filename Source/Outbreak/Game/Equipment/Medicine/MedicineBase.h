@@ -17,6 +17,8 @@ class OUTBREAK_API AMedicineBase : public AEquipmentBase
 public:	
 	virtual bool CanUse() const override;
 	virtual void OnUse() override;
+	virtual void OnEquip() override;
+	virtual void OnEndUse() override;
 	
 	virtual void UseSelf();
 	virtual void UseOnTarget(TObjectPtr<class ACharacterPlayer> TargetCharacter);
@@ -26,6 +28,12 @@ protected:
 	void OnUseComplete();
 
 	virtual void ApplyHealEffect(TObjectPtr<class ACharacterPlayer> TargetCharacter);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_PlayHealAnim(UAnimMontage* MontageToPlay);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_StopHealAnim(UAnimMontage* MontageToStop);
 	
 // --------------------
 // Variables
