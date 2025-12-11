@@ -47,4 +47,10 @@ protected:
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly);
 	bool ShouldMove;
+
+private:
+	float GroundSpeedInterpSpeed = 10.0f;
+	float DirectionInterpSpeed = 15.0f;
+	float CurrentGroundSpeed = 0.0f;
+	float CurrentDirection = 0.0f;
 };

@@ -28,11 +28,18 @@ void UZombieAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	}
 
 	if (!IsValid(MovementComponent)) return;
-
-	AttackRate = OwnerZombie->GetZombieData()->AttackRate;
+	
 	Velocity = MovementComponent->Velocity;
-	GroundSpeed = FVector(Velocity.X, Velocity.Y, 0.0f).Size();
-	Direction = UKismetAnimationLibrary::CalculateDirection(Velocity, OwnerZombie->GetActorRotation());
+	
+	const float RawGroundSpeed = FVector(Velocity.X, Velocity.Y, 0.0f).Size();
+	const float RawDirection = UKismetAnimationLibrary::CalculateDirection(Velocity, OwnerZombie->GetActorRotation());
+
+	CurrentGroundSpeed = FMath::FInterpTo(CurrentGroundSpeed, RawGroundSpeed, DeltaSeconds, GroundSpeedInterpSpeed);
+	CurrentDirection = FMath::FInterpTo(CurrentDirection, RawDirection, DeltaSeconds, DirectionInterpSpeed);
+	GroundSpeed = CurrentGroundSpeed;
+	Direction = CurrentDirection;
+	
+	AttackRate = OwnerZombie->GetZombieData()->AttackRate;
 	ShouldMove = GroundSpeed > 3.0f;
 }
 
