@@ -33,7 +33,23 @@ void UZombieAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	Velocity = MovementComponent->Velocity;
 	GroundSpeed = FVector(Velocity.X, Velocity.Y, 0.0f).Size();
 	Direction = UKismetAnimationLibrary::CalculateDirection(Velocity, OwnerZombie->GetActorRotation());
-	IsAttack = OwnerZombie->GetIsAttacking();
-	IsScream = OwnerZombie->GetIsScreaming();
 	ShouldMove = GroundSpeed > 3.0f;
+}
+
+void UZombieAnimInstance::PlayAttackMontage()
+{
+	if (AttackMontages.Num() == 0) return;
+
+	const int32 RandomIndex = FMath::RandRange(0, AttackMontages.Num() - 1);
+	UAnimMontage* SelectedMontage = AttackMontages[RandomIndex];
+
+	Montage_Play(SelectedMontage);
+}
+
+void UZombieAnimInstance::PlayScreamingMontage(FOnMontageEnded& OnMontageEndedDelegate)
+{
+	if (!ScreamingMontage) return;
+
+	Montage_Play(ScreamingMontage);
+	Montage_SetEndDelegate(OnMontageEndedDelegate, ScreamingMontage);
 }

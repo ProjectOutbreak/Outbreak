@@ -18,7 +18,15 @@ public:
 	virtual void NativeInitializeAnimation() override;
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 
+	void PlayAttackMontage();
+	void PlayScreamingMontage(FOnMontageEnded& OnMontageEndedDelegate);
+
 protected:
+	UPROPERTY(EditDefaultsOnly)
+	TArray<TObjectPtr<UAnimMontage>> AttackMontages;
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UAnimMontage> ScreamingMontage;
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly);
 	TObjectPtr<ACharacterZombie> OwnerZombie;
 	
@@ -39,10 +47,4 @@ protected:
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly);
 	bool ShouldMove;
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly);
-	bool IsAttack;
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly);
-	bool IsScream;
 };

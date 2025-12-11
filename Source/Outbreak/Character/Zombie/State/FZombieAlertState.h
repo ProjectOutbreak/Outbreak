@@ -13,7 +13,5 @@ public:
 	virtual void Exit(EZombieStateType NextState) override;
 
 private:
-	// TODO : delete magic number
-	float AlertAnimationLength = 1.6f;
-	float Timer = 0.0f;
+	void OnScreamingMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 };

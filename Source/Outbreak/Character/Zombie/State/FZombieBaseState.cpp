@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "FZombieBaseState.h"
+#include "Outbreak/Animation/ZombieAnimInstance.h"
 #include "Outbreak/Character/Player/CharacterPlayer.h"
 #include "Outbreak/Character/Zombie/CharacterZombie.h"
 #include "Outbreak/Component/ZombieAIComponent.h"
@@ -17,6 +18,15 @@ void FZombieBaseState::Enter(EZombieStateType PreviousState) { }
 void FZombieBaseState::Execute(EZombieStateType CurrentState, float DeltaTime) { }
 
 void FZombieBaseState::Exit(EZombieStateType NextState) { }
+
+TObjectPtr<UZombieAnimInstance> FZombieBaseState::GetAnimInstance()
+{
+	if (!CachedAnimInstance && Owner)
+	{
+		CachedAnimInstance = Cast<UZombieAnimInstance>(Owner->GetMesh()->GetAnimInstance());
+	}
+	return CachedAnimInstance;
+}
 
 TObjectPtr<ACharacterPlayer> FZombieBaseState::GetTarget() const
 {
