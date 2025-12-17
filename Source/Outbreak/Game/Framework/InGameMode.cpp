@@ -1,13 +1,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "InGameMode.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerController.h"
 #include "Containers/Set.h"
+#include "Outbreak/Character/Player/CharacterPlayer.h"
 #include "Outbreak/Manager/CharacterSpawnManager.h"
 #include "Outbreak/Manager/SoundManager.h"
-
+#include "Utilities/DebugHelper.h"
 
 AInGameMode::AInGameMode()
 {
@@ -18,18 +18,26 @@ void AInGameMode::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	StartMatch();
 	if (USoundManager* SM = GetGameInstance()->GetSubsystem<USoundManager>())
 	{
 		SM->StartMainBgmShuffle(false, 0.6f);
 	}
-	UE_LOG(LogTemp, Warning, TEXT("게임 시작됨"));
-	
-	StartMatch();
 	
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	SpawnManager = GetWorld()->SpawnActor<ACharacterSpawnManager>(SpawnManagerClass, SpawnParams);
+
+	if (SpawnManager && !SpawnManager->IsActivated())
+	{
+		if (APlayerController* HostPC = UGameplayStatics::GetPlayerController(GetWorld(), 0))
+		{
+			FTimerHandle TimerHandle;
+			FTimerDelegate TimerDelegate;
+          
+			TimerDelegate.BindUObject(this, &AInGameMode::ActivateSpawnManagerForPlayer, HostPC);
+			GetWorld()->GetTimerManager().SetTimer(TimerHandle, TimerDelegate, 1.0f, false);
+		}
+	}
 }
 
 void AInGameMode::ProceedToNextLevel() const
@@ -59,4 +67,15 @@ void AInGameMode::ProceedToNextLevel() const
 		// 단, 마지막 페이즈는 보스 처치시 게임이 완료 됨(SafeZoneCollision이 없음)
 	}
 	GetWorld()->ServerTravel(NextLevelName, true);
+}
+
+void AInGameMode::ActivateSpawnManagerForPlayer(APlayerController* PlayerToTarget)
+{
+	if (SpawnManager && !SpawnManager->IsActivated() && IsValid(PlayerToTarget))
+	{
+		if (ACharacterPlayer* TargetPlayer = Cast<ACharacterPlayer>(PlayerToTarget->GetPawn()))
+		{
+			SpawnManager->Activate(TargetPlayer);
+		}
+	}
 }

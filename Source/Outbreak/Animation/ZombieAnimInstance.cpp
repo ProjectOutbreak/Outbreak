@@ -4,7 +4,6 @@
 #include "KismetAnimationLibrary.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Outbreak/Character/Zombie/CharacterZombie.h"
-#include "Outbreak/Public/Utilities/DebugHelper.h"
 
 void UZombieAnimInstance::NativeInitializeAnimation()
 {

@@ -10,7 +10,7 @@
 AToxicZombie::AToxicZombie()
 {
 	ZombieSubType = EZombieSubType::Toxic;
-	BodyScale = 1.3f;
+	
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh> ToxicMesh(TEXT("/Game/Art/Characters/Zombies/Meshes/SKM_Zombie_Toxic.SKM_Zombie_Toxic"));
 	if (ToxicMesh.Succeeded())
 	{

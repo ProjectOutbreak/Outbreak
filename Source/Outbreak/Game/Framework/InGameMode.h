@@ -22,6 +22,9 @@ public:
 
 	FORCEINLINE TObjectPtr<class ACharacterSpawnManager> GetSpawnManager() const { return SpawnManager; }
 
+protected:
+	void ActivateSpawnManagerForPlayer(APlayerController* PlayerToTarget);
+
 private:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<ACharacterSpawnManager> SpawnManagerClass;

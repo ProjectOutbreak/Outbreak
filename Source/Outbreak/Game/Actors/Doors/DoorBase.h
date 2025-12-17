@@ -22,7 +22,6 @@ class OUTBREAK_API ADoorBase : public AActor, public IInteractInterface
 public:
 	ADoorBase();
 
-	// 멤버 함수
 public:
 	virtual void Interact_Implementation(APawn* InstigatorPawn) override;
 	bool IsOpen() const;
@@ -34,17 +33,18 @@ private:
 	UFUNCTION()
 	void UpdateTimeline(float Output);
 
-	
-	// 멤버 변수
 public:
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UCurveFloat> DoorTimelineFloatCurve;
 
 protected:
+	UPROPERTY()
 	TObjectPtr<UStaticMeshComponent> DoorMesh;
 	
+	UPROPERTY()
 	TObjectPtr<UStaticMeshComponent> DoorFrame;
     
+	UPROPERTY()
 	TObjectPtr<UTimelineComponent> DoorTimelineComp;
     
 	bool bIsCanInteract = true;

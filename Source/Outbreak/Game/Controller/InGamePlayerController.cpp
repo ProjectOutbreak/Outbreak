@@ -8,10 +8,7 @@
 #include "Outbreak/Character/Player/CharacterPlayer.h"
 #include "Outbreak/Game/Interface/InteractInterface.h"
 #include "Outbreak/UI/OBWidget.h"
-
 #include "DrawDebugHelpers.h"
-
-#include "Utilities/DebugHelper.h"
 
 AInGamePlayerController::AInGamePlayerController()
 {
@@ -90,31 +87,17 @@ AInGamePlayerController::AInGamePlayerController()
 	}
 }
 
+
 void AInGamePlayerController::Tick(float DeltaTime)
 {
 	GetInteractableObject();
 }
 
-void AInGamePlayerController::BeginPlay()
+void AInGamePlayerController::AcknowledgePossession(APawn* InPawn)
 {
-	Super::BeginPlay();
+	Super::AcknowledgePossession(InPawn);
 
-	if (IsLocalController())
-	{
-		const FString DebugMsg = FString::Printf(TEXT("Is Server: %s"), HasAuthority() ? TEXT("True") : TEXT("False"));
-		PRINT_WITH_CURRENT_CONTEXT(DebugMsg);
-	}
-}
-
-void AInGamePlayerController::OnPossess(class APawn* PossessedPawn)
-{
-	Super::OnPossess(PossessedPawn);
-
-	ControlledCharacter = Cast<ACharacterPlayer>(PossessedPawn);
-	if (!ControlledCharacter)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[%s] PossessedPawn is not a CharacterPlayer!"), CURRENT_CONTEXT);
-	}
+	ControlledCharacter = Cast<ACharacterPlayer>(InPawn);
 }
 
 void AInGamePlayerController::SetupInputComponent()
@@ -147,7 +130,6 @@ void AInGamePlayerController::FirstPersonMove(const FInputActionValue& Value)
 
 	const FVector2D MovementVector = Value.Get<FVector2D>();
 	
-	// if (ControlledCharacter->CanMove())
 	if (ControlledCharacter && MovementVector != FVector2D::ZeroVector)
 	{
 
@@ -251,7 +233,6 @@ void AInGamePlayerController::ChangePlayerControl()
 	
 	ControlledCharacter->ChangePlayerControl();
 }
-
 
 void AInGamePlayerController::TogglePauseMenu()
 {
@@ -358,6 +339,11 @@ void AInGamePlayerController::SelectEquipment(const FInputActionValue& Value)
 	const int32 SlotIndex = FMath::RoundToInt(SlotNumber);
 
 	UE_LOG(LogTemp, Log, TEXT("[%s] Select Equipment Slot: %d"), CURRENT_CONTEXT, SlotIndex);
+	
+	if (ControlledCharacter)
+	{
+		ControlledCharacter->HandleEquipBySlot(SlotIndex);
+	}
 }
 
 void AInGamePlayerController::ToggleFireMode()

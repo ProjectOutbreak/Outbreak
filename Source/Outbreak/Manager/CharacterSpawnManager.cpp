@@ -9,6 +9,12 @@
 #include "Outbreak/Util/DataTableHelper.h"
 #include "Outbreak/Util/EnumHelper.h"
 
+ACharacterSpawnManager::ACharacterSpawnManager()
+{
+	bReplicates = true;
+	AActor::SetReplicateMovement(false);
+}
+
 void ACharacterSpawnManager::BeginPlay()
 {
 	Super::BeginPlay();
@@ -40,7 +46,7 @@ void ACharacterSpawnManager::SetWaveId(FName InWaveId)
 
 void ACharacterSpawnManager::Activate(const TObjectPtr<ACharacterPlayer>& InTarget)
 {
-	if (bIsActivated)
+	if (!HasAuthority() || bIsActivated)
 		return;
 	
 	Target = InTarget;
@@ -56,7 +62,7 @@ void ACharacterSpawnManager::Activate(const TObjectPtr<ACharacterPlayer>& InTarg
 
 void ACharacterSpawnManager::Deactivate()
 {
-	if (!bIsActivated)
+	if (!HasAuthority() || !bIsActivated)
 		return;
 	
 	bIsActivated = false;
@@ -282,6 +288,8 @@ FVector ACharacterSpawnManager::GetRandomLocationInRadius(const FVector& Optimal
 
 void ACharacterSpawnManager::SpawnEnemies()
 {
+	if (!HasAuthority()) return;
+	
 	if (!Target)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[%s] Target not found!"), CURRENT_CONTEXT);

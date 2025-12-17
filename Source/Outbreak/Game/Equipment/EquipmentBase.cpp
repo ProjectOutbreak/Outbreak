@@ -4,6 +4,9 @@
 
 AEquipmentBase::AEquipmentBase()
 {
+	bReplicates = true;
+	AActor::SetReplicateMovement(true);
+	
 	USceneComponent* DefaultSceneRoot = CreateDefaultSubobject<USceneComponent>(TEXT("DefaultSceneRoot"));
 	RootComponent = DefaultSceneRoot;
 	
