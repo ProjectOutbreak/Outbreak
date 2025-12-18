@@ -2,11 +2,33 @@
 
 
 #include "MedicineBase.h"
+
+#include "Components/AudioComponent.h"
 #include "Outbreak/Character/Player/CharacterPlayer.h"
+
+AMedicineBase::AMedicineBase()
+{
+	AudioComp = CreateDefaultSubobject<UAudioComponent>(TEXT("AudioComp"));
+	AudioComp->SetupAttachment(RootComponent);
+	AudioComp->bAutoActivate = false;
+}
+
+void AMedicineBase::BeginPlay()
+{
+	if (MedicineData.MaxCount > 0)
+	{
+		CurrentCount = MedicineData.MaxCount;
+	}
+	else
+	{
+		CurrentCount = 1;
+	}
+}
+
 
 bool AMedicineBase::CanUse() const
 {
-	return !bIsUsing;
+	return !bIsUsing && (CurrentCount > 0);
 }
 
 void AMedicineBase::OnUse()
@@ -67,6 +89,15 @@ void AMedicineBase::OnUseComplete()
 	if (ACharacterPlayer* Player = Cast<ACharacterPlayer>(GetOwner()))
 	{
 		ApplyHealEffect(Player);
+		CurrentCount--;
+		
+		if (CurrentCount <= 0)
+		{
+			if (UEquipmentController* EqController = Player->FindComponentByClass<UEquipmentController>())
+			{
+				EqController->RemoveEquipment(this);
+			}
+		}
 	}
 	OnEndUse();
 }
@@ -90,6 +121,11 @@ void AMedicineBase::Multicast_PlayHealAnim_Implementation(UAnimMontage* MontageT
 			AnimInstance->Montage_Play(MontageToPlay);
 		}
 	}
+	if (AudioComp && MedicineData.HealSound)
+	{
+		AudioComp->SetSound(MedicineData.HealSound);
+		AudioComp->Play();
+	}
 }
 
 void AMedicineBase::Multicast_StopHealAnim_Implementation(UAnimMontage* MontageToStop)
@@ -102,6 +138,10 @@ void AMedicineBase::Multicast_StopHealAnim_Implementation(UAnimMontage* MontageT
 		{
 			AnimInstance->Montage_Stop(0.2f, MontageToStop);
 		}
+	}
+	if (AudioComp && AudioComp->IsPlaying())
+	{
+		AudioComp->Stop();
 	}
 }
 

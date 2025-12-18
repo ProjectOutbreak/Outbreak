@@ -314,6 +314,44 @@ void UEquipmentController::UnEquipCurrentEquipment()
 	CurrentEquippedItem = nullptr;
 }
 
+void UEquipmentController::RemoveEquipment(AEquipmentBase* ItemToRemove)
+{
+	if (!IsValid(ItemToRemove)) return;
+
+	if (CurrentEquippedItem == ItemToRemove)
+	{
+		UnEquipCurrentEquipment();
+	}
+
+	if (FirstPrimaryWeapon == ItemToRemove)
+	{
+		FirstPrimaryWeapon = nullptr;
+	}
+	else if (SecondPrimaryWeapon == ItemToRemove)
+	{
+		SecondPrimaryWeapon = nullptr;
+	}
+	else if (SecondaryWeapon == ItemToRemove)
+	{
+		SecondaryWeapon = nullptr;
+	}
+	else if (ThrowableWeapon == ItemToRemove)
+	{
+		ThrowableWeapon = nullptr;
+	}
+	else if (FirstMedicine == ItemToRemove)
+	{
+		FirstMedicine = nullptr;
+	}
+	else if (SecondMedicine == ItemToRemove)
+	{
+		SecondMedicine = nullptr;
+	}
+
+	ItemToRemove->Destroy();
+}
+
+
 void UEquipmentController::HandleAmmoChanged()
 {
 	const AFirableBase* CurrentWeapon = Cast<AFirableBase>(CurrentEquippedItem);

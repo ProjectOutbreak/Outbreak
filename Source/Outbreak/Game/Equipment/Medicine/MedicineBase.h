@@ -14,7 +14,10 @@ class OUTBREAK_API AMedicineBase : public AEquipmentBase
 // --------------------
 // Functions
 // --------------------
-public:	
+public:
+	AMedicineBase();
+	virtual void BeginPlay() override;
+	
 	virtual bool CanUse() const override;
 	virtual void OnUse() override;
 	virtual void OnEquip() override;
@@ -42,6 +45,12 @@ protected:
 	EMedicineType MedicineType;
 	FMedicineData MedicineData;
 	bool bIsUsing = false;
+
+	UPROPERTY()
+	int32 CurrentCount;
+	
+	UPROPERTY()
+	TObjectPtr<UAudioComponent> AudioComp;
 
 	FTimerHandle UseTimer;
 };
