@@ -31,10 +31,6 @@ public:
 	void AnimNotify_Attack();
 	
 	FORCEINLINE FZombieData* GetZombieData() { return &ZombieData; }
-	FORCEINLINE bool GetIsAttacking() const { return bIsAttacking; }
-	FORCEINLINE void SetIsAttacking(const bool NewAttack) { bIsAttacking = NewAttack; }
-	FORCEINLINE bool GetIsScreaming() const { return bIsScreaming; }
-	FORCEINLINE void SetIsScreaming(const bool NewScream) { bIsScreaming = NewScream; }
 
 	FOnZombieDeathSignature OnDeathDelegate;
 
@@ -74,5 +70,6 @@ protected:
 	AController* LastDamagePlayer;
 
 private:
+	UPROPERTY()
 	TObjectPtr<USoundCue> DeadSoundCue;
 };
