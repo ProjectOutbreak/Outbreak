@@ -17,15 +17,4 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	virtual void OnRep_Die() override;
-
-private:
-	void AttachVibrationEffect();
-	void ReleaseVibrationEffect();
-
-private:
-	UPROPERTY()
-	TObjectPtr<class UNiagaraSystem> VibrationEffect;
-
-	UPROPERTY()
-	TObjectPtr<class UNiagaraComponent> VibrationEffectComponent;
 };

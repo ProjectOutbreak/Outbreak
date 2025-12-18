@@ -13,9 +13,13 @@ public:
 	virtual void OnUnequip() override;
 
 private:
-	void OnVibrationAbility() const;
+	void OnVibrationAbility();
+	void SpawnVibrationEffect();
 
 private:
+	UPROPERTY()
+	TObjectPtr<class UNiagaraSystem> VibrationEffectAsset;
+	
 	FTimerHandle VibrationTimerHandle;
 	float VibrationInterval = 3.0f;
 	float VibrationDamage = 5.0f;
