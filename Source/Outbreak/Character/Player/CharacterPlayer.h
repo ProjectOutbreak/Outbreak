@@ -60,6 +60,7 @@ private:
 public:
 	bool GetIsCutscenePlaying() const { return bIsCutscenePlaying; }
 	bool SetIsCutscenePlaying(const bool bInIsCutscenePlaying) { return bIsCutscenePlaying =  bInIsCutscenePlaying; }
+	TObjectPtr<UEquipmentController> GetEquipmentController() const { return EquipmentController; }
 // --------------------
 // Variables
 // --------------------
