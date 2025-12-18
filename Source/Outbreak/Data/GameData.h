@@ -189,6 +189,9 @@ USTRUCT()
 struct FMedicineData : public FTableRowBase
 {
 	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere)
+	int32 MaxCount = 3;
 	
 	UPROPERTY(EditAnywhere)
 	float HealAmount = 0.0f;
@@ -204,6 +207,9 @@ struct FMedicineData : public FTableRowBase
 
 	UPROPERTY(EditAnywhere, Category = "Animation")
 	TObjectPtr<UAnimMontage> HealMontage;
+
+	UPROPERTY(EditAnywhere, Category = "Sound")
+	TObjectPtr<USoundBase> HealSound;
 };
 
 USTRUCT()
