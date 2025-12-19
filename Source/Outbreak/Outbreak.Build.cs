@@ -29,6 +29,7 @@ public class Outbreak : ModuleRules
 			"Networking",
 			"PacketHandler",
 			"OnlineSubsystem",
+			"OnlineSubsystemSteam",
 			"OnlineSubsystemNull",
 			"Niagara"
 		});
@@ -44,6 +45,12 @@ public class Outbreak : ModuleRules
 		// To include OnlineSubsystemSteam, add it to the plugins section in your uproject file with the Enabled attribute set to true
 
 		//Load AWS SDK 
+		bUseRTTI = true;
+		bEnableExceptions = true;
+		if (Target.Type == TargetType.Server)
+		{
+			PublicAdditionalLibraries.Add("/FORCE:MULTIPLE");
+		}
 		bUseUnity = false;
 		LoadAWSSDK(Target);
 	}
@@ -66,8 +73,14 @@ public class Outbreak : ModuleRules
 			PublicIncludePaths.Add(SDKIncludePath);
 
 			string[] LibFiles = Directory.GetFiles(SDKLibPath, "*.lib", SearchOption.AllDirectories);
+          
 			foreach (string LibFile in LibFiles)
 			{
+				string FileName = Path.GetFileName(LibFile).ToLower();
+				if (FileName.Contains("test") || FileName.Contains("mock") || FileName.Contains("gtest"))
+				{
+					continue; 
+				}
 				PublicAdditionalLibraries.Add(LibFile);
 			}
 
@@ -79,7 +92,5 @@ public class Outbreak : ModuleRules
 			PublicAdditionalLibraries.Add("crypt32.lib");     
 			PublicAdditionalLibraries.Add("secur32.lib");     
 			PublicAdditionalLibraries.Add("ncrypt.lib");      
-
 		}
-	}
-}
+	}}
