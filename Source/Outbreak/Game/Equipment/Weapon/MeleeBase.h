@@ -18,6 +18,7 @@ public:
 	virtual void OnUse() override;
 	virtual void OnEndUse() override;
 	virtual bool CanUse() const override;
+	virtual bool IsActive() const override;
 
 	UFUNCTION(BlueprintCallable, Category = "Melee")
 	void ResetAttack();
@@ -33,6 +34,9 @@ protected:
 	virtual void Tick(float DeltaTime) override;
 	void PerformHitDetection();
 
+	UFUNCTION(NetMulticast, Unreliable)
+	void Multicast_AttackAnim(UAnimMontage* MontageToPlay);
+
 
 protected:
 	//----- Variables -----//
@@ -42,6 +46,9 @@ protected:
 	FName HitStartSocketName = TEXT("Melee_Start");
 	UPROPERTY(EditDefaultsOnly)
 	FName HitEndSocketName = TEXT("Melee_End");
+
+	UPROPERTY()
+	USoundBase* AttackSound;
 	
 	bool bIsAttacking = false;
 

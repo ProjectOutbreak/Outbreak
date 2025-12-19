@@ -26,12 +26,11 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 	virtual void PostInitializeComponents() override;
+
+	UFUNCTION(BlueprintCallable, Category="Zombie|Attack")
+	void AnimNotify_Attack();
 	
 	FORCEINLINE FZombieData* GetZombieData() { return &ZombieData; }
-	FORCEINLINE bool GetIsAttacking() const { return bIsAttacking; }
-	FORCEINLINE void SetIsAttacking(const bool NewAttack) { bIsAttacking = NewAttack; }
-	FORCEINLINE bool GetIsScreaming() const { return bIsScreaming; }
-	FORCEINLINE void SetIsScreaming(const bool NewScream) { bIsScreaming = NewScream; }
 
 	FOnZombieDeathSignature OnDeathDelegate;
 
@@ -45,6 +44,9 @@ protected:
 	UFUNCTION()
 	void OnRep_ZombieData();
 	void ApplyZombieData();
+
+private:
+	void PerformAttack();
 	
 // --------------------
 // Variables
@@ -68,5 +70,6 @@ protected:
 	AController* LastDamagePlayer;
 
 private:
+	UPROPERTY()
 	TObjectPtr<USoundCue> DeadSoundCue;
 };

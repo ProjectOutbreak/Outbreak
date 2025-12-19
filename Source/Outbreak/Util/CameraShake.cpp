@@ -4,14 +4,22 @@
 #include "CameraShake.h"
 
 UCameraShake::UCameraShake() {
-	// 카메라 쉐이크 설정
-	OscillationDuration = 0.08f; // 반동 지속시간
-	OscillationBlendInTime = 0.05f; // 반동 시작 블렌딩
-	OscillationBlendOutTime = 0.05f; // 반동 종료 블렌딩
+	OscillationDuration = 0.5f;
+	OscillationBlendInTime = 0.05f;
+	OscillationBlendOutTime = 0.2f;
 
-	RotOscillation.Pitch.Amplitude = 1.0f; // 위아래 반동 정도
-	RotOscillation.Pitch.Frequency = 10.0f; // 반동 빈도
-
-	RotOscillation.Yaw.Amplitude = 1.0f; // 좌우 반동 정도
-	RotOscillation.Yaw.Frequency = 10.0f; // 반동 빈도
+	RotOscillation.Pitch.Amplitude = 5.0f;
+	RotOscillation.Pitch.Frequency = 25.0f;
+	RotOscillation.Pitch.InitialOffset = EInitialOscillatorOffset::EOO_OffsetRandom;
+	RotOscillation.Pitch.Waveform = EOscillatorWaveform::SineWave; 
+    
+	RotOscillation.Yaw.Amplitude = 3.0f;
+	RotOscillation.Yaw.Frequency = 20.0f;
+	RotOscillation.Yaw.InitialOffset = EInitialOscillatorOffset::EOO_OffsetRandom;
+	RotOscillation.Yaw.Waveform = EOscillatorWaveform::SineWave;
+    
+	LocOscillation.Z.Amplitude = 10.0f;
+	LocOscillation.Z.Frequency = 20.0f;
+	LocOscillation.Z.InitialOffset = EInitialOscillatorOffset::EOO_OffsetRandom;
+	LocOscillation.Z.Waveform = EOscillatorWaveform::SineWave;
 }

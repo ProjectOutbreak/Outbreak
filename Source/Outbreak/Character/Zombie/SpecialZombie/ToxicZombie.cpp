@@ -16,11 +16,6 @@ AToxicZombie::AToxicZombie()
 	{
 		GetMesh()->SetSkeletalMesh(ToxicMesh.Object);
 	}
-	static ConstructorHelpers::FObjectFinder<UNiagaraSystem> ToxicEffectAsset(TEXT("/Game/Art/VFX/Niagara/NS_Smoke_D.NS_Smoke_D"));
-	if (ToxicEffectAsset.Succeeded())
-	{
-		ToxicEffect = ToxicEffectAsset.Object;
-	}
 }
 
 void AToxicZombie::BeginPlay()

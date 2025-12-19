@@ -42,20 +42,31 @@ bool AMeleeBase::CanUse() const
 	return !bIsAttacking;
 }
 
+bool AMeleeBase::IsActive() const
+{
+	return bIsAttacking;
+}
+
 void AMeleeBase::OnUse()
 {
-	if (!CanUse())
-	{
-		return;
-	}
+	if (!CanUse()) return;
 	bIsAttacking = true;
 	
-	if (CachedOwnerCharacter && MeleeData.AttackMontage)
+	Multicast_AttackAnim(MeleeData.AttackMontage);
+}
+
+void AMeleeBase::Multicast_AttackAnim_Implementation(UAnimMontage* MontageToPlay)
+{
+	if (AttackSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, AttackSound, GetActorLocation());
+	}
+	if (CachedOwnerCharacter && MontageToPlay)
 	{
 		UAnimInstance* AnimInstance = CachedOwnerCharacter->GetMesh()->GetAnimInstance();
 		if (AnimInstance)
 		{
-			AnimInstance->Montage_Play(MeleeData.AttackMontage);
+			AnimInstance->Montage_Play(MontageToPlay);
 		}
 	}
 	else
@@ -63,6 +74,7 @@ void AMeleeBase::OnUse()
 		ResetAttack();
 	}
 }
+
 
 void AMeleeBase::ResetAttack()
 {

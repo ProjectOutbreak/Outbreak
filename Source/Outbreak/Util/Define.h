@@ -50,8 +50,10 @@ enum class EFirableType : uint8
 	None,
 	AssaultRifle,
 	SniperRifle,
-	Pistol,
 	Shotgun,
+	MachineGun,
+	SubMachineGun,
+	Pistol,
 };
 
 

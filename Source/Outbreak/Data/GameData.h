@@ -1,9 +1,40 @@
 ﻿#pragma once
 #include "CoreMinimal.h"
+#include "NiagaraSystem.h"
 #include "Outbreak/Util/Define.h"
 #include "StructUtils/InstancedStruct.h"
 #include "Sound/SoundCue.h"
 #include "GameData.generated.h"
+
+USTRUCT()
+struct FAmmoCount
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	EFirableType Type = EFirableType::None;
+
+	UPROPERTY()
+	int32 Count = 0;
+};
+
+USTRUCT()
+struct FAmmoData : public FTableRowBase
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere)
+	EFirableType Type = EFirableType::None;
+	
+	UPROPERTY(EditAnywhere)
+	int32 InitialAmmoCount = 0;
+
+	UPROPERTY(EditAnywhere)
+	int32 MaxTotalAmmo = 0;
+
+	UPROPERTY(EditAnywhere)
+	int32 ResupplyAmount = 0;
+};
 
 USTRUCT()
 struct FSingleEnemyData
@@ -213,6 +244,9 @@ struct FFirableData : public FWeaponData
 
 	UPROPERTY(EditAnywhere)
 	float ReloadTime = 0.0f;
+
+	UPROPERTY(EditAnywhere)
+	EFirableType FirableType = EFirableType::None;
 };
 
 USTRUCT()
@@ -221,16 +255,31 @@ struct FThrowableData : public FWeaponData
 	GENERATED_BODY()
 	
 	UPROPERTY(EditAnywhere)
-	int32 MaxCount = 0;
+	int32 MaxCount = 3;
 
 	UPROPERTY(EditAnywhere)
-	float ThrowForce = 0.0f;
+	float ThrowForce = 1000.0f;
 
 	UPROPERTY(EditAnywhere)
-	float ExplosionRadius = 0.0f;
+	float ExplosionRadius = 500.0f;
 
 	UPROPERTY(EditAnywhere)
-	float FuseTime = 0.0f;
+	float FuseTime = 3.0f;
+
+	UPROPERTY(EditAnywhere, Category = "Animation")
+	TObjectPtr<UAnimMontage> ThrowMontage;
+
+	UPROPERTY(EditAnywhere, Category = "VFX")
+	TObjectPtr<UNiagaraSystem> ExplosionVfx;
+
+	UPROPERTY(EditAnywhere, Category = "VFX")
+	FVector VFXScale = FVector(1.0f);
+
+	UPROPERTY(EditAnywhere, Category = "Projectile")
+	TSubclassOf<class AThrowableProjectile> ProjectileClass;
+
+	UPROPERTY(EditAnywhere, Category = "Sound")
+	USoundBase* ExplosionSound;
 };
 
 USTRUCT()

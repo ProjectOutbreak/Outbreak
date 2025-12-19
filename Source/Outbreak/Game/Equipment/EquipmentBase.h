@@ -20,6 +20,7 @@ public:
 	virtual void OnUse() PURE_VIRTUAL(AEquipmentBase::OnUse, );
 	virtual void OnEndUse() PURE_VIRTUAL(AEquipmentBase::OnEndUse, );
 	virtual bool CanUse() const PURE_VIRTUAL(AEquipmentBase::CanUse, return true;);
+	virtual bool IsActive() const { return false; }
 
 	UFUNCTION(BlueprintCallable)
 	EEquipmentType GetEquipmentType() const { return EquipmentType; }

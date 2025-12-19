@@ -7,6 +7,8 @@
 #include "Outbreak/Character/Zombie/CharacterZombie.h"
 #include "Outbreak/Core/TStateMachine.h"
 
+class UZombieAnimInstance;
+
 class OUTBREAK_API FZombieBaseState : public TState<EZombieStateType>
 {
 public:
@@ -18,9 +20,15 @@ public:
 	virtual void Exit(EZombieStateType NextState) override;
 
 protected:
+	TObjectPtr<UZombieAnimInstance> GetAnimInstance();
+
+protected:
 	TObjectPtr<ACharacterPlayer> GetTarget() const;
 
 	TObjectPtr<ACharacterZombie> Owner;
 	TObjectPtr<AZombieAIComponent> AIController;
 	float RotationSpeed = 180.0f;
+
+private:
+	TObjectPtr<UZombieAnimInstance> CachedAnimInstance;
 };
