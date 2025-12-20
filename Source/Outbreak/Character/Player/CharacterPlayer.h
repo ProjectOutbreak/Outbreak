@@ -13,6 +13,7 @@
 #include "Outbreak/Util/Define.h"
 #include "CharacterPlayer.generated.h"
 
+class AFirstAidKit;
 class AGranade;
 class AKnife;
 class AM4;
@@ -110,12 +111,11 @@ protected:
 	TObjectPtr<AWeaponBase> GrenadeWeapon;
 	UPROPERTY()
 	TSubclassOf<AGranade> GrenadeToSpawn;
-	TSubclassOf<class AGranade> GranadeToSpawn;
 	
 	UPROPERTY()
-	TObjectPtr<class AEquipmentBase> HealWeapon;
+	TObjectPtr<AEquipmentBase> HealWeapon;
 	UPROPERTY()
-	TSubclassOf<class AFirstAidKit> HealToSpawn;
+	TSubclassOf<AFirstAidKit> HealToSpawn;
 
 private:
 	UPROPERTY()
