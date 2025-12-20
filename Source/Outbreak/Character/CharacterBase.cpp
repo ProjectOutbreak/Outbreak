@@ -6,7 +6,6 @@
 #include "Components/CapsuleComponent.h"
 #include "Engine/DamageEvents.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "Outbreak/Util/Define.h"
 #include "Net/UnrealNetwork.h"
 #include "Outbreak/Public/Utilities/DebugHelper.h"
 #include "Outbreak/UI/InGameHUD.h"
@@ -18,13 +17,8 @@ ACharacterBase::ACharacterBase()
 	PrimaryActorTick.bCanEverTick = false;
 	bReplicates = true;
 
-	if (GetMesh())
-	{
-		GetMesh()->SetRelativeLocationAndRotation(
-			FVector(0.0f, 0.0f, -GetCapsuleComponent()->GetScaledCapsuleHalfHeight()),
-			FRotator(0.0f, -90.0f, 0.0f)
-		);
-	}
+	const float LocationZ = GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+	GetMesh()->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, -LocationZ),FRotator(0.0f, -90.0f, 0.0f));
 }
 
 void ACharacterBase::BeginPlay()

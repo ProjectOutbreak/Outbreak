@@ -45,7 +45,7 @@ void UCutsceneController::PlayCutscene(ULevelSequence* Sequence)
 					Character->GetCharacterMovement()->DisableMovement();
 					if (ACharacterPlayer* CP = Cast<ACharacterPlayer>(Character))
 					{
-						CP->bIsCutscenePlaying = true;
+						CP->SetIsCutscenePlaying(true);
 					}
 				}
 			}
@@ -68,7 +68,7 @@ void UCutsceneController::OnCutSceneFinished()
 				Character->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 				if (ACharacterPlayer* CP = Cast<ACharacterPlayer>(Character))
 				{
-					CP->bIsCutscenePlaying = false;
+					CP->SetIsCutscenePlaying(false);
 				}
 			}
 		}

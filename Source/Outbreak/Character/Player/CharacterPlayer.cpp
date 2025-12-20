@@ -37,12 +37,6 @@ ACharacterPlayer::ACharacterPlayer()
 	PostProcessComponent->SetupAttachment(RootComponent);
 	PostProcessComponent->bEnabled = true;
 	
-	static ConstructorHelpers::FObjectFinder<UMaterialInterface> ToxicAuraMaterialRef(TEXT("/Game/Art/VFX/PostProcess/M_ToxicAura.M_ToxicAura"));
-	if (ToxicAuraMaterialRef.Succeeded())
-	{
-		ToxicAuraPostProcessMaterial = ToxicAuraMaterialRef.Object;
-	}
-	
 	// TODO : for test. delete later
 	static ConstructorHelpers::FClassFinder<AM4> WeaponClassRef(TEXT("/Game/Blueprints/Equipment/BP_M4.BP_M4_C"));
 	if (WeaponClassRef.Class)
@@ -57,7 +51,7 @@ ACharacterPlayer::ACharacterPlayer()
 	static ConstructorHelpers::FClassFinder<AGranade> GranadeClassRef(TEXT("/Game/Blueprints/Equipment/BP_Granade.BP_Granade_C"));
 	if (GranadeClassRef.Class)
 	{
-		GranadeToSpawn = GranadeClassRef.Class;
+		GrenadeToSpawn = GranadeClassRef.Class;
 	}
 	static ConstructorHelpers::FClassFinder<AEquipmentBase> HealClassRef(TEXT("/Game/Blueprints/Equipment/BP_FirstAidKit.BP_FirstAidKit_C"));
 	if (HealClassRef.Class)
@@ -66,7 +60,6 @@ ACharacterPlayer::ACharacterPlayer()
 	}
 	
 	CharacterType = ECharacterType::Player;
-	PlayerType = EPlayerType::Player1;
 
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
@@ -116,35 +109,6 @@ ACharacterPlayer::ACharacterPlayer()
 	PlayerNameText->SetTextRenderColor(FColor::White);
 	PlayerNameText->SetVisibility(true);
 	PlayerNameText->bVisibleInSceneCaptureOnly = true;
-	
-	// ----- Mesh
-	GetMesh()->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, -100.0f), FRotator(0.0f, -90.0f, 0.0f));
-	static ConstructorHelpers::FObjectFinder<USkeletalMesh> DefaultMesh(TEXT("/Game/Art/Characters/Mannequin_UE4/Meshes/SK_Mannequin.SK_Mannequin"));
-	if (DefaultMesh.Succeeded())
-	{
-		GetMesh()->SetSkeletalMesh(DefaultMesh.Object);
-	}
-	
-	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceClassRef(TEXT("/Script/Engine.AnimBlueprint'/Game/Blueprints/ABP_Player.ABP_Player_C'"));
-	if (AnimInstanceClassRef.Class)
-	{
-		GetMesh()->SetAnimInstanceClass(AnimInstanceClassRef.Class);
-	}
-	
-	// ----- Input
-	static ConstructorHelpers::FObjectFinder<UPlayerControlData> FirstPersonDataRef(TEXT("/Script/Outbreak.PlayerControlData'/Game/Data/DA_FirstPersonView.DA_FirstPersonView'"));
-	if (FirstPersonDataRef.Object)
-	{
-		PlayerControlMap.Add(EPlayerControlType::FirstPersonView, FirstPersonDataRef.Object);
-	}
-
-	static ConstructorHelpers::FObjectFinder<UPlayerControlData> TopViewDataRef(TEXT("/Script/Outbreak.PlayerControlData'/Game/Data/DA_TopView.DA_TopView'"));
-	if (TopViewDataRef.Object)
-	{
-		PlayerControlMap.Add(EPlayerControlType::TopView, TopViewDataRef.Object);
-	}
-	
-	CurrentCharacterControlType = EPlayerControlType::FirstPersonView;
 }
 
 void ACharacterPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -225,7 +189,7 @@ void ACharacterPlayer::BeginPlay()
 	}
 
 	// TODO : For Test. Remove later.
-	if (HasAuthority() && IsValid(WeaponToSpawn) && IsValid(KnifeToSpawn) && IsValid(GranadeToSpawn) && IsValid(HealToSpawn))
+	if (HasAuthority() && IsValid(WeaponToSpawn) && IsValid(KnifeToSpawn) && IsValid(GrenadeToSpawn))
 	{
 		const FVector SpawnLocation = GetActorLocation();
 		const FRotator SpawnRotation = GetActorRotation();
@@ -236,15 +200,13 @@ void ACharacterPlayer::BeginPlay()
 
 		SpawnedWeapon = GetWorld()->SpawnActor<AWeaponBase>(WeaponToSpawn, SpawnLocation, SpawnRotation, SpawnParams);
 		KnifeWeapon = GetWorld()->SpawnActor<AWeaponBase>(KnifeToSpawn, SpawnLocation, SpawnRotation, SpawnParams);
-		GranadeWeapon = GetWorld()->SpawnActor<AWeaponBase>(GranadeToSpawn, SpawnLocation, SpawnRotation, SpawnParams);
-		HealWeapon = GetWorld()->SpawnActor<AEquipmentBase>(HealToSpawn, SpawnLocation, SpawnRotation, SpawnParams);
+		GrenadeWeapon = GetWorld()->SpawnActor<AWeaponBase>(GrenadeToSpawn, SpawnLocation, SpawnRotation, SpawnParams);
 
-		if (IsValid(SpawnedWeapon) && IsValid(KnifeWeapon) && IsValid(GranadeWeapon) && IsValid(HealWeapon))
+		if (IsValid(SpawnedWeapon) && IsValid(KnifeWeapon) && IsValid(GrenadeWeapon))
 		{
 			EquipmentController->AddEquipment(SpawnedWeapon);
 			EquipmentController->AddEquipment(KnifeWeapon);
-			EquipmentController->AddEquipment(GranadeWeapon);
-			EquipmentController->AddEquipment(HealWeapon);
+			EquipmentController->AddEquipment(GrenadeWeapon);
 		}
 		EquipmentController->UnEquipCurrentEquipment();
 	}

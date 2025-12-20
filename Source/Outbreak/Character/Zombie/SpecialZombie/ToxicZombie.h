@@ -23,7 +23,7 @@ private:
 	void ReleaseToxicEffect();
 
 private:
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly, Category = "VFX")
 	TObjectPtr<class UNiagaraSystem> ToxicEffect;
 
 	UPROPERTY()

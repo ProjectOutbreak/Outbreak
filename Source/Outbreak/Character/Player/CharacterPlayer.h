@@ -13,6 +13,12 @@
 #include "Outbreak/Util/Define.h"
 #include "CharacterPlayer.generated.h"
 
+class AGranade;
+class AKnife;
+class AM4;
+class UPostProcessComponent;
+class USpringArmComponent;
+
 UCLASS()
 class OUTBREAK_API ACharacterPlayer : public ACharacterBase, public IGenericTeamAgentInterface
 {
@@ -51,71 +57,59 @@ private:
 	void SetPlayerControl(EPlayerControlType InPlayerControlType);
 	void SetPlayerControlData(const class UPlayerControlData* InPlayerControlData);
 
+public:
+	bool GetIsCutscenePlaying() const { return bIsCutscenePlaying; }
+	bool SetIsCutscenePlaying(const bool bInIsCutscenePlaying) { return bIsCutscenePlaying =  bInIsCutscenePlaying; }
+	TObjectPtr<UEquipmentController> GetEquipmentController() const { return EquipmentController; }
 // --------------------
 // Variables
 // --------------------
-public:
-	UPROPERTY()
-	bool bIsCutscenePlaying = false;
-	
 protected:
-	UPROPERTY()
-	TObjectPtr<class AInGameHUD> CachedHUD;
-	
-	UPROPERTY(EditAnywhere)
-	TObjectPtr<class USpringArmComponent> CameraBoom;
+	// ~ Begin Components
+	UPROPERTY(EditAnywhere, Category = "Player|Components")
+	TObjectPtr<USpringArmComponent> CameraBoom;
 
-	UPROPERTY(EditAnywhere)
-	TObjectPtr<class UCameraComponent> FollowCamera;
+	UPROPERTY(EditAnywhere, Category = "Player|Components")
+	TObjectPtr<UCameraComponent> FollowCamera;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TObjectPtr<class UEquipmentController> EquipmentController;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Player|Components")
+	TObjectPtr<UEquipmentController> EquipmentController;
 	
-	UPROPERTY(Replicated)
-	FPlayerData PlayerData;
+	UPROPERTY(VisibleAnywhere, Category = "Player|Components")
+	TObjectPtr<UPostProcessComponent> PostProcessComponent;
 	
-	UPROPERTY(Replicated)
-	EPlayerType PlayerType = EPlayerType::Player1;
-	
-	FGenericTeamId TeamId = 0;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
-	USceneCaptureComponent2D* SceneCapture;
-
-	// Input
-	UPROPERTY()
-	TMap<EPlayerControlType, TObjectPtr<class UPlayerControlData>> PlayerControlMap;
-	
-	EPlayerControlType CurrentCharacterControlType;
-
-	// UI & HUD
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Minimap")
+	UPROPERTY(VisibleAnywhere, Category = "Player|Components")
 	TObjectPtr<UPaperSpriteComponent> PlayerIconSprite;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Minimap")
+	UPROPERTY(VisibleAnywhere, Category = "Player|Components")
 	TObjectPtr<UTextRenderComponent> PlayerNameText;
-
-	// VFX
-	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<class UPostProcessComponent> PostProcessComponent;
-
-	UPROPERTY(EditDefaultsOnly)
+	
+	UPROPERTY(VisibleAnywhere, Category = "Player|Components")
+	TObjectPtr<USceneCaptureComponent2D> SceneCapture;
+	// ~ End Components
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Player|VFX")
 	TObjectPtr<UMaterialInterface> ToxicAuraPostProcessMaterial;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Player|Control")
+	TMap<EPlayerControlType, TObjectPtr<UPlayerControlData>> PlayerControlMap;
+	
 
 	// TODO : for test. delete later
 	UPROPERTY()
-	TObjectPtr<class AWeaponBase> SpawnedWeapon;
+	TObjectPtr<AWeaponBase> SpawnedWeapon;
 	UPROPERTY()
-	TSubclassOf<class AM4> WeaponToSpawn;
+	TSubclassOf<AM4> WeaponToSpawn;
 	
 	UPROPERTY()
-    TObjectPtr<class AWeaponBase> KnifeWeapon;
+    TObjectPtr<AWeaponBase> KnifeWeapon;
     UPROPERTY()
-    TSubclassOf<class AKnife> KnifeToSpawn;
+    TSubclassOf<AKnife> KnifeToSpawn;
 	
 	UPROPERTY()
-	TObjectPtr<class AWeaponBase> GranadeWeapon;
+	TObjectPtr<AWeaponBase> GrenadeWeapon;
 	UPROPERTY()
+	TSubclassOf<AGranade> GrenadeToSpawn;
 	TSubclassOf<class AGranade> GranadeToSpawn;
 	
 	UPROPERTY()
@@ -125,6 +119,18 @@ protected:
 
 private:
 	UPROPERTY()
+	TObjectPtr<AInGameHUD> CachedHUD;
+	
+	UPROPERTY()
 	TObjectPtr<UMaterialInstanceDynamic> ToxicAuraMID;
-
+	
+	UPROPERTY(Replicated)
+	FPlayerData PlayerData;
+	
+	UPROPERTY(Replicated)
+	EPlayerType PlayerType = EPlayerType::Player1;
+	
+	EPlayerControlType CurrentCharacterControlType = EPlayerControlType::FirstPersonView;
+	FGenericTeamId TeamId = 0;
+	bool bIsCutscenePlaying = false;
 };
