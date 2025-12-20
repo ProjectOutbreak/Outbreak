@@ -4,12 +4,9 @@
 #include "CoreMinimal.h"
 #include "GenericTeamAgentInterface.h"
 #include "Camera/CameraComponent.h"
-#include "PaperSpriteComponent.h"
-#include "Components/TextRenderComponent.h"
 #include "Outbreak/Character/CharacterBase.h"
 #include "Outbreak/Component/EquipmentController.h"
 #include "Outbreak/Data/GameData.h"
-#include "Outbreak/Game/Interface/InteractInterface.h"
 #include "Outbreak/Util/Define.h"
 #include "CharacterPlayer.generated.h"
 
@@ -19,6 +16,7 @@ class AKnife;
 class AM4;
 class UPostProcessComponent;
 class USpringArmComponent;
+class UChildActorComponent;
 
 UCLASS()
 class OUTBREAK_API ACharacterPlayer : public ACharacterBase, public IGenericTeamAgentInterface
@@ -80,13 +78,7 @@ protected:
 	TObjectPtr<UPostProcessComponent> PostProcessComponent;
 	
 	UPROPERTY(VisibleAnywhere, Category = "Player|Components")
-	TObjectPtr<UPaperSpriteComponent> PlayerIconSprite;
-
-	UPROPERTY(VisibleAnywhere, Category = "Player|Components")
-	TObjectPtr<UTextRenderComponent> PlayerNameText;
-	
-	UPROPERTY(VisibleAnywhere, Category = "Player|Components")
-	TObjectPtr<USceneCaptureComponent2D> SceneCapture;
+	TObjectPtr<UChildActorComponent> UIComponent;
 	// ~ End Components
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Player|VFX")

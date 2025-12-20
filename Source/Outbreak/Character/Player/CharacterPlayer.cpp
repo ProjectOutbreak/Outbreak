@@ -13,6 +13,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
+#include "Outbreak/Component/CharacterUIComponent.h"
 #include "Outbreak/Component/EquipmentController.h"
 #include "Outbreak/Data/PlayerControlData.h"
 #include "Outbreak/Game/Controller/InGamePlayerController.h"
@@ -48,10 +49,10 @@ ACharacterPlayer::ACharacterPlayer()
 	{
 		KnifeToSpawn = KnifeClassRef.Class;
 	}
-	static ConstructorHelpers::FClassFinder<AGranade> GranadeClassRef(TEXT("/Game/Blueprints/Equipment/BP_Granade.BP_Granade_C"));
-	if (GranadeClassRef.Class)
+	static ConstructorHelpers::FClassFinder<AGranade> GrenadeClassRef(TEXT("/Game/Blueprints/Equipment/BP_Granade.BP_Granade_C"));
+	if (GrenadeClassRef.Class)
 	{
-		GrenadeToSpawn = GranadeClassRef.Class;
+		GrenadeToSpawn = GrenadeClassRef.Class;
 	}
 	static ConstructorHelpers::FClassFinder<AEquipmentBase> HealClassRef(TEXT("/Game/Blueprints/Equipment/BP_FirstAidKit.BP_FirstAidKit_C"));
 	if (HealClassRef.Class)
@@ -70,45 +71,10 @@ ACharacterPlayer::ACharacterPlayer()
 
 	EquipmentController = CreateDefaultSubobject<UEquipmentController>(TEXT("EquipmentController"));
 
-	// ----- MiniMap
-	SceneCapture = CreateDefaultSubobject<USceneCaptureComponent2D>(TEXT("SceneCapture2D"));
-	SceneCapture->ProjectionType = ECameraProjectionMode::Type::Orthographic;
-	SceneCapture->OrthoWidth = 4000.f;
-	SceneCapture->SetupAttachment(RootComponent); 
-	SceneCapture->SetRelativeLocation(FVector(0.f, 0.f, 2100.f)); 
-	SceneCapture->SetRelativeRotation(FRotator(-90.f, 0.f, 0.f)); 
-	SceneCapture->bCaptureEveryFrame = true;
-	SceneCapture->bCaptureOnMovement = false;
-	static ConstructorHelpers::FObjectFinder<UTextureRenderTarget2D> RenderTargetRef(TEXT("/Script/Engine.TextureRenderTarget2D'/Game/Art/UI/MiniMap/RT_MiniMap.RT_MiniMap'"));
-	if (RenderTargetRef.Succeeded())
-	{
-		SceneCapture->TextureTarget = RenderTargetRef.Object;
-	}
-
-	// ----- UI
-	PlayerIconSprite = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("PlayerIconSprite"));
-	PlayerIconSprite->SetupAttachment(GetCapsuleComponent());
-	PlayerIconSprite->SetRelativeLocation(FVector(0.f, 0.f, 2000.f));
-	PlayerIconSprite->SetRelativeRotation(FRotator(-180.f, -180.f, -90.f));
-	PlayerIconSprite->SetRelativeScale3D(FVector(0.5f));       
-	PlayerIconSprite->SetVisibility(true);
-	PlayerIconSprite->bVisibleInSceneCaptureOnly = true;
-	static ConstructorHelpers::FObjectFinder<UPaperSprite> PlayerIconAsset(TEXT("/Script/Paper2D.PaperSprite'/Game/Art/UI/MiniMap/PlayerIcon_Sprite.PlayerIcon_Sprite'"));
-	if (PlayerIconAsset.Succeeded())
-	{
-		PlayerIconSprite->SetSprite(PlayerIconAsset.Object);
-	}
-	
-	PlayerNameText = CreateDefaultSubobject<UTextRenderComponent>(TEXT("PlayerNameText"));
-	PlayerNameText->SetupAttachment(GetCapsuleComponent());
-	PlayerNameText->SetRelativeLocation(FVector(-250.f, 0.f, 2000.f));
-	PlayerNameText->SetRelativeRotation(FRotator(90.f, 180.f, 0.f));
-	PlayerNameText->SetHorizontalAlignment(EHTA_Center);
-	PlayerNameText->SetVerticalAlignment(EVRTA_TextCenter);
-	PlayerNameText->SetWorldSize(200.f); 
-	PlayerNameText->SetTextRenderColor(FColor::White);
-	PlayerNameText->SetVisibility(true);
-	PlayerNameText->bVisibleInSceneCaptureOnly = true;
+	UIComponent = CreateDefaultSubobject<UChildActorComponent>(TEXT("UIComponent"));
+	UIComponent->SetupAttachment(RootComponent);
+	UIComponent->SetChildActorClass(ACharacterUIComponent::StaticClass());
+	UIComponent->SetRelativeLocation(FVector::ZeroVector);
 }
 
 void ACharacterPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -175,7 +141,11 @@ void ACharacterPlayer::BeginPlay()
 	{
 		const FString DebugMsg = FString::Printf(TEXT("Player Name : %s"), *GetName());
 		PRINT_WITH_CURRENT_CONTEXT(DebugMsg);
-		
+
+		if (ACharacterUIComponent* UIRig = Cast<ACharacterUIComponent>(UIComponent->GetChildActor()))
+		{
+			UIRig->SetPlayerName(GetName());
+		}
 		SetPlayerControl(CurrentCharacterControlType);
 		
 		if (const AInGamePlayerController* PC = Cast<AInGamePlayerController>(GetController()))
@@ -189,7 +159,7 @@ void ACharacterPlayer::BeginPlay()
 	}
 
 	// TODO : For Test. Remove later.
-	if (HasAuthority() && IsValid(WeaponToSpawn) && IsValid(KnifeToSpawn) && IsValid(GrenadeToSpawn))
+	if (HasAuthority() && IsValid(WeaponToSpawn) && IsValid(KnifeToSpawn) && IsValid(GrenadeToSpawn) && IsValid(HealToSpawn))
 	{
 		const FVector SpawnLocation = GetActorLocation();
 		const FRotator SpawnRotation = GetActorRotation();
@@ -201,12 +171,14 @@ void ACharacterPlayer::BeginPlay()
 		SpawnedWeapon = GetWorld()->SpawnActor<AWeaponBase>(WeaponToSpawn, SpawnLocation, SpawnRotation, SpawnParams);
 		KnifeWeapon = GetWorld()->SpawnActor<AWeaponBase>(KnifeToSpawn, SpawnLocation, SpawnRotation, SpawnParams);
 		GrenadeWeapon = GetWorld()->SpawnActor<AWeaponBase>(GrenadeToSpawn, SpawnLocation, SpawnRotation, SpawnParams);
+		HealWeapon = GetWorld()->SpawnActor<AEquipmentBase>(HealToSpawn, SpawnLocation, SpawnRotation, SpawnParams);
 
-		if (IsValid(SpawnedWeapon) && IsValid(KnifeWeapon) && IsValid(GrenadeWeapon))
+		if (IsValid(SpawnedWeapon) && IsValid(KnifeWeapon) && IsValid(GrenadeWeapon) && IsValid(HealWeapon))
 		{
 			EquipmentController->AddEquipment(SpawnedWeapon);
 			EquipmentController->AddEquipment(KnifeWeapon);
 			EquipmentController->AddEquipment(GrenadeWeapon);
+			EquipmentController->AddEquipment(HealWeapon);
 		}
 		EquipmentController->UnEquipCurrentEquipment();
 	}
