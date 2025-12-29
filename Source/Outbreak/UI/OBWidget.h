@@ -7,6 +7,8 @@
 #include "Components/WidgetSwitcher.h"
 #include "Components/ComboBoxString.h"
 #include "Types/SlateEnums.h"
+#include "OBCrouchDisplay.h"
+#include "WeaponContainer.h"
 #include "OBWidget.generated.h"
 
 class UComboBoxString;
@@ -23,19 +25,12 @@ class OUTBREAK_API UOBWidget : public UUserWidget
 public:
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 	virtual void NativeConstruct() override;
-	
 	void SetMatchTimeText(float Time);
-	void SetCurrentPhaseText(FString Phase);
-	void SetAlivePlayerCountText(int32 Count);
 	void SetAnnouncementText(FString AnnouncementText);
-	void SetTotalZombieKillsText(int32 TotalKills);
-	void SetZombieKillsText(int32 Kills);
 	void SetAmmoText(int32 currentAmmo, int32 TotalAmmo);
-	void SetWeaponTypeText(FString Type);
 	void SetCurrentHealth(int32 CurrentHealth, float HealthPercent);
-	
 	void SetCutsceneMode(bool bEnable);
-
+	void SetCrouchState(bool IsCrouch);
 	
 	
 protected:
@@ -44,36 +39,24 @@ protected:
 
 	UPROPERTY(meta = (BindWidget))
 	UImage* AimImage;
+
+	UPROPERTY(meta = (BindWidget))
+	UImage* HealthBar;
 	
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* MatchTimeTextBlock;
 
 	UPROPERTY(meta = (BindWidget))
-	UTextBlock* PhaseTextBlock;
-
-	UPROPERTY(meta = (BindWidget))
-	UTextBlock* AlivePlayerCountTextBlock;
-
-	UPROPERTY(meta = (BindWidget))
 	UTextBlock* AnnouncementTextBlock;
-
-	UPROPERTY(meta = (BindWidget))
-	UTextBlock* TotalZombieKillsTextBlock;
-
-	UPROPERTY(meta = (BindWidget))
-	UTextBlock* ZombieKillsTextBlock;
-
-	UPROPERTY(meta = (BindWidget))
-	UTextBlock* AmmoTextBlock;
-
-	UPROPERTY(meta = (BindWidget))
-	UTextBlock* WeaponTypeTextBlock;
 
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* CurrentHealthTextBlock;
 
 	UPROPERTY(meta = (BindWidget))
-	class UProgressBar* HealthBar;
+	class UOBCrouchDisplay* CrouchDisplay;
+
+	UPROPERTY(meta = (BindWidget))
+	class UWeaponContainer* WBP_WeaponContainer;
 
 	// //--------Graphics--------//
 	UPROPERTY(meta = (BindWidget))

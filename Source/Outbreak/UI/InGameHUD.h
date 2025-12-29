@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/HUD.h"
 #include "Outbreak/Data/GameData.h"
+
 #include "InGameHUD.generated.h"
 
 UCLASS()
@@ -21,10 +22,9 @@ public:
 	void DisplayTotalZombieKills(int32 TotalZombieKills);
 	void DisplayZombieKills(int32 ZombieKills);
 	void DisplayAmmo(int32 CurrentAmmo, int32 TotalAmmo);
-	void DisplayWeaponType(FString Type);
 	void DisplayCurrentHealth(int32 CurrentHealth);
-	
 	void SetCutsceneMode(bool bEnable);
+	void SetCrouchIcon(bool IsCrouch);
 
 	UFUNCTION()
 	class UOBWidget* GetOBWidget() const { return OB_Widget;}
