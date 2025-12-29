@@ -158,6 +158,9 @@ USTRUCT()
 struct FMedicineData : public FTableRowBase
 {
 	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UTexture2D> ItemIcon;
 	
 	UPROPERTY(EditAnywhere)
 	float HealAmount = 0.0f;
@@ -170,12 +173,16 @@ struct FMedicineData : public FTableRowBase
 
 	UPROPERTY(EditAnywhere)
 	bool bCanUseOthers = true;
+	
 };
 
 USTRUCT()
 struct FWeaponData : public FTableRowBase
 {
 	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UTexture2D> ItemIcon;
 	
 	UPROPERTY(EditAnywhere)
 	float Damage = 0.0f;
@@ -236,7 +243,7 @@ USTRUCT()
 struct FMeleeData : public FWeaponData
 {
 	GENERATED_BODY()
-
+	
 	UPROPERTY(EditAnywhere)
 	float AttackRate = 1.0f;
 
