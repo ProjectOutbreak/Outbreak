@@ -32,11 +32,17 @@ public class Outbreak : ModuleRules
 			"OnlineSubsystemSteam",
 			"OnlineSubsystemNull",
 			"Niagara",
-			"GameplayCameras"
+			"GameplayCameras",
+			"HTTP",
+			"Json",
+			"JsonUtilities",
+			"Niagara",
+			"GameplayCameras",
+			"GameLiftServerSDK"
 		});
-
+		
 		PrivateDependencyModuleNames.AddRange(new string[] { "Paper2D", "AnimGraphRuntime" });
-
+		
 		// Uncomment if you are using Slate UI
 		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
 
