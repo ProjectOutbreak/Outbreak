@@ -25,7 +25,7 @@ private:
 	const TCHAR* JoinSessionResultToText(EOnJoinSessionCompleteResult::Type InResult) const;
 	FString GenerateRandomLobbyCode(int32 Length);
 
-	// ~ Begin Seesion Subsystem
+	// ~ Begin Session Subsystem
 	void BindSessionSubsystemCallbacks();
 	void RemoveSessionSubsystemCallbacks();
 	

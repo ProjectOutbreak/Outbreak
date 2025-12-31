@@ -28,7 +28,8 @@ public class Outbreak : ModuleRules
 			"OnlineSubsystem",
 			"OnlineSubsystemNull",
 			"Niagara",
-			"GameplayCameras"
+			"GameplayCameras",
+			"ApplicationCore",
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] { "Paper2D", "AnimGraphRuntime" });

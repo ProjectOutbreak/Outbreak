@@ -6,6 +6,7 @@
 #include "OnlineSubsystemUtils.h"
 #include "Components/Button.h"
 #include "Components/EditableTextBox.h"
+#include "HAL/PlatformApplicationMisc.h"
 #include "Kismet/GameplayStatics.h"
 #include "Subsystems/SessionSubsystem.h"
 #include "Utilities/DebugHelper.h"
@@ -56,6 +57,10 @@ FString UMainWidget::GenerateRandomLobbyCode(int32 Length)
 	{
 		RandomCode += Chars[FMath::RandRange(0, Chars.Len() - 1)];
 	}
+	
+	FPlatformApplicationMisc::ClipboardCopy(*RandomCode);
+	PRINT_WITH_CURRENT_CONTEXT(FString::Printf(TEXT("Lobby Code copied to Clipboard: %s"), *RandomCode));
+	
 	return RandomCode;
 }
 
