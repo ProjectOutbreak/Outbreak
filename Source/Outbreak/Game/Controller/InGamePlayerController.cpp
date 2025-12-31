@@ -209,6 +209,10 @@ void AInGamePlayerController::Crouch()
 	if (!ControlledCharacter) return;
 	
 	ControlledCharacter->GetCharacterMovement()->MaxWalkSpeed = CrouchSpeed;
+	if (AInGameHUD* HUD = Cast<AInGameHUD>(GetHUD()))
+	{
+		HUD->SetCrouchIcon(true);
+	}
 }
 
 void AInGamePlayerController::StopCrouch()
@@ -216,6 +220,11 @@ void AInGamePlayerController::StopCrouch()
 	if (!ControlledCharacter) return;
 	
 	ControlledCharacter->GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+	if (AInGameHUD* HUD = Cast<AInGameHUD>(GetHUD()))
+	{
+		HUD->SetCrouchIcon(false);
+	}
+	
 }
 
 void AInGamePlayerController::ChangePlayerControl()
