@@ -259,6 +259,9 @@ void UEquipmentController::Equip(const TObjectPtr<AEquipmentBase>& Equipment)
 			case EEquipmentType::ThrowableWeapon:
 				SocketName = TEXT("Weapon_Granade");
 				break;
+			case EEquipmentType::Medicine:
+				SocketName = TEXT("Weapon_FirstAidKit");
+				break;
 			case EEquipmentType::PrimaryWeapon:
 			default:
 				SocketName = TEXT("Weapon_M4");
@@ -310,6 +313,44 @@ void UEquipmentController::UnEquipCurrentEquipment()
 	
 	CurrentEquippedItem = nullptr;
 }
+
+void UEquipmentController::RemoveEquipment(AEquipmentBase* ItemToRemove)
+{
+	if (!IsValid(ItemToRemove)) return;
+
+	if (CurrentEquippedItem == ItemToRemove)
+	{
+		UnEquipCurrentEquipment();
+	}
+
+	if (FirstPrimaryWeapon == ItemToRemove)
+	{
+		FirstPrimaryWeapon = nullptr;
+	}
+	else if (SecondPrimaryWeapon == ItemToRemove)
+	{
+		SecondPrimaryWeapon = nullptr;
+	}
+	else if (SecondaryWeapon == ItemToRemove)
+	{
+		SecondaryWeapon = nullptr;
+	}
+	else if (ThrowableWeapon == ItemToRemove)
+	{
+		ThrowableWeapon = nullptr;
+	}
+	else if (FirstMedicine == ItemToRemove)
+	{
+		FirstMedicine = nullptr;
+	}
+	else if (SecondMedicine == ItemToRemove)
+	{
+		SecondMedicine = nullptr;
+	}
+
+	ItemToRemove->Destroy();
+}
+
 
 void UEquipmentController::HandleAmmoChanged()
 {

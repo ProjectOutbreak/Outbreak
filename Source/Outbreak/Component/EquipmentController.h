@@ -23,6 +23,7 @@ public:
 	void EquipBySlot(int32 SlotNumber);
 	void AddEquipment(const TObjectPtr<class AEquipmentBase>& Equipment);
 	void UnEquipCurrentEquipment();
+	void RemoveEquipment(class AEquipmentBase* ItemToRemove);
 	
 	void HandleUse();
 	void HandleEndUse();

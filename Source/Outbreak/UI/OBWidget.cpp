@@ -78,7 +78,6 @@ void UOBWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 	if (const AInGameState* GS = GetWorld()->GetGameState<AInGameState>())
 	{
 		SetMatchTimeText(GS->GetMatchTime());
-		SetCurrentPhaseText(GS->GetCurrentPhase());
 	}
 }
 	
@@ -90,13 +89,7 @@ void UOBWidget::SetCutsceneMode(bool bEnable)
 		MiniMapImage,
 		AimImage,
 		MatchTimeTextBlock,
-		PhaseTextBlock,
-		AlivePlayerCountTextBlock,
 		AnnouncementTextBlock,
-		TotalZombieKillsTextBlock,
-		ZombieKillsTextBlock,
-		AmmoTextBlock,
-		WeaponTypeTextBlock,
 		HealthBar,
 		CurrentHealthTextBlock
 	};
@@ -125,23 +118,6 @@ void UOBWidget::SetMatchTimeText(float Time)
 	
 }
 
-void UOBWidget::SetCurrentPhaseText(FString Phase)
-{
-	if (PhaseTextBlock)
-	{
-		FString PhaseStr = FString::Printf(TEXT("%s"), *Phase);
-		PhaseTextBlock->SetText(FText::FromString(PhaseStr));
-	}
-}
-
-void UOBWidget::SetAlivePlayerCountText(int32 Count)
-{
-	if (AlivePlayerCountTextBlock)
-	{
-		FString CountText = FString::Printf(TEXT("Alive Player : %d"), Count);
-		AlivePlayerCountTextBlock->SetText(FText::FromString(CountText));
-	}
-}
 
 void UOBWidget::SetAnnouncementText(FString AnnouncementText)
 {
@@ -152,39 +128,12 @@ void UOBWidget::SetAnnouncementText(FString AnnouncementText)
 	}
 }
 
-void UOBWidget::SetTotalZombieKillsText(int32 TotalKills)
-{
-	if (TotalZombieKillsTextBlock)
-	{
-		FString CountText = FString::Printf(TEXT("Total Kills : %d"), TotalKills);
-		TotalZombieKillsTextBlock->SetText(FText::FromString(CountText));
-	}
-}
-
-void UOBWidget::SetZombieKillsText(int32 Kills)
-{
-	if (ZombieKillsTextBlock)
-	{
-		FString CountText = FString::Printf(TEXT("Kills : %d"), Kills);
-		ZombieKillsTextBlock->SetText(FText::FromString(CountText));
-	}
-}
 
 void UOBWidget::SetAmmoText(int32 CurrentAmmo, int32 TotalAmmo)
 {
-	if (AmmoTextBlock)
+	if (WBP_WeaponContainer)
 	{
-		FString AmmoStr = FString::Printf(TEXT("%d / %d"), CurrentAmmo, TotalAmmo);
-		AmmoTextBlock->SetText(FText::FromString(AmmoStr));
-	}
-}
-
-void UOBWidget::SetWeaponTypeText(FString Type)
-{
-	if (WeaponTypeTextBlock)
-	{
-		FString TypeStr = FString::Printf(TEXT("%s"), *Type);
-		WeaponTypeTextBlock->SetText(FText::FromString(TypeStr));
+		WBP_WeaponContainer->SetAmmoText(CurrentAmmo, TotalAmmo);
 	}
 }
 
@@ -194,12 +143,25 @@ void UOBWidget::SetCurrentHealth(int32 CurrentHealth, float HealthPercent)
 
 	if (HealthBar)
 	{
-		HealthBar->SetPercent(HealthPercent);
-	}	
+		UMaterialInstanceDynamic* DynamicMat = HealthBar->GetDynamicMaterial();
+
+		if (DynamicMat)
+		{
+			DynamicMat->SetScalarParameterValue(FName("Percent"), HealthPercent);
+		}
+	}
 	if (CurrentHealthTextBlock)
 	{
-		FString HealthStr = FString::Printf(TEXT("%d / 100"), CurrentHealth);
+		FString HealthStr = FString::Printf(TEXT("%d"), CurrentHealth);
 		CurrentHealthTextBlock->SetText(FText::FromString(HealthStr));
+	}
+}
+void UOBWidget::SetCrouchState(bool IsCrouch)
+{
+	// 자식 위젯이 유효한지 체크 후 함수 호출
+	if (CrouchDisplay)
+	{
+		CrouchDisplay->SetCrouchImage(IsCrouch);
 	}
 }
 
