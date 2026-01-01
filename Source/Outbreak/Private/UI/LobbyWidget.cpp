@@ -33,8 +33,7 @@ void ULobbyWidget::NativeConstruct()
 	{
 		Button_GameStart->OnClicked.AddDynamic(this, &ULobbyWidget::OnClickGameStartButton);
 	}
-	
-	if (SessionsSubsystem && !SessionsSubsystem->IsSessionHost() && Button_GameStart)
+	if (SessionsSubsystem && !SessionsSubsystem->IsLocalHost() && Button_GameStart)
 	{
 		Button_GameStart->SetVisibility(ESlateVisibility::Collapsed);
 	}
@@ -120,16 +119,12 @@ void ULobbyWidget::OnStartSession(bool bWasSuccessful)
 
 void ULobbyWidget::OnClickGameStartButton()
 {
-	if (!SessionsSubsystem->IsSessionHost())
-	{
-		PRINT_WITH_CURRENT_CONTEXT("Only the Host can start the game.");
-		return;
-	}
-	
 	ALobbyGameMode* GM = Cast<ALobbyGameMode>(GetWorld()->GetAuthGameMode());
 	if (!GM) return;
 	
 	GM->StartGame();
+	
+	Button_GameStart->SetIsEnabled(false);
 }
 
 void ULobbyWidget::OnPlayerListUpdate(const TArray<FString>& PlayerNames)
