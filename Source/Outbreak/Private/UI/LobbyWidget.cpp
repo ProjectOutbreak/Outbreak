@@ -45,16 +45,19 @@ void ULobbyWidget::NativeConstruct()
 
 void ULobbyWidget::NativeDestruct()
 {
-	Super::NativeDestruct();
-	
+	RemoveFromParent();
+	if (const UWorld* World = GetWorld())
+	{
+		if (APlayerController* PlayerController = World->GetFirstPlayerController())
+		{
+			const FInputModeGameOnly InputModeData;
+			PlayerController->SetInputMode(InputModeData);
+			PlayerController->SetShowMouseCursor(false);
+		}
+	}
 	RemoveSessionSubsystemCallbacks();
 	
-	if (APlayerController* PC = GetOwningPlayer())
-	{
-		FInputModeGameOnly InputMode;
-		PC->SetInputMode(InputMode);
-		PC->bShowMouseCursor = false;
-	}
+	Super::NativeDestruct();
 }
 
 void ULobbyWidget::BindSessionSubsystemCallbacks()

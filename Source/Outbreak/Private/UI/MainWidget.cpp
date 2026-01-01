@@ -38,13 +38,6 @@ void UMainWidget::NativeDestruct()
 	Super::NativeDestruct();
 	
 	RemoveSessionSubsystemCallbacks();
-	
-	if (APlayerController* PC = GetOwningPlayer())
-	{
-		FInputModeGameOnly InputMode;
-		PC->SetInputMode(InputMode);
-		PC->bShowMouseCursor = false;
-	}
 }
 
 void UMainWidget::SetButtonsEnabled(bool BNewIsEnabled)
