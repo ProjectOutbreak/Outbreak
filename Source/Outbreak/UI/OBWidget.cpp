@@ -4,7 +4,6 @@
 #include "Components/TextBlock.h"
 #include "Components/Image.h"
 #include "Components/Button.h" 
-#include "Components/ProgressBar.h"
 #include "Components/ComboBoxString.h"
 #include "Engine/TextureRenderTarget2D.h"
 #include "Outbreak/Util/GraphicOptionHelper.h"
@@ -15,6 +14,13 @@
 void UOBWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
+	
+	if (APlayerController* PC = GetOwningPlayer())
+	{
+		FInputModeGameOnly InputMode;
+		PC->SetInputMode(InputMode);
+		PC->bShowMouseCursor = false;
+	}
 
 	if (BtnResume) BtnResume->OnClicked.AddDynamic(this, &UOBWidget::OnResumeClicked);
 	if (BtnGraphics) BtnGraphics->OnClicked.AddDynamic(this, &UOBWidget::OnOpenGraphicsClicked);

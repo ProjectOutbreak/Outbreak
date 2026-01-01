@@ -10,6 +10,7 @@
 #include "Components/WidgetSwitcher.h"
 #include "HAL/PlatformApplicationMisc.h"
 #include "Kismet/GameplayStatics.h"
+#include "Outbreak/Game/Framework/LobbyGameMode.h"
 #include "Subsystems/SessionSubsystem.h"
 #include "Utilities/DebugHelper.h"
 
@@ -22,7 +23,14 @@ void UMainWidget::NativeConstruct()
 	if (Button_CreateLobby)	Button_CreateLobby->OnClicked.AddDynamic(this, &UMainWidget::OnClickCreateGameButton);
 	if (Button_JoinLobby)		Button_JoinLobby->OnClicked.AddDynamic(this, &UMainWidget::OnClickJoinGameButton);
 	if (Button_SinglePlay)	Button_SinglePlay->OnClicked.AddDynamic(this, &UMainWidget::OnClickSinglePlayButton);
-	if (Button_GameStart)	Button_GameStart->OnClicked.AddDynamic(this, &UMainWidget::OnClickGameStartButton);
+	
+	if (APlayerController* PC = GetOwningPlayer())
+	{
+		FInputModeUIOnly InputMode;
+		InputMode.SetWidgetToFocus(TakeWidget());
+		PC->SetInputMode(InputMode);
+		PC->bShowMouseCursor = true;
+	}
 }
 
 void UMainWidget::NativeDestruct()
@@ -30,6 +38,13 @@ void UMainWidget::NativeDestruct()
 	Super::NativeDestruct();
 	
 	RemoveSessionSubsystemCallbacks();
+	
+	if (APlayerController* PC = GetOwningPlayer())
+	{
+		FInputModeGameOnly InputMode;
+		PC->SetInputMode(InputMode);
+		PC->bShowMouseCursor = false;
+	}
 }
 
 void UMainWidget::SetButtonsEnabled(bool BNewIsEnabled)
@@ -99,13 +114,11 @@ void UMainWidget::OnCreateSession(bool bWasSuccessful)
 {
 	if (bWasSuccessful)
 	{
-		PRINT_WITH_CURRENT_CONTEXT("Session Created Successfully");
-		Button_GameStart->SetVisibility(ESlateVisibility::Visible);
-		if (Text_LobbyCode)
-		{
-			Text_LobbyCode->SetText(FText::FromString(CachedCreatedLobbyCode));
-			WS_Main->SetActiveWidgetIndex(3);
-		}
+		PRINT_WITH_CURRENT_CONTEXT("Session Created Successfully. Opening Listen Server...");
+
+		const FString LobbyLevelName = "L_Lobby";
+		const FString Option = "?listen";
+		UGameplayStatics::OpenLevel(GetWorld(), FName(*LobbyLevelName + Option));
 	}		
 	else
 	{
@@ -149,11 +162,6 @@ void UMainWidget::OnFindSession(const TArray<FOnlineSessionSearchResult>& Sessio
 			Result.Session.SessionSettings.bUsesPresence = true;
 			SessionsSubsystem->JoinSession(Result);
 			
-			if (Text_LobbyCode)
-			{
-				Text_LobbyCode->SetText(FText::FromString(LobbyCode));
-				WS_Main->SetActiveWidgetIndex(3);
-			}
 			return;
 		}
 	}
@@ -191,10 +199,18 @@ void UMainWidget::OnJoinSession(EOnJoinSessionCompleteResult::Type Result)
 
 	FString Address;
 	SessionInterface->GetResolvedConnectString(NAME_GameSession, Address);
+	if (Address.Contains(TEXT(":0")))
+	{
+		Address.ReplaceInline(TEXT(":0"), TEXT(":7777"));
+	}
+	else if (!Address.Contains(TEXT(":")))
+	{
+		Address += TEXT(":7777");
+	}
+	PRINT_WITH_CURRENT_CONTEXT(FString::Printf(TEXT("Joining session at address: %s"), *Address));
 
 	if (APlayerController* PC = GetGameInstance()->GetFirstLocalPlayerController())
 	{
-		Button_GameStart->SetVisibility(ESlateVisibility::Collapsed);
 		PC->ClientTravel(Address, ETravelType::TRAVEL_Absolute);
 	}
 }
@@ -253,22 +269,4 @@ void UMainWidget::OnClickJoinGameButton()
 void UMainWidget::OnClickSinglePlayButton()
 {
 	// TODO : Single Play 구현
-}
-
-void UMainWidget::OnClickGameStartButton()
-{
-	if (!SessionsSubsystem->IsSessionHost())
-	{
-		PRINT_WITH_CURRENT_CONTEXT("Only the Host can start the game.");
-		return;
-	}
-	
-	const FString MapName = "L_Loading";
-	// const FString Options = "?listen";
-	
-	UWorld* World = GetWorld();
-	if (!World->ServerTravel(MapName))
-	{
-		PRINT_WITH_CURRENT_CONTEXT("ServerTravel failed");
-	}
 }

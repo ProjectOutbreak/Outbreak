@@ -35,15 +35,6 @@ protected:
 	UPROPERTY(meta = (BindWidgetOptional))
 	TObjectPtr<UEditableTextBox> ETB_LobbyCode;
 	
-	UPROPERTY(meta = (BindWidgetOptional))
-	TObjectPtr<UButton> Button_GameStart;
-	
-	UPROPERTY(meta = (BindWidgetOptional))
-	TObjectPtr<UTextBlock> Text_LobbyCode;
-	
-	UPROPERTY(meta = (BindWidgetOptional))
-	TObjectPtr<UTextBlock> Text_PlayerList;
-	
 	UPROPERTY(meta = (BindWidgetOptional), BlueprintReadWrite)
 	TObjectPtr<UWidgetSwitcher> WS_Main;
 	// ~ End UMG
@@ -76,8 +67,6 @@ private:
 	void OnClickJoinGameButton();
 	UFUNCTION()
 	void OnClickSinglePlayButton();
-	UFUNCTION()
-	void OnClickGameStartButton();
 	// ~ End Button Callbacks
 	
 	UPROPERTY(Transient)

@@ -6,23 +6,13 @@
 #include "GameFramework/GameMode.h"
 #include "LobbyGameMode.generated.h"
 
-
 UCLASS()
 class OUTBREAK_API ALobbyGameMode : public AGameMode
 {
 	GENERATED_BODY()
 
-
 public:
-	virtual void BeginPlay() override;
 	ALobbyGameMode();
-
-    UPROPERTY(BlueprintReadOnly)
-	int32 ConnectedPlayers;
-
-	void PostLogin(APlayerController* NewPlayer) override;
-
-	virtual void PreLogin(const FString& Options, const FString& Address, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage) override;
-
-	void StartMatchIfReady();	
+	
+	void StartGame() const;
 };
