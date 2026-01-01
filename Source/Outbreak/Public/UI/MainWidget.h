@@ -51,16 +51,16 @@ private:
 	// ~ End Button Callbacks
 	
 	// ~ Begin UMG
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UButton> CreateGameButton;
+	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<UButton> Button_SinglePlay;
 	
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UButton> JoinGameButton;
+	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<UButton> Button_CreateLobby;
 	
-	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UButton> SinglePlayButton;
+	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<UButton> Button_JoinLobby;
 	
-	UPROPERTY(meta = (BindWidget))
+	UPROPERTY(meta = (BindWidgetOptional))
 	TObjectPtr<UEditableTextBox> TB_LobbyCode;
 	// ~ End UMG
 	

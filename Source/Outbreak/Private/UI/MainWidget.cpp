@@ -17,9 +17,9 @@ void UMainWidget::NativeConstruct()
 	
 	BindSessionSubsystemCallbacks();
 
-	if (CreateGameButton)	CreateGameButton->OnClicked.AddDynamic(this, &UMainWidget::OnClickCreateGameButton);
-	if (JoinGameButton)		JoinGameButton->OnClicked.AddDynamic(this, &UMainWidget::OnClickJoinGameButton);
-	if (SinglePlayButton)	SinglePlayButton->OnClicked.AddDynamic(this, &UMainWidget::OnClickSinglePlayButton);
+	if (Button_CreateLobby)	Button_CreateLobby->OnClicked.AddDynamic(this, &UMainWidget::OnClickCreateGameButton);
+	if (Button_JoinLobby)		Button_JoinLobby->OnClicked.AddDynamic(this, &UMainWidget::OnClickJoinGameButton);
+	if (Button_SinglePlay)	Button_SinglePlay->OnClicked.AddDynamic(this, &UMainWidget::OnClickSinglePlayButton);
 }
 
 void UMainWidget::NativeDestruct()
@@ -31,9 +31,9 @@ void UMainWidget::NativeDestruct()
 
 void UMainWidget::SetButtonsEnabled(bool BNewIsEnabled)
 {
-	CreateGameButton->SetIsEnabled(BNewIsEnabled);
-	JoinGameButton->SetIsEnabled(BNewIsEnabled);
-	SinglePlayButton->SetIsEnabled(BNewIsEnabled);
+	Button_CreateLobby->SetIsEnabled(BNewIsEnabled);
+	Button_JoinLobby->SetIsEnabled(BNewIsEnabled);
+	Button_SinglePlay->SetIsEnabled(BNewIsEnabled);
 }
 
 const TCHAR* UMainWidget::JoinSessionResultToText(const EOnJoinSessionCompleteResult::Type InResult) const
