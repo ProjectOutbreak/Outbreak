@@ -1,6 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "SoundManager.h"
 #include "Components/AudioComponent.h"
 #include "Outbreak/Game/Framework/OutBreakGameInstance.h"
@@ -10,10 +9,8 @@
 void USoundManager::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
-	if (UWorld* World = GetWorld())
-	{
-		OBGameInstance = World->GetGameInstance<UOutbreakGameInstance>();
-	}
+    
+	OBGameInstance = Cast<UOutbreakGameInstance>(GetGameInstance());
 }
 
 void USoundManager::Deinitialize()
@@ -34,15 +31,16 @@ void USoundManager::StartMainBgmShuffle(bool bRestartIfPlaying, float FadeInTime
 
 	if (!IsValid(BgmComponent))
 	{
-		BgmComponent = NewObject<UAudioComponent>(GetWorld());
-		BgmComponent->bAutoActivate = false;
-		BgmComponent->bIsUISound = false;
-		BgmComponent->bAutoActivate = false;
-		BgmComponent->OnAudioFinished.AddDynamic(this, &USoundManager::USoundManager::OnMusicFinished);
-		BgmComponent->RegisterComponent();
+		BgmComponent = UGameplayStatics::CreateSound2D(GetWorld(), nullptr, 1.0f, 1.0f, 0.0f, nullptr, true, false);
+       
+		if (IsValid(BgmComponent))
+		{
+			BgmComponent->bAutoActivate = false;
+			BgmComponent->OnAudioFinished.AddDynamic(this, &USoundManager::OnMusicFinished);
+		}
 	}
 
-	if (BgmComponent->IsPlaying())
+	if (IsValid(BgmComponent) && BgmComponent->IsPlaying())
 	{
 		if (!bRestartIfPlaying) return;
 		BgmComponent->Stop();			
