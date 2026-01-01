@@ -11,7 +11,7 @@
 
 AInGameMode::AInGameMode()
 {
-	// bUseSeamlessTravel = true;
+	bUseSeamlessTravel = true;
 }
 
 void AInGameMode::BeginPlay()

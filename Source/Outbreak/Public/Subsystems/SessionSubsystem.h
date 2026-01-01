@@ -42,7 +42,8 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "Session")
 	bool IsLocalHost() const;
-
+	
+	bool IsSessionHost() const;
 	bool IsLanEnvironment() const;
 
 	bool FindMatchingLobbyInResult(const FString& InLobbyCode, FOnlineSessionSearchResult& OutResult) const;

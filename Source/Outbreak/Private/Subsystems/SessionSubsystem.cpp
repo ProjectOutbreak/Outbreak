@@ -3,6 +3,7 @@
 #include "Subsystems/SessionSubsystem.h"
 #include "OnlineSubsystem.h"
 #include "OnlineSessionSettings.h"
+#include "OnlineSubsystemUtils.h"
 #include "Online/OnlineSessionNames.h"
 
 const FName USessionSubsystem::KEY_LOBBY_CODE(TEXT("LOBBY_CODE"));
@@ -243,6 +244,18 @@ bool USessionSubsystem::IsLocalHost() const
 	return false;
 }
 
+bool USessionSubsystem::IsSessionHost() const
+{
+	const IOnlineSessionPtr SessionInterface = Online::GetSubsystem(GetWorld())->GetSessionInterface();
+	if (SessionInterface.IsValid())
+	{
+		if (const FNamedOnlineSession* CurrentSession = SessionInterface->GetNamedSession(NAME_GameSession))
+		{
+			return CurrentSession->bHosting;
+		}
+	}
+	return false;
+}
 
 void USessionSubsystem::HandleCreateSessionComplete(FName InSessionName, bool bWasSuccessful)
 {

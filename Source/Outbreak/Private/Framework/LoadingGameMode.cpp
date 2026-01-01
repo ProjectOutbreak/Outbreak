@@ -3,6 +3,11 @@
 #include "Outbreak/Public/Framework/LoadingGameMode.h"
 #include "Outbreak/Public/Utilities/DebugHelper.h"
 
+ALoadingGameMode::ALoadingGameMode()
+{
+	bUseSeamlessTravel = true;
+}
+
 void ALoadingGameMode::PlayerIsReady(APlayerController* PC)
 {
 	NumberOfReadyPlayers++;

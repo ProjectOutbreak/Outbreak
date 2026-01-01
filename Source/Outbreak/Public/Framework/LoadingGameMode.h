@@ -12,6 +12,7 @@ class OUTBREAK_API ALoadingGameMode : public AGameModeBase
 	GENERATED_BODY()
 
 public:
+	ALoadingGameMode();
 	void PlayerIsReady(APlayerController* PC);
 
 private:

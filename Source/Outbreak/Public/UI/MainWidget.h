@@ -7,6 +7,8 @@
 #include "Interfaces/OnlineSessionInterface.h"
 #include "MainWidget.generated.h"
 
+class UWidgetSwitcher;
+class UTextBlock;
 class USessionSubsystem;
 class UEditableTextBox;
 class UButton;
@@ -19,6 +21,32 @@ class OUTBREAK_API UMainWidget : public UUserWidget
 protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
+	
+	// ~ Begin UMG
+	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<UButton> Button_SinglePlay;
+	
+	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<UButton> Button_CreateLobby;
+	
+	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<UButton> Button_JoinLobby;
+	
+	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<UEditableTextBox> ETB_LobbyCode;
+	
+	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<UButton> Button_GameStart;
+	
+	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<UTextBlock> Text_LobbyCode;
+	
+	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<UTextBlock> Text_PlayerList;
+	
+	UPROPERTY(meta = (BindWidgetOptional), BlueprintReadWrite)
+	TObjectPtr<UWidgetSwitcher> WS_Main;
+	// ~ End UMG
 	
 private:
 	void SetButtonsEnabled(bool BNewIsEnabled);
@@ -48,22 +76,12 @@ private:
 	void OnClickJoinGameButton();
 	UFUNCTION()
 	void OnClickSinglePlayButton();
+	UFUNCTION()
+	void OnClickGameStartButton();
 	// ~ End Button Callbacks
-	
-	// ~ Begin UMG
-	UPROPERTY(meta = (BindWidgetOptional))
-	TObjectPtr<UButton> Button_SinglePlay;
-	
-	UPROPERTY(meta = (BindWidgetOptional))
-	TObjectPtr<UButton> Button_CreateLobby;
-	
-	UPROPERTY(meta = (BindWidgetOptional))
-	TObjectPtr<UButton> Button_JoinLobby;
-	
-	UPROPERTY(meta = (BindWidgetOptional))
-	TObjectPtr<UEditableTextBox> TB_LobbyCode;
-	// ~ End UMG
 	
 	UPROPERTY(Transient)
 	TObjectPtr<USessionSubsystem> SessionsSubsystem;
+	
+	FString CachedCreatedLobbyCode;
 };

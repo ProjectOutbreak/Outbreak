@@ -6,6 +6,8 @@
 #include "OnlineSubsystemUtils.h"
 #include "Components/Button.h"
 #include "Components/EditableTextBox.h"
+#include "Components/TextBlock.h"
+#include "Components/WidgetSwitcher.h"
 #include "HAL/PlatformApplicationMisc.h"
 #include "Kismet/GameplayStatics.h"
 #include "Subsystems/SessionSubsystem.h"
@@ -20,6 +22,7 @@ void UMainWidget::NativeConstruct()
 	if (Button_CreateLobby)	Button_CreateLobby->OnClicked.AddDynamic(this, &UMainWidget::OnClickCreateGameButton);
 	if (Button_JoinLobby)		Button_JoinLobby->OnClicked.AddDynamic(this, &UMainWidget::OnClickJoinGameButton);
 	if (Button_SinglePlay)	Button_SinglePlay->OnClicked.AddDynamic(this, &UMainWidget::OnClickSinglePlayButton);
+	if (Button_GameStart)	Button_GameStart->OnClicked.AddDynamic(this, &UMainWidget::OnClickGameStartButton);
 }
 
 void UMainWidget::NativeDestruct()
@@ -97,11 +100,13 @@ void UMainWidget::OnCreateSession(bool bWasSuccessful)
 	if (bWasSuccessful)
 	{
 		PRINT_WITH_CURRENT_CONTEXT("Session Created Successfully");
-		const FString MapName = "L_Loading";
-		const FString Options = "?listen";
-	
-		UGameplayStatics::OpenLevel(this, FName(* (MapName + Options)));
-	}
+		Button_GameStart->SetVisibility(ESlateVisibility::Visible);
+		if (Text_LobbyCode)
+		{
+			Text_LobbyCode->SetText(FText::FromString(CachedCreatedLobbyCode));
+			WS_Main->SetActiveWidgetIndex(3);
+		}
+	}		
 	else
 	{
 		PRINT_WITH_CURRENT_CONTEXT("Failed to Create Session");
@@ -117,7 +122,7 @@ void UMainWidget::OnFindSession(const TArray<FOnlineSessionSearchResult>& Sessio
 		SetButtonsEnabled(true);
 		return;
 	}
-	const FString& LobbyCode = TB_LobbyCode->GetText().ToString();
+	const FString& LobbyCode = ETB_LobbyCode->GetText().ToString();
 
 	if (!bWasSuccessful || SessionResults.Num() == 0)
 	{
@@ -143,6 +148,12 @@ void UMainWidget::OnFindSession(const TArray<FOnlineSessionSearchResult>& Sessio
 			Result.Session.SessionSettings.bUseLobbiesIfAvailable = true;
 			Result.Session.SessionSettings.bUsesPresence = true;
 			SessionsSubsystem->JoinSession(Result);
+			
+			if (Text_LobbyCode)
+			{
+				Text_LobbyCode->SetText(FText::FromString(LobbyCode));
+				WS_Main->SetActiveWidgetIndex(3);
+			}
 			return;
 		}
 	}
@@ -183,6 +194,7 @@ void UMainWidget::OnJoinSession(EOnJoinSessionCompleteResult::Type Result)
 
 	if (APlayerController* PC = GetGameInstance()->GetFirstLocalPlayerController())
 	{
+		Button_GameStart->SetVisibility(ESlateVisibility::Collapsed);
 		PC->ClientTravel(Address, ETravelType::TRAVEL_Absolute);
 	}
 }
@@ -208,26 +220,25 @@ void UMainWidget::OnClickCreateGameButton()
 {
 	SetButtonsEnabled(false);
 	
-	FString LobbyCode;
-	if (TB_LobbyCode->GetText().IsEmpty())
+	if (ETB_LobbyCode->GetText().IsEmpty())
 	{
-		LobbyCode = GenerateRandomLobbyCode(5);
+		CachedCreatedLobbyCode = GenerateRandomLobbyCode(5);
 	}
 	else
 	{
-		LobbyCode = TB_LobbyCode->GetText().ToString().ToUpper();
+		CachedCreatedLobbyCode = ETB_LobbyCode->GetText().ToString().ToUpper();
 	}
 	
 	if (SessionsSubsystem)
 	{
 		int NumPublicConnections = 4;
-		SessionsSubsystem->CreateSession(NumPublicConnections, LobbyCode);
+		SessionsSubsystem->CreateSession(NumPublicConnections, CachedCreatedLobbyCode);
 	}
 }
 
 void UMainWidget::OnClickJoinGameButton()
 {
-	if (TB_LobbyCode->GetText().IsEmpty())
+	if (ETB_LobbyCode->GetText().IsEmpty())
 	{
 		PRINT_WITH_CURRENT_CONTEXT("Lobby Code is Empty");
 		return;
@@ -235,11 +246,29 @@ void UMainWidget::OnClickJoinGameButton()
 	SetButtonsEnabled(false);
 	if (SessionsSubsystem)
 	{
-		SessionsSubsystem->FindSessions(10000, TB_LobbyCode->GetText().ToString().ToUpper());
+		SessionsSubsystem->FindSessions(10000, ETB_LobbyCode->GetText().ToString().ToUpper());
 	}
 }
 
 void UMainWidget::OnClickSinglePlayButton()
 {
-	UGameplayStatics::OpenLevel(this, FName("L_Loading"));
+	// TODO : Single Play 구현
+}
+
+void UMainWidget::OnClickGameStartButton()
+{
+	if (!SessionsSubsystem->IsSessionHost())
+	{
+		PRINT_WITH_CURRENT_CONTEXT("Only the Host can start the game.");
+		return;
+	}
+	
+	const FString MapName = "L_Loading";
+	// const FString Options = "?listen";
+	
+	UWorld* World = GetWorld();
+	if (!World->ServerTravel(MapName))
+	{
+		PRINT_WITH_CURRENT_CONTEXT("ServerTravel failed");
+	}
 }
