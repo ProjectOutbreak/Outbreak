@@ -9,7 +9,7 @@
 #include "Outbreak/Component/ZombieAIComponent.h"
 #include "Outbreak/Game/Framework/InGameMode.h"
 #include "Outbreak/Game/Framework/InGameState.h"
-#include "Outbreak/Game/Framework/InGamePlayerState.h"
+#include "Outbreak/Game/Framework/DefaultPlayerState.h"
 #include "Outbreak/Manager/CharacterSpawnManager.h"
 #include "Outbreak/Util/EnumHelper.h"
 #include "Outbreak/Util/MeshLoadHelper.h"
@@ -190,7 +190,7 @@ void ACharacterZombie::OnRep_Die()
 		
 		if (LastDamagePlayer)
 		{
-			if (AInGamePlayerState* PS = LastDamagePlayer->GetPlayerState<AInGamePlayerState>())
+			if (ADefaultPlayerState* PS = LastDamagePlayer->GetPlayerState<ADefaultPlayerState>())
 			{
 				PS->AddZombieKill();
 			}

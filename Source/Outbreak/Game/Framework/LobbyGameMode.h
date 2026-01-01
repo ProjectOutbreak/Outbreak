@@ -7,7 +7,7 @@
 #include "LobbyGameMode.generated.h"
 
 UCLASS()
-class OUTBREAK_API ALobbyGameMode : public AGameMode
+class OUTBREAK_API ALobbyGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
 

@@ -1,4 +1,5 @@
 #include "LobbyGameMode.h"
+#include "Framework/GameState/LobbyGameState.h"
 #include "Utilities/DebugHelper.h"
 
 ALobbyGameMode::ALobbyGameMode()

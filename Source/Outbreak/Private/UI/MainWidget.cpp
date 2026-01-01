@@ -35,9 +35,9 @@ void UMainWidget::NativeConstruct()
 
 void UMainWidget::NativeDestruct()
 {
-	Super::NativeDestruct();
-	
 	RemoveSessionSubsystemCallbacks();
+	
+	Super::NativeDestruct();
 }
 
 void UMainWidget::SetButtonsEnabled(bool BNewIsEnabled)

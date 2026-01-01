@@ -3,7 +3,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "WeaponBase.h"
-#include "Outbreak/Game/Framework/InGamePlayerState.h"
+#include "Outbreak/Game/Framework/DefaultPlayerState.h"
 #include "FirableBase.generated.h"
 
 DECLARE_DELEGATE(FOnReloadFinished);

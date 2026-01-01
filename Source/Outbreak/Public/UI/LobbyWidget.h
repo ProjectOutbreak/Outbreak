@@ -16,9 +16,10 @@ class OUTBREAK_API ULobbyWidget : public UUserWidget
 	GENERATED_BODY()
 	
 public:
+	virtual bool Initialize() override;
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
-
+	
 protected:
 	// ~ Begin UMG
 	UPROPERTY(meta = (BindWidgetOptional))
@@ -42,12 +43,15 @@ private:
 	void OnSessionError(const FString& Reason);
 	UFUNCTION()
 	void OnStartSession(bool bWasSuccessful);
+	UFUNCTION()
+	void OnPlayerListUpdate(const TArray<FString>& PlayerNames);
 	// ~ End Session Subsystem
 	
 	// ~ Begin Button Callbacks
 	UFUNCTION()
 	void OnClickGameStartButton();
 	// ~ End Button Callbacks
+	
 	
 	UPROPERTY(Transient)
 	TObjectPtr<USessionSubsystem> SessionsSubsystem;

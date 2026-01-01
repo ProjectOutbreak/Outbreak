@@ -3,13 +3,30 @@
 #include "UI/LobbyWidget.h"
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
+#include "Framework/GameState/LobbyGameState.h"
 #include "Outbreak/Game/Framework/LobbyGameMode.h"
 #include "Subsystems/SessionSubsystem.h"
 #include "Utilities/DebugHelper.h"
 
+bool ULobbyWidget::Initialize()
+{
+	if (!Super::Initialize())
+	{
+		return false;
+	}
+	
+	if (const ALobbyGameState* Lgs = GetWorld()->GetGameState<ALobbyGameState>())
+	{
+		OnPlayerListUpdate(Lgs->GetPlayerList());
+	}
+	
+	return true;
+}
+
 void ULobbyWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
+	
 	BindSessionSubsystemCallbacks();
 	
 	if (Button_GameStart)
@@ -69,6 +86,7 @@ void ULobbyWidget::BindSessionSubsystemCallbacks()
 		SessionsSubsystem->OnSessionDestroyComplete.AddDynamic(this, &ThisClass::OnDestroySession);
 		SessionsSubsystem->OnSessionError.AddDynamic(this, &ThisClass::OnSessionError);
 		SessionsSubsystem->OnSessionStart.AddDynamic(this, &ThisClass::OnStartSession);
+		SessionsSubsystem->OnPlayerListUpdated.AddDynamic(this, &ThisClass::OnPlayerListUpdate);
 	}
 }
 
@@ -79,6 +97,7 @@ void ULobbyWidget::RemoveSessionSubsystemCallbacks()
 		SessionsSubsystem->OnSessionDestroyComplete.RemoveDynamic(this, &ThisClass::OnDestroySession);
 		SessionsSubsystem->OnSessionError.RemoveDynamic(this, &ThisClass::OnSessionError);
 		SessionsSubsystem->OnSessionStart.RemoveDynamic(this, &ThisClass::OnStartSession);
+		SessionsSubsystem->OnPlayerListUpdated.RemoveDynamic(this, &ThisClass::OnPlayerListUpdate);
 	}
 }
 
@@ -111,4 +130,18 @@ void ULobbyWidget::OnClickGameStartButton()
 	if (!GM) return;
 	
 	GM->StartGame();
+}
+
+void ULobbyWidget::OnPlayerListUpdate(const TArray<FString>& PlayerNames)
+{
+	if (!Text_PlayerList) return;
+
+	FString FormattedPlayerList = TEXT("Players:\n");
+
+	for (int32 i = 0; i < PlayerNames.Num(); ++i)
+	{
+		FormattedPlayerList.Append(FString::Printf(TEXT("%d. %s\n"), i + 1, *PlayerNames[i]));
+	}
+	
+	Text_PlayerList->SetText(FText::FromString(FormattedPlayerList));
 }
