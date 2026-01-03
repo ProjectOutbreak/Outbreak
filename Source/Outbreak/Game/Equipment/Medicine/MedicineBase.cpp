@@ -15,6 +15,8 @@ AMedicineBase::AMedicineBase()
 
 void AMedicineBase::BeginPlay()
 {
+	Super::BeginPlay();
+	
 	if (MedicineData.MaxCount > 0)
 	{
 		CurrentCount = MedicineData.MaxCount;
