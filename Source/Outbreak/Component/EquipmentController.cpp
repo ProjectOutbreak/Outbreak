@@ -10,7 +10,7 @@
 #include "Outbreak/Game/Equipment/Weapon/ThrowableBase.h"
 #include "Outbreak/Game/Equipment/Medicine/MedicineBase.h"
 #include "Outbreak/Game/Equipment/Weapon/MeleeBase.h"
-#include "Outbreak/Game/Framework/InGamePlayerState.h"
+#include "Outbreak/Game/Framework/DefaultPlayerState.h"
 #include "Outbreak/UI/InGameHUD.h"
 #include "Outbreak/Util/Define.h"
 #include "Outbreak/Util/EnumHelper.h"
@@ -276,7 +276,7 @@ void UEquipmentController::Equip(const TObjectPtr<AEquipmentBase>& Equipment)
 			CurrentAmmoInMag = NewFirableWeapon->GetCurrentAmmoInMag();
 			NewFirableWeapon->OnPlayerAmmoChangedDelegate.AddDynamic(this, &UEquipmentController::HandleAmmoChanged);
 
-			if (AInGamePlayerState* PS = CachedOwner->GetPlayerState<AInGamePlayerState>())
+			if (ADefaultPlayerState* PS = CachedOwner->GetPlayerState<ADefaultPlayerState>())
 			{
 				PS->OnPlayerAmmoChangedDelegate.AddDynamic(this, &UEquipmentController::HandleAmmoChanged);
 			}
@@ -299,7 +299,7 @@ void UEquipmentController::UnEquipCurrentEquipment()
 			OldFirableWeapon->OnPlayerAmmoChangedDelegate.RemoveDynamic(this, &UEquipmentController::HandleAmmoChanged);
 			if (IsValid(CachedOwner))
 			{
-				if (AInGamePlayerState* PS = CachedOwner->GetPlayerState<AInGamePlayerState>())
+				if (ADefaultPlayerState* PS = CachedOwner->GetPlayerState<ADefaultPlayerState>())
 				{
 					PS->OnPlayerAmmoChangedDelegate.RemoveDynamic(this, &UEquipmentController::HandleAmmoChanged);
 				}
@@ -357,7 +357,7 @@ void UEquipmentController::HandleAmmoChanged()
 	const AFirableBase* CurrentWeapon = Cast<AFirableBase>(CurrentEquippedItem);
 	if (!CurrentWeapon) return;
 
-	const AInGamePlayerState* PS = CachedOwner->GetPlayerState<AInGamePlayerState>();
+	const ADefaultPlayerState* PS = CachedOwner->GetPlayerState<ADefaultPlayerState>();
 	if (!PS) return;
 
 	const int32 CurrentMag = CurrentWeapon->GetCurrentAmmoInMag();

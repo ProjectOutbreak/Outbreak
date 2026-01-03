@@ -192,6 +192,9 @@ struct FMedicineData : public FTableRowBase
 
 	UPROPERTY(EditAnywhere)
 	int32 MaxCount = 3;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UTexture2D> ItemIcon;
 	
 	UPROPERTY(EditAnywhere)
 	float HealAmount = 0.0f;
@@ -216,6 +219,9 @@ USTRUCT()
 struct FWeaponData : public FTableRowBase
 {
 	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UTexture2D> ItemIcon;
 	
 	UPROPERTY(EditAnywhere)
 	float Damage = 0.0f;
@@ -294,7 +300,7 @@ USTRUCT()
 struct FMeleeData : public FWeaponData
 {
 	GENERATED_BODY()
-
+	
 	UPROPERTY(EditAnywhere)
 	float AttackRate = 1.0f;
 
