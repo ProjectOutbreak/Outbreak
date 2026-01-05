@@ -5,78 +5,65 @@
 #include "CoreMinimal.h"
 #include "Interfaces/OnlineSessionInterface.h"
 #include "Subsystems/GameInstanceSubsystem.h"
-
-namespace Aws {struct SDKOptions;}
-namespace Aws {namespace GameLift {class GameLiftClient;}}
-
+#include "FindSessionsCallbackProxy.h"
+#include "HttpModule.h"
 #include "OutbreakSessionSubsystem.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnCreateLobbyResult, bool, bWasSuccessful);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnJoinLobbyResult, bool, bWasSuccessful);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStartGameSessionResult,bool,bWasSuccessful);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnOutbreakFindSessionsComplete, const TArray<FBlueprintSessionResult>&, SessionResults);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnOutbreakCreateSessionComplete, bool, bWasSuccessful);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnOutbreakJoinSessionComplete,bool,bWasSuccessful);
 
 UCLASS()
 class OUTBREAK_API UOutbreakSessionSubsystem : public UGameInstanceSubsystem
 {
 	GENERATED_BODY()
-
-private:
-	//-----Variables-----//
-
-	// Init
-	Aws::SDKOptions* m_SdkOptions;
-	Aws::GameLift::GameLiftClient* m_GameLiftClient;
-	IOnlineSessionPtr SessionInterface;
 	
-	FTimerHandle PollingTimerHandle;
-	FString CurrentPlacementId;
-
-	TSharedPtr<class FOnlineSessionSearch> SessionSearch;
-	FString TargetRoomCode;
-	const FName ROOM_CODE_KEY = FName("ROOM_CODE");
-
-	// Delegate 
-	FDelegateHandle FindSessionDelegateHandle;
-	FDelegateHandle JoinSessionDelegateHandle;
-	FDelegateHandle CreateSessionDelegateHandle;
-
+// --------------------
+// Functions
+// --------------------
 public:
-	UPROPERTY(BlueprintAssignable)
-	FOnCreateLobbyResult OnCreateLobbyResult;
-	UPROPERTY(BlueprintAssignable)
-	FOnJoinLobbyResult OnJoinLobbyResult;
-	UPROPERTY(BlueprintAssignable)
-	FOnStartGameSessionResult OnStartGameSessionResult;
-	
-private:
-	//-----Function-----//
-	void InitAwsSDK();
-	void ShutdownAwsSDK();
-	void OnSteamLobbyUpdated(FName SessionName, const FOnlineSessionSettings& UpdatedSettings);
-
-	
-protected:
-	void OnFindSessionResult(bool bSucceeded);
-	void OnJoinSessionComplete(FName SessionName, EOnJoinSessionCompleteResult::Type Result);
-	TArray<FString> GetSteamLobbyMembers();
-
-public:
-	//-----Function-----//
+	// ---------- Methods ---------- //
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
-    virtual void Deinitialize() override;
-	UOutbreakSessionSubsystem();
-	~UOutbreakSessionSubsystem();
+	virtual void Deinitialize() override;
 	
+	UFUNCTION(BlueprintCallable)
+	void CreateSession(int32 MaxPlayers = 4 , bool IsLAN = false, FString RoomCode);
+	UFUNCTION(BlueprintCallable)
+	void JoinSession(const FBlueprintSessionResult& SessionResult);
+	UFUNCTION(BlueprintCallable)
+	void FindSessions(int32 MaxResults, bool bIsLAN);
+	
+	// Request via AWS Lambda 
 	UFUNCTION(BlueprintCallable)
 	void RequestGameSession();
-	UFUNCTION(BlueprintCallable)
-	void CreateSteamLobby(int32 MaxPlayers);
-	UFUNCTION(BlueprintCallable)
-	void JoinSteamLobby(FString RoomCode);
 
-	void OnPlacementStatusCheck();
-	void UpdateSteamLobby(FString IP, int32 Port, TMap<FString, FString> PlayerTickets);
-	void OnCreateSessionComplete(FName SessionName, bool Success);
+private:
+	// Callback Events
+	void OnSteamLobbyUpdated(FName SessionName, const FOnlineSessionSettings& UpdatedSettings);
+	void OnCreateSessionCompleted(FName SessionName, bool bWasSuccessful);
+	void OnFindSessionsCompleted(bool bWasSuccessful);
+	void OnJoinSessionCompleted(FName SessionName, EOnJoinSessionCompleteResult::Type Result);
 	
+	// Http Callback of RequestGameSession 
+	void OnGameSessionResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
+	void UpdateSteamLobby(FString IP, int32 Port, TMap<FString, FString> PlayerTickets);
+	TArray<FString> GetSteamLobbyMembers();
+	bool IsSessionOwner();
+
+// --------------------
+// Variables
+// --------------------
+public:
+	// ---------- Delegates ---------- //
+	UPROPERTY(BlueprintAssignable)
+	FOnOutbreakFindSessionsComplete OnFindSessionsComplete;
+	UPROPERTY(BlueprintAssignable)
+	FOnOutbreakCreateSessionComplete OnCreateSessionComplete;
+	UPROPERTY(BlueprintAssignable)
+	FOnOutbreakJoinSessionComplete OnJoinSessionComplete;
+	
+private:
+	IOnlineSessionPtr SessionInterface;
+	TSharedPtr<FOnlineSessionSearch> LastSessionSearch;
 };
 
