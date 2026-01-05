@@ -1,6 +1,8 @@
 #include "LobbyGameMode.h"
 #include "Kismet/GameplayStatics.h"
-
+#include "GameLiftServerSDK.h"
+#include "OutbreakGameLiftSubsystem.h"
+#include "Misc/PackageName.h"
 ALobbyGameMode::ALobbyGameMode()
 {
 	bUseSeamlessTravel = true;
@@ -23,8 +25,32 @@ void ALobbyGameMode::PostLogin(APlayerController* NewPlayer)
 	StartMatchIfReady();
 }
 
+void ALobbyGameMode::Logout(AController* Exiting)
+{
+	Super::Logout(Exiting);
+	if (ConnectedPlayers > 0)
+	{
+		ConnectedPlayers--;
+	}
+	UE_LOG(LogTemp,Warning,TEXT("플레이어 퇴장. 현재 인원: %d명"),ConnectedPlayers);
+
+	if (ConnectedPlayers <= 0)
+	{
+		UE_LOG(LogTemp,Warning,TEXT("[LobbyGameMode] No Players in Lobby Session... Terminating Server"));
+		auto* GI = GetGameInstance();
+		if (GI)
+		{
+			UOutbreakGameLiftSubsystem* GameLiftSys = GI->GetSubsystem<UOutbreakGameLiftSubsystem>();
+			if (GameLiftSys)
+			{
+				GameLiftSys->EndGameServer();
+			}
+		}
+	}
+}
+
 void ALobbyGameMode::PreLogin(const FString& Options, const FString& Address, const FUniqueNetIdRepl& UniqueId,
-							   FString& ErrorMessage)
+                              FString& ErrorMessage)
 {
 	if (ConnectedPlayers >= 4)
 	{
@@ -32,7 +58,31 @@ void ALobbyGameMode::PreLogin(const FString& Options, const FString& Address, co
 		UE_LOG(LogTemp, Warning, TEXT("접속 거부: 최대 인원 초과"));
 		return;
 	}
+// Check Client Ticket 
+#if WITH_GAMELIFT
+	FString PlayerSessionId = UGameplayStatics::ParseOption(Options, TEXT("PlayerSessionId"));
 
+	if (!PlayerSessionId.IsEmpty())
+	{
+		FGameLiftServerSDKModule* GameLiftSdkModule = &FModuleManager::LoadModuleChecked<FGameLiftServerSDKModule>(FName("GameLiftServerSDK"));
+        
+		FGameLiftGenericOutcome Outcome = GameLiftSdkModule->AcceptPlayerSession(PlayerSessionId);
+		if (Outcome.IsSuccess())
+		{
+			UE_LOG(LogTemp, Display, TEXT("[PreLogin] GameLift 승인 성공! 유저 입장 허용."));
+		}
+		else
+		{
+			ErrorMessage = TEXT("GameLift 접속 승인 실패: 유효하지 않은 세션입니다.");
+			UE_LOG(LogTemp, Error, TEXT("[PreLogin] 승인 실패: %s"), *Outcome.GetError().m_errorMessage);
+			return; 
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[PreLogin] 입장권 없음. 로컬 테스트로 간주하고 입장 허용."));
+	}
+#endif
 	Super::PreLogin(Options, Address, UniqueId, ErrorMessage);
 }
 
@@ -43,9 +93,19 @@ void ALobbyGameMode::StartMatchIfReady()
 	{
 		if (HasAuthority())
 		{
-			StartMatch(); // MatchState = InProgress
-			UE_LOG(LogTemp, Warning, TEXT("매치 시작 조건 만족"));
-			GetWorld()->ServerTravel("/Game/Maps/FirstPhase?listen", true);
+			FString TargetMapPath = TEXT("/Game/Maps/L_FirstPhase");
+			if (FPackageName::DoesPackageExist(TargetMapPath))
+			{
+				StartMatch(); // MatchState = InProgress
+				UE_LOG(LogTemp, Warning, TEXT("매치 시작 조건 만족"));
+				FString TravelURL = FString::Printf(TEXT("%s?listen"), *TargetMapPath);
+                
+				GetWorld()->ServerTravel(TravelURL, true);
+			}
+			else
+            {
+                UE_LOG(LogTemp, Error, TEXT("CRITICAL: 이동하려는 맵을 찾을 수 없습니다! 경로: %s"), *TargetMapPath);
+            }
 		}
 	}
 }

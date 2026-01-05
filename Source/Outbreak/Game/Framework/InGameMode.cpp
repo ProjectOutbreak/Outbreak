@@ -7,11 +7,12 @@
 #include "Outbreak/Character/Player/CharacterPlayer.h"
 #include "Outbreak/Manager/CharacterSpawnManager.h"
 #include "Outbreak/Manager/SoundManager.h"
+#include "OutbreakGameLiftSubsystem.h"
 #include "Utilities/DebugHelper.h"
 
 AInGameMode::AInGameMode()
 {
-	// bUseSeamlessTravel = true;
+	bUseSeamlessTravel = true;
 }
 
 void AInGameMode::BeginPlay()
@@ -27,16 +28,16 @@ void AInGameMode::BeginPlay()
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	SpawnManager = GetWorld()->SpawnActor<ACharacterSpawnManager>(SpawnManagerClass, SpawnParams);
 
-	if (SpawnManager && !SpawnManager->IsActivated())
-	{
-		if (APlayerController* HostPC = UGameplayStatics::GetPlayerController(GetWorld(), 0))
+		if (SpawnManager && !SpawnManager->IsActivated())
 		{
-			FTimerHandle TimerHandle;
-			FTimerDelegate TimerDelegate;
-          
-			TimerDelegate.BindUObject(this, &AInGameMode::ActivateSpawnManagerForPlayer, HostPC);
-			GetWorld()->GetTimerManager().SetTimer(TimerHandle, TimerDelegate, 1.0f, false);
-		}
+			if (APlayerController* HostPC = UGameplayStatics::GetPlayerController(GetWorld(), 0))
+			{
+				FTimerHandle TimerHandle;
+				FTimerDelegate TimerDelegate;
+	          
+				TimerDelegate.BindUObject(this, &AInGameMode::ActivateSpawnManagerForPlayer, HostPC);
+				GetWorld()->GetTimerManager().SetTimer(TimerHandle, TimerDelegate, 1.0f, false);
+			}
 	}
 }
 
@@ -67,6 +68,35 @@ void AInGameMode::ProceedToNextLevel() const
 		// 단, 마지막 페이즈는 보스 처치시 게임이 완료 됨(SafeZoneCollision이 없음)
 	}
 	GetWorld()->ServerTravel(NextLevelName, true);
+}
+
+void AInGameMode::Logout(AController* Exiting)
+{
+	Super::Logout(Exiting);
+	if (!IsRunningDedicatedServer()) return;
+
+	int32 RemainingPlayers = 0;
+	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
+	{
+		APlayerController* PC = Iterator->Get();
+		if (PC && PC != Exiting)
+		{
+			RemainingPlayers++;
+		}
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("[InGameMode] Player Logout. Remaining: %d"), RemainingPlayers);
+	if (RemainingPlayers <= 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[InGameMode] All players left. Server Shutting Down..."));
+		if (UGameInstance* GI = GetGameInstance())
+		{
+			if (UOutbreakGameLiftSubsystem* GameLiftSys = GI->GetSubsystem<UOutbreakGameLiftSubsystem>())
+			{
+				GameLiftSys->EndGameServer();
+			}
+		}
+	}
 }
 
 void AInGameMode::ActivateSpawnManagerForPlayer(APlayerController* PlayerToTarget)

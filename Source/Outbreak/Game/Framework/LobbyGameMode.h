@@ -21,7 +21,7 @@ public:
 	int32 ConnectedPlayers;
 
 	void PostLogin(APlayerController* NewPlayer) override;
-
+	void Logout(AController* Exiting) override;
 	virtual void PreLogin(const FString& Options, const FString& Address, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage) override;
 
 	void StartMatchIfReady();	
