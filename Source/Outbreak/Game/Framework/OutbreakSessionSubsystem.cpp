@@ -35,7 +35,7 @@ void UOutbreakSessionSubsystem::Deinitialize()
     Super::Deinitialize();
 }
 
-void UOutbreakSessionSubsystem::CreateSession(int32 MaxPlayers, bool IsLAN, FString RoomCode)
+void UOutbreakSessionSubsystem::CreateSession(FString RoomCode, int32 MaxPlayers, bool IsLAN)
 {
     if (!SessionInterface.IsValid()) 
     {

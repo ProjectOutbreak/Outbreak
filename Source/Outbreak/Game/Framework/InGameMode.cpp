@@ -65,7 +65,6 @@ void AInGameMode::ProceedToNextLevel() const
 	{
 		UE_LOG(LogTemp, Warning, TEXT("게임 종료"));
 		// TODO: 대기방 레벨로 이동 코드 작성
-		// 단, 마지막 페이즈는 보스 처치시 게임이 완료 됨(SafeZoneCollision이 없음)
 	}
 	GetWorld()->ServerTravel(NextLevelName, true);
 }

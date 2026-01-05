@@ -5,6 +5,18 @@
 #include "OnlineSubsystem.h"
 #include "Interfaces/OnlineIdentityInterface.h"
 
+void UOutbreakAuthSubsystem::Initialize(FSubsystemCollectionBase& Collection)
+{
+	
+	Super::Initialize(Collection);
+}
+
+void UOutbreakAuthSubsystem::Deinitialize()
+{
+	SteamIdentityInterface = nullptr;
+	Super::Deinitialize();
+}
+
 FString UOutbreakAuthSubsystem::GetSteamId() const
 {
 	if (IsRunningDedicatedServer())
@@ -23,3 +35,12 @@ FString UOutbreakAuthSubsystem::GetSteamId() const
 	return TEXT("");
 }
 
+FString UOutbreakAuthSubsystem::GetSteamAuthTicket()
+{
+	IOnlineSubsystem* Subsystem = IOnlineSubsystem::Get(FName("Steam"));
+	if (Subsystem && Subsystem->GetIdentityInterface().IsValid())
+	{
+		return Subsystem->GetIdentityInterface()->GetAuthToken(0);
+	}
+	return TEXT("");
+}

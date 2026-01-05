@@ -19,7 +19,7 @@ class OUTBREAK_API UOutbreakGameLiftSubsystem : public UGameInstanceSubsystem
 private :
 	FGameLiftServerSDKModule* GameLiftSdkModule;
 	bool bIsInitialized = false;
-public :
+	bool bProcessEndingInitiated = false;
 	
 //-----Methods-----//
 
@@ -27,13 +27,14 @@ private:
 	void OnStartGameSession(Aws::GameLift::Server::Model::GameSession GameSession);
 	void OnProcessTerminate();
 	bool OnHealthCheck();
-	
 public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	virtual void Deinitialize() override;
 
 	void StartGameServer();
-
+	void EndGameServer();
 	
+	void TriggerProcessEnding();
+
 	
 };

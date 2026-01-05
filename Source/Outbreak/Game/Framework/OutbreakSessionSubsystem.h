@@ -27,7 +27,7 @@ public:
 	virtual void Deinitialize() override;
 	
 	UFUNCTION(BlueprintCallable)
-	void CreateSession(int32 MaxPlayers = 4 , bool IsLAN = false, FString RoomCode);
+	void CreateSession(FString RoomCode, int32 MaxPlayers = 4 , bool IsLAN = false);
 	UFUNCTION(BlueprintCallable)
 	void JoinSession(const FBlueprintSessionResult& SessionResult);
 	UFUNCTION(BlueprintCallable)

@@ -97,3 +97,41 @@ void UOutbreakGameLiftSubsystem::StartGameServer()
 	}
 #endif	
 }
+
+void UOutbreakGameLiftSubsystem::EndGameServer()
+{
+#if WITH_GAMELIFT
+	if (GameLiftSdkModule)
+	{
+		OnProcessTerminate();
+	}
+#endif
+}
+
+void UOutbreakGameLiftSubsystem::TriggerProcessEnding()
+{
+	if (bProcessEndingInitiated) return;
+	bProcessEndingInitiated = true;
+
+#if WITH_GAMELIFT
+	UE_LOG(LogTemp,Warning,TEXT("[GameLiftSubsystem] Calling TriggerProcessEnding..."));
+	if (GameLiftSdkModule)
+	{
+		GameLiftSdkModule->ProcessEnding();
+	}
+
+	if (UWorld* World = GetWorld())
+	{
+		FTimerHandle TimerHandle;
+		World->GetTimerManager().SetTimer(TimerHandle, [this]()
+		{
+			UE_LOG(LogTemp, Error, TEXT("[GameLift] Timer Expired. Requesting Exit(false)..."));
+			FGenericPlatformMisc::RequestExit(false);
+		}, 1.0f, false);
+	}
+	else
+	{
+		FGenericPlatformMisc::RequestExit(false);
+	}
+#endif
+}

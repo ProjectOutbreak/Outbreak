@@ -69,6 +69,21 @@ void AInGamePlayerState::AddAmmo(EFirableType Type, const int32 InInAmountToAdd)
 	}
 }
 
+void AInGamePlayerState::SetIsDead(bool bDead)
+{
+	if (HasAuthority())
+	{
+		bIsDead = bDead;
+		ForceNetUpdate();
+		OnRep_IsDead();
+	}
+}
+
+void AInGamePlayerState::OnRep_IsDead()
+{
+	// TODO : Show Dead Icons on HUD 
+}
+
 void AInGamePlayerState::BeginPlay()
 {
 	Super::BeginPlay();
@@ -85,6 +100,7 @@ void AInGamePlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
 	
 	DOREPLIFETIME(ThisClass, ZombieKills);
 	DOREPLIFETIME_CONDITION(ThisClass, ReserveAmmoArray, COND_OwnerOnly);
+	DOREPLIFETIME(ThisClass, bIsDead);
 }
 
 void AInGamePlayerState::OnRep_ZombieKills()
