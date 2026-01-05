@@ -7,7 +7,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Outbreak/Character/Player/CharacterPlayer.h"
 #include "Outbreak/Character/Zombie/CharacterZombie.h"
-#include "Outbreak/Game/Framework/InGamePlayerState.h"
+#include "Outbreak/Game/Framework/DefaultPlayerState.h"
 #include "Outbreak/Util/EnumHelper.h"
 #include "Outbreak/Util/FloatHelper.h"
 
@@ -150,7 +150,7 @@ void AFirableBase::FinishReload()
 	ACharacterPlayer* OwnerCharacter = Cast<ACharacterPlayer>(GetOwner());
 	if (!OwnerCharacter) return;
     
-	AInGamePlayerState* PS = OwnerCharacter->GetPlayerState<AInGamePlayerState>();
+	ADefaultPlayerState* PS = OwnerCharacter->GetPlayerState<ADefaultPlayerState>();
 	if (!PS) return;
 
 	const int32 ReserveAmmo = PS->GetReserveAmmo(FirableData.FirableType);
@@ -215,7 +215,7 @@ int32 AFirableBase::GetReservedAmmo() const
 	const ACharacterPlayer* OwnerCharacter = Cast<ACharacterPlayer>(GetOwner());
 	if (!OwnerCharacter) return 0;
 
-	const AInGamePlayerState* PS = OwnerCharacter->GetPlayerState<AInGamePlayerState>();
+	const ADefaultPlayerState* PS = OwnerCharacter->GetPlayerState<ADefaultPlayerState>();
 	if (!PS) return 0;
 
 	const int32 ReserveAmmo = PS->GetReserveAmmo(FirableData.FirableType);

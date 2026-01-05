@@ -1,22 +1,35 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "InGamePlayerState.h"
+#include "DefaultPlayerState.h"
+
+#include "Framework/GameState/LobbyGameState.h"
 #include "Net/UnrealNetwork.h"
 #include "Outbreak/UI/InGameHUD.h"
 #include "Utilities/DebugHelper.h"
 
-AInGamePlayerState::AInGamePlayerState()
+ADefaultPlayerState::ADefaultPlayerState()
 {
+	bReplicates = true;
 	ZombieKills = 0;
 }
 
-void AInGamePlayerState::AddZombieKill()
+void ADefaultPlayerState::OnRep_PlayerName()
+{
+	Super::OnRep_PlayerName();
+	
+	if (ALobbyGameState* Lgs = GetWorld()->GetGameState<ALobbyGameState>())
+	{
+		Lgs->UpdatePlayerList();
+	}
+}
+
+void ADefaultPlayerState::AddZombieKill()
 {
 	ZombieKills++;
 	OnRep_ZombieKills();
 }
 
-int32 AInGamePlayerState::GetReserveAmmo(EFirableType Type) const
+int32 ADefaultPlayerState::GetReserveAmmo(EFirableType Type) const
 {
 	const FAmmoCount* FoundAmmo = ReserveAmmoArray.FindByPredicate([Type](const FAmmoCount& Item){
 		return Item.Type == Type;
@@ -25,7 +38,7 @@ int32 AInGamePlayerState::GetReserveAmmo(EFirableType Type) const
 	return FoundAmmo ? FoundAmmo->Count : 0;
 }
 
-void AInGamePlayerState::ConsumeAmmo(EFirableType Type, int32 AmountToConsume)
+void ADefaultPlayerState::ConsumeAmmo(EFirableType Type, int32 AmountToConsume)
 {
 	if (GetLocalRole() != ROLE_Authority) return;
 
@@ -42,7 +55,7 @@ void AInGamePlayerState::ConsumeAmmo(EFirableType Type, int32 AmountToConsume)
 	}
 }
 
-void AInGamePlayerState::AddAmmo(EFirableType Type, const int32 InInAmountToAdd)
+void ADefaultPlayerState::AddAmmo(EFirableType Type, const int32 InInAmountToAdd)
 {
 	if (GetLocalRole() != ROLE_Authority) return;
 
@@ -69,7 +82,7 @@ void AInGamePlayerState::AddAmmo(EFirableType Type, const int32 InInAmountToAdd)
 	}
 }
 
-void AInGamePlayerState::SetIsDead(bool bDead)
+void ADefaultPlayerState::SetIsDead(bool bDead)
 {
 	if (HasAuthority())
 	{
@@ -79,12 +92,12 @@ void AInGamePlayerState::SetIsDead(bool bDead)
 	}
 }
 
-void AInGamePlayerState::OnRep_IsDead()
+void ADefaultPlayerState::OnRep_IsDead()
 {
 	// TODO : Show Dead Icons on HUD 
 }
 
-void AInGamePlayerState::BeginPlay()
+void ADefaultPlayerState::BeginPlay()
 {
 	Super::BeginPlay();
 	
@@ -94,7 +107,7 @@ void AInGamePlayerState::BeginPlay()
 	}
 }
 
-void AInGamePlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+void ADefaultPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	
@@ -103,7 +116,7 @@ void AInGamePlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
 	DOREPLIFETIME(ThisClass, bIsDead);
 }
 
-void AInGamePlayerState::OnRep_ZombieKills()
+void ADefaultPlayerState::OnRep_ZombieKills()
 {
 	if (APlayerController* PC = GetWorld()->GetFirstPlayerController())
 	{
@@ -117,12 +130,12 @@ void AInGamePlayerState::OnRep_ZombieKills()
 	}
 }
 
-void AInGamePlayerState::OnRep_ReserveAmmoArray()
+void ADefaultPlayerState::OnRep_ReserveAmmoArray()
 {
 	OnPlayerAmmoChangedDelegate.Broadcast();
 }
 
-void AInGamePlayerState::InitializeAmmo()
+void ADefaultPlayerState::InitializeAmmo()
 {
 	ReserveAmmoArray.Empty();
 

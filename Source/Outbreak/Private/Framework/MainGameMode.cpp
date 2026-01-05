@@ -3,3 +3,7 @@
 
 #include "Framework/MainGameMode.h"
 
+AMainGameMode::AMainGameMode()
+{
+	bUseSeamlessTravel = true;
+}

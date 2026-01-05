@@ -11,4 +11,6 @@ class OUTBREAK_API AMainGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
 	
+public:
+	AMainGameMode();
 };

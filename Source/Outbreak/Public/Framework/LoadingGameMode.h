@@ -12,7 +12,9 @@ class OUTBREAK_API ALoadingGameMode : public AGameModeBase
 	GENERATED_BODY()
 
 public:
-	void PlayerIsReady(APlayerController* PC);
+	ALoadingGameMode();
+	void PlayerIsReady(const APlayerController* PC);
+	int32 GetTargetPlayerCountFromSession() const;
 
 private:
 	int32 NumberOfReadyPlayers = 0;

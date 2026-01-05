@@ -6,17 +6,18 @@
 #include "GameFramework/PlayerState.h"
 #include "Outbreak/Data/GameData.h"
 #include "Outbreak/Util/Define.h"
-#include "InGamePlayerState.generated.h"
+#include "DefaultPlayerState.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPlayerAmmoChangedSignature);
 
 UCLASS()
-class OUTBREAK_API AInGamePlayerState : public APlayerState
+class OUTBREAK_API ADefaultPlayerState : public APlayerState
 {
 	GENERATED_BODY()
 
 public:
-	AInGamePlayerState();
+	ADefaultPlayerState();
+	virtual void OnRep_PlayerName() override;
 
 	void AddZombieKill();
 	
