@@ -190,7 +190,7 @@ void ACharacterPlayer::Die()
 	
 	if (AInGameMode* Gm = Cast<AInGameMode>(GetWorld()->GetAuthGameMode()))
 	{
-		Gm->OnPlayerDie(this, SavedController);
+		Gm->OnPlayerDie(SavedController);
 	}
 }
 
