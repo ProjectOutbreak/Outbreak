@@ -38,7 +38,7 @@ public:
 	void HandleReload() const { EquipmentController->HandleReload(); }
 	void HandleEquipBySlot(const int32 SlotNumber) const { EquipmentController->EquipBySlot(SlotNumber); }
 	void HandleToggleFireMode() const { EquipmentController->HandleToggleFireMode(); }
-	TObjectPtr<class AInGameHUD> GetHud() const { return CachedHUD; }
+	TObjectPtr<AInGameHUD> GetHud() const { return CachedHUD; }
 
 	void UpdateToxicAuraEffect(float Intensity);
 	
@@ -47,7 +47,8 @@ protected:
 	virtual void InitCharacterData() override;
 	virtual void SetupCollision() override;
 	virtual void SetupMovement() override;
-	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
+	
+	virtual void Die() override;
 	virtual void OnRep_Die() override;
 	
 	virtual FGenericTeamId GetGenericTeamId() const override { return TeamId; }

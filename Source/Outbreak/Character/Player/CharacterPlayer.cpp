@@ -3,12 +3,8 @@
 #include "CharacterPlayer.h"
 #include "EnhancedInputSubsystems.h"
 #include "Camera/CameraComponent.h"
-#include "PaperSprite.h"
-#include "Components/SceneCaptureComponent2D.h"
-#include "Engine/TextureRenderTarget2D.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/PostProcessComponent.h"
-#include "Components/TextRenderComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -184,10 +180,18 @@ void ACharacterPlayer::BeginPlay()
 	}
 }
 
-void ACharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+void ACharacterPlayer::Die()
 {
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
+	AController* SavedController = GetController();
+	
+	Super::Die();
+	
+	if (!HasAuthority()) return;
+	
+	if (AInGameMode* Gm = Cast<AInGameMode>(GetWorld()->GetAuthGameMode()))
+	{
+		Gm->OnPlayerDie(this, SavedController);
+	}
 }
 
 void ACharacterPlayer::OnRep_Die()
