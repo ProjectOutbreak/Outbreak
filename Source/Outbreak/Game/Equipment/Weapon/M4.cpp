@@ -30,7 +30,6 @@ AM4::AM4()
 	{
 		FireSound = FireSoundRef.Object;
 	}
-	
 	// TODO : Temp Load DataTable
 	static ConstructorHelpers::FObjectFinder<UDataTable> FirableDataTableRef(TEXT("/Game/Data/DT_Firable.DT_Firable"));
 	if (FirableDataTableRef.Succeeded())
@@ -53,3 +52,16 @@ void AM4::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 }
+UTexture2D* AM4::GetEquipmentIcon() const
+{
+	if (FirableData.WeaponIcon.IsNull())
+	{
+		return nullptr;
+	}
+    
+	UTexture2D* LoadedIcon = FirableData.WeaponIcon.LoadSynchronous();
+
+    
+	return LoadedIcon;
+}
+

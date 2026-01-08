@@ -11,5 +11,6 @@ class OUTBREAK_API AGranade : public AThrowableBase
 	GENERATED_BODY()
 	
 public:
-	AGranade();	
+	AGranade();
+	virtual UTexture2D* GetEquipmentIcon() const override;	
 };

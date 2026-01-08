@@ -20,7 +20,7 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
-
+	virtual UTexture2D* GetEquipmentIcon() const override;
 // --------------------
 // Variables
 // --------------------

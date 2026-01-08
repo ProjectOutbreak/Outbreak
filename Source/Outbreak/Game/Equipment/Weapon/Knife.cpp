@@ -27,3 +27,16 @@ AKnife::AKnife()
 	EquipmentType = EEquipmentType::SecondaryWeapon;
 	
 }
+
+UTexture2D* AKnife::GetEquipmentIcon() const
+{
+    if (MeleeData.WeaponIcon.IsNull())
+    {
+        return nullptr;
+    }
+    
+    UTexture2D* LoadedIcon = MeleeData.WeaponIcon.LoadSynchronous();
+
+    
+    return LoadedIcon;
+}
