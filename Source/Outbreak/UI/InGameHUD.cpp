@@ -108,3 +108,29 @@ void AInGameHUD::SetCrouchIcon(bool IsCrouch)
 		OB_Widget->SetCrouchState(IsCrouch);
 	}
 }
+
+void AInGameHUD::SetWeaponContainer(UTexture2D* Icon)
+{
+	if (OB_Widget)
+	{
+		OB_Widget->SetWeaponContainer(Icon);
+	}
+}
+
+void AInGameHUD::SetSubWeaponContainer(UTexture2D* Icon, int32 SlotNum)
+{
+	if (OB_Widget)
+	{
+		OB_Widget->SetSubWeaponContainer(Icon, SlotNum);
+	}
+}
+
+void AInGameHUD::SetBottomInv(UTexture2D* Icon, int32 SlotNum)
+{
+	if (OB_Widget)
+	{
+		OB_Widget -> SetBottomInvSlot(Icon, SlotNum);
+	}
+}
+
+

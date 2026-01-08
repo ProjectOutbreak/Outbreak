@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "BottomInv.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/WidgetSwitcher.h"
 #include "Components/ComboBoxString.h"
@@ -31,7 +32,9 @@ public:
 	void SetCurrentHealth(int32 CurrentHealth, float HealthPercent);
 	void SetCutsceneMode(bool bEnable);
 	void SetCrouchState(bool IsCrouch);
-	
+	void SetWeaponContainer(UTexture2D* Icon);
+	void SetSubWeaponContainer(UTexture2D* Icon, int32 SlotNum);
+	void SetBottomInvSlot(UTexture2D* Icon, int32 SlotNum);
 	
 protected:
 	UPROPERTY(meta = (BindWidget))
@@ -53,10 +56,13 @@ protected:
 	UTextBlock* CurrentHealthTextBlock;
 
 	UPROPERTY(meta = (BindWidget))
-	class UOBCrouchDisplay* CrouchDisplay;
+	UOBCrouchDisplay* CrouchDisplay;
 
 	UPROPERTY(meta = (BindWidget))
-	class UWeaponContainer* WBP_WeaponContainer;
+	UWeaponContainer* WeaponHUD;
+
+	UPROPERTY(meta = (BindWidget))
+	UBottomInv* BottomInv;
 
 	// //--------Graphics--------//
 	UPROPERTY(meta = (BindWidget))

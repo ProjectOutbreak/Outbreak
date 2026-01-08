@@ -25,6 +25,7 @@ public:
 	
 	virtual void UseSelf();
 	virtual void UseOnTarget(TObjectPtr<class ACharacterPlayer> TargetCharacter);
+	virtual UTexture2D* GetEquipmentIcon() const override;
 
 protected:
 	UFUNCTION()
