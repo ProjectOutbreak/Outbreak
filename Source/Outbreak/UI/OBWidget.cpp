@@ -131,9 +131,9 @@ void UOBWidget::SetAnnouncementText(FString AnnouncementText)
 
 void UOBWidget::SetAmmoText(int32 CurrentAmmo, int32 TotalAmmo)
 {
-	if (WBP_WeaponContainer)
+	if (WeaponHUD)
 	{
-		WBP_WeaponContainer->SetAmmoText(CurrentAmmo, TotalAmmo);
+		WeaponHUD->SetAmmoText(CurrentAmmo, TotalAmmo);
 	}
 }
 
@@ -162,6 +162,29 @@ void UOBWidget::SetCrouchState(bool IsCrouch)
 	if (CrouchDisplay)
 	{
 		CrouchDisplay->SetCrouchImage(IsCrouch);
+	}
+}
+void UOBWidget::SetWeaponContainer(UTexture2D* Icon)
+{
+	if (WeaponHUD)
+	{
+		WeaponHUD -> SetWeaponIcon(Icon);
+	}
+}
+
+void UOBWidget::SetSubWeaponContainer(UTexture2D* Icon, int32 SlotNum)
+{
+	if (WeaponHUD)
+	{
+		WeaponHUD -> SetSubslotIcon(Icon, SlotNum);
+	}
+}
+
+void UOBWidget::SetBottomInvSlot(UTexture2D* Icon, int32 SlotNum)
+{
+	if (BottomInv)
+	{
+		BottomInv -> SetInvIcon(Icon,SlotNum);
 	}
 }
 

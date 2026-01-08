@@ -145,4 +145,19 @@ void AMedicineBase::Multicast_StopHealAnim_Implementation(UAnimMontage* MontageT
 	}
 }
 
+UTexture2D* AMedicineBase::GetEquipmentIcon() const
+{
+	{
+		if (MedicineData.ItemIcon.IsNull())
+		{
+			return nullptr;
+		}
+    
+		UTexture2D* LoadedIcon = MedicineData.ItemIcon.LoadSynchronous();
+
+    
+		return LoadedIcon;
+	}
+}
+
 
