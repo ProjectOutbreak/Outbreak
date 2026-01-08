@@ -19,7 +19,7 @@ public:
 	AInGameMode();
 	virtual void BeginPlay() override;
 	
-	virtual void OnPlayerDie(AController* Controller);
+	virtual void OnPlayerDie(ACharacter* DeadCharacter, AController* Controller);
 
 	UFUNCTION()
 	void ProceedToNextLevel() const;
@@ -28,6 +28,8 @@ protected:
 	void ActivateSpawnManagerForPlayer(APlayerController* PlayerToTarget);
 
 private:
+	UPROPERTY(EditAnywhere, Category = "Config")
+	TSubclassOf<AOutbreakSpectatorPawn> OutbreakSpectatorClass;
 	UPROPERTY(EditAnywhere, Category = "Config")
 	TSubclassOf<ACharacterSpawnManager> SpawnManagerClass;
 	UPROPERTY()

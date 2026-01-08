@@ -62,19 +62,6 @@ float ACharacterBase::TakeDamage(const float Damage, FDamageEvent const& DamageE
 	return DamageAmount;
 }
 
-void ACharacterBase::OnRep_CurrentHealth()
-{
-	if (!this->IsA(ACharacterPlayer::StaticClass())) return;
-		
-	if (APlayerController* PC = Cast<APlayerController>(GetController()))
-	{
-		if (AInGameHUD* HUD = Cast<AInGameHUD>(PC->GetHUD()))
-		{
-			HUD->DisplayCurrentHealth(CurrentHealth);
-		}
-	}
-}
-
 void ACharacterBase::InitCharacterData()
 {
 	// Implement in derived classes
@@ -82,11 +69,7 @@ void ACharacterBase::InitCharacterData()
 
 bool ACharacterBase::IsDead() const
 {
-	if (CurrentHealth <= 0)
-	{
-		return true;
-	}
-	return false;
+	return true ? bIsDead || CurrentHealth <= 0 : false;
 }
 
 void ACharacterBase::Die()
@@ -114,6 +97,8 @@ void ACharacterBase::OnRep_Die()
 	OnRagdoll();
 	SetLifeSpan(10.0f);
 }
+
+void ACharacterBase::OnRep_CurrentHealth() { }
 
 float ACharacterBase::GetDamageMultiplier(const EPhysicalSurface SurfaceType)
 {
