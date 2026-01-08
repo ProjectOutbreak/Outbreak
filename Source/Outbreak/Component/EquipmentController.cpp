@@ -197,11 +197,11 @@ void UEquipmentController::AddEquipment(const TObjectPtr<AEquipmentBase>& Equipm
 				if (Icon)
 				{
 					Hud->SetBottomInv(Icon,2);
-					UE_LOG(LogTemp, Log, TEXT("Throw/Icon Load Success"));
+					UE_LOG(LogTemp, Log, TEXT("Med1/Icon Load Success"));
 				}
 				else
 				{
-					UE_LOG(LogTemp, Log, TEXT("Throw/Icon Load Fail"));
+					UE_LOG(LogTemp, Log, TEXT("Med1/Icon Load Fail"));
 				}
 			}
 			else if (!IsValid(SecondMedicine))
@@ -212,11 +212,11 @@ void UEquipmentController::AddEquipment(const TObjectPtr<AEquipmentBase>& Equipm
 				if (Icon)
 				{
 					Hud->SetBottomInv(Icon,3);
-					UE_LOG(LogTemp, Log, TEXT("Throw/Icon Load Success"));
+					UE_LOG(LogTemp, Log, TEXT("Med2/Icon Load Success"));
 				}
 				else
 				{
-					UE_LOG(LogTemp, Log, TEXT("Throw/Icon Load Fail"));
+					UE_LOG(LogTemp, Log, TEXT("Med2/Icon Load Fail"));
 				}
 			}
 			else
@@ -228,11 +228,11 @@ void UEquipmentController::AddEquipment(const TObjectPtr<AEquipmentBase>& Equipm
 				if (Icon)
 				{
 					Hud->SetBottomInv(Icon,2);
-					UE_LOG(LogTemp, Log, TEXT("Throw/Icon Load Success"));
+					UE_LOG(LogTemp, Log, TEXT("Med1/Icon Load Success"));
 				}
 				else
 				{
-					UE_LOG(LogTemp, Log, TEXT("Throw/Icon Load Fail"));
+					UE_LOG(LogTemp, Log, TEXT("Med1/Icon Load Fail"));
 				}
 			}
 			break;
