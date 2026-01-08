@@ -105,4 +105,12 @@ void AInGameHUD::CreateInGameWidget()
 			PC->bShowMouseCursor = false;
 		}
 	}
+	
+	if (PerformanceWidgetClass && PC)
+	{
+		if (const TObjectPtr<UUserWidget> PerformanceWidgetInstance = CreateWidget<UUserWidget>(PC, PerformanceWidgetClass))
+		{
+			PerformanceWidgetInstance->AddToViewport();
+		}
+	}
 }

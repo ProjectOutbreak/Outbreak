@@ -30,6 +30,8 @@ private:
 	
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UUserWidget> InGameWidgetClass;
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UUserWidget> PerformanceWidgetClass;
 
 	UPROPERTY()
 	TObjectPtr<UOBWidget> InGameWidgetInstance;
