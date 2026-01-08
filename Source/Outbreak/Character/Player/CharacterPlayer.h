@@ -56,6 +56,7 @@ protected:
 private:
 	void SetPlayerControl(EPlayerControlType InPlayerControlType);
 	void SetPlayerControlData(const class UPlayerControlData* InPlayerControlData);
+	void ClearInputMappings() const;
 
 public:
 	bool GetIsCutscenePlaying() const { return bIsCutscenePlaying; }

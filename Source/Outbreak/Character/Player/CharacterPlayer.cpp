@@ -204,6 +204,7 @@ void ACharacterPlayer::OnRep_Die()
 		GetMesh()->SetSimulatePhysics(true);
 	}
 	
+	ClearInputMappings();
 	DetachFromControllerPendingDestroy();
 }
 
@@ -262,6 +263,20 @@ void ACharacterPlayer::SetPlayerControlData(const UPlayerControlData* InPlayerCo
 	CameraBoom->bInheritYaw = InPlayerControlData->bInheritYaw;
 	CameraBoom->bInheritRoll = InPlayerControlData->bInheritRoll;
 	CameraBoom->bDoCollisionTest = InPlayerControlData->bDoCollisionTest;
+}
+
+void ACharacterPlayer::ClearInputMappings() const
+{
+	if (IsLocallyControlled())
+	{
+		if (const APlayerController* PC = Cast<APlayerController>(GetController()))
+		{
+			if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer()))
+			{
+				Subsystem->ClearAllMappings();
+			}
+		}
+	}
 }
 
 void ACharacterPlayer::SetupCollision()
