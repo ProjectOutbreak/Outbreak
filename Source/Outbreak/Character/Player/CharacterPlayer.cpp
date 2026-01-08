@@ -144,12 +144,18 @@ void ACharacterPlayer::BeginPlay()
 		}
 		SetPlayerControl(CurrentCharacterControlType);
 		
-		if (const AInGamePlayerController* PC = Cast<AInGamePlayerController>(GetController()))
+		if (AInGamePlayerController* PC = Cast<AInGamePlayerController>(GetController()))
 		{
 			CachedHUD = Cast<AInGameHUD>(PC->GetHUD());
 			if (!CachedHUD)
 			{
 				UE_LOG(LogTemp, Warning, TEXT("[%s] Failed to cast HUD"), CURRENT_CONTEXT);
+			}
+
+			if (PC->PlayerCameraManager)
+			{
+				PC->PlayerCameraManager->ViewPitchMin = -15.0f; 
+				PC->PlayerCameraManager->ViewPitchMax = 20.0f; 
 			}
 		}
 	}
@@ -266,7 +272,7 @@ void ACharacterPlayer::SetupCollision()
 	MeshComp->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	MeshComp->SetCollisionObjectType(ECollisionChannel::ECC_Pawn);
 	MeshComp->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
-	MeshComp->bOwnerNoSee = true;
+	// MeshComp->bOwnerNoSee = true;
 	// MeshComp->SetHiddenInGame(true);
 }
 
