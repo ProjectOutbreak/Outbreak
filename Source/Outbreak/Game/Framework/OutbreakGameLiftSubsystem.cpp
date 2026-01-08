@@ -11,6 +11,17 @@ void UOutbreakGameLiftSubsystem::OnStartGameSession(Aws::GameLift::Server::Model
 	if (GameLiftSdkModule)
 	{
 		GameLiftSdkModule->ActivateGameSession();
+
+		UWorld* World = GetWorld();
+		if (World)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("GameLift: Traveling to Gameplay Map..."));
+			World->ServerTravel(TEXT("/Game/Maps/L_TestBed_Play?listen"));
+		}
+		else
+        {
+             UE_LOG(LogTemp, Error, TEXT("GameLift: World is NULL! Cannot Travel."));
+        }
 	}
 #endif
 }
@@ -27,8 +38,7 @@ void UOutbreakGameLiftSubsystem::OnProcessTerminate()
 
 bool UOutbreakGameLiftSubsystem::OnHealthCheck()
 {
-	// TODO :: check Server Memory or other logics
-	return true;
+	return bIsServerHealthy;
 }
 
 void UOutbreakGameLiftSubsystem::Initialize(FSubsystemCollectionBase& Collection)
@@ -36,13 +46,18 @@ void UOutbreakGameLiftSubsystem::Initialize(FSubsystemCollectionBase& Collection
 	Super::Initialize(Collection);
 	GameLiftSdkModule = nullptr;
 	bIsInitialized = false;
-	if (IsRunningDedicatedServer())
-	{
-		StartGameServer();
-	}}
+	bIsServerHealthy = true;
+	
+	OnWorldLoadedDelegateHandle = FCoreUObjectDelegates::PostLoadMapWithWorld.AddUObject(this, &UOutbreakGameLiftSubsystem::OnWorldLoaded);
+}
 
 void UOutbreakGameLiftSubsystem::Deinitialize()
 {
+	if (OnWorldLoadedDelegateHandle.IsValid())
+	{
+		FCoreUObjectDelegates::PostLoadMapWithWorld.Remove(OnWorldLoadedDelegateHandle);
+		OnWorldLoadedDelegateHandle.Reset();
+	}
 #if WITH_GAMELIFT
 	if (GameLiftSdkModule)
 	{
@@ -107,6 +122,17 @@ void UOutbreakGameLiftSubsystem::EndGameServer()
 	}
 #endif
 }
+
+void UOutbreakGameLiftSubsystem::OnWorldLoaded(UWorld* World)
+{
+	if (bIsInitialized) return;
+
+	if (!IsRunningDedicatedServer()) return;
+
+	if (World != GetGameInstance()->GetWorld()) return;
+	StartGameServer();
+}
+
 
 void UOutbreakGameLiftSubsystem::TriggerProcessEnding()
 {

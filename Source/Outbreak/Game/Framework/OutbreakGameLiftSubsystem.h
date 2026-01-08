@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "GameLiftServerSDK.h"
+#include <atomic>
 #include "OutbreakGameLiftSubsystem.generated.h"
 
 /**
@@ -20,21 +21,21 @@ private :
 	FGameLiftServerSDKModule* GameLiftSdkModule;
 	bool bIsInitialized = false;
 	bool bProcessEndingInitiated = false;
-	
+	FDelegateHandle OnWorldLoadedDelegateHandle;
+	std::atomic<bool> bIsServerHealthy;
 //-----Methods-----//
-
-private:
-	void OnStartGameSession(Aws::GameLift::Server::Model::GameSession GameSession);
-	void OnProcessTerminate();
-	bool OnHealthCheck();
 public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	virtual void Deinitialize() override;
 
 	void StartGameServer();
 	void EndGameServer();
-	
+	void OnWorldLoaded(UWorld* World);
 	void TriggerProcessEnding();
 
+private:
+	void OnStartGameSession(Aws::GameLift::Server::Model::GameSession GameSession);
+	void OnProcessTerminate();
+	bool OnHealthCheck();
 	
 };
