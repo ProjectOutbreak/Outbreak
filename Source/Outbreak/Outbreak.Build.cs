@@ -39,7 +39,8 @@ public class Outbreak : ModuleRules
 			"Niagara",
 			"GameplayCameras",
 			"GameLiftServerSDK",
-			"ApplicationCore"
+			"ApplicationCore",
+			"OnlineSubsystemUtils"
 		});
 		
 		PrivateDependencyModuleNames.AddRange(new string[] { "Paper2D", "AnimGraphRuntime" });
