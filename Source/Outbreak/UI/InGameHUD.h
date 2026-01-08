@@ -4,15 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/HUD.h"
-#include "Outbreak/Data/GameData.h"
-
 #include "InGameHUD.generated.h"
+
+class UOBWidget;
 
 UCLASS()
 class OUTBREAK_API AInGameHUD : public AHUD
 {
 	GENERATED_BODY()
-
 
 public:
 	virtual void BeginPlay() override;
@@ -25,16 +24,18 @@ public:
 	void DisplayCurrentHealth(int32 CurrentHealth);
 	void SetCutsceneMode(bool bEnable);
 	void SetCrouchIcon(bool IsCrouch);
-
-	UFUNCTION()
-	class UOBWidget* GetOBWidget() const { return OB_Widget;}
-protected:
+	
+private:
+	void CreateInGameWidget();
+	
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UUserWidget> InGameWidgetClass;
 
 	UPROPERTY()
-	FPlayerData PlayerData;
-private:
-	UPROPERTY()
-	class UOBWidget* OB_Widget;
+	TObjectPtr<UOBWidget> InGameWidgetInstance;
+	
+public:
+	// ~ Begin Getter & Setter
+	TObjectPtr<UOBWidget> GetInGameWidget() const { return InGameWidgetInstance;}
+	// ~ End Getter & Setter
 };
