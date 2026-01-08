@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Components/Image.h"
 #include "GameFramework/HUD.h"
 #include "InGameHUD.generated.h"
 
@@ -24,10 +25,14 @@ public:
 	void DisplayCurrentHealth(int32 CurrentHealth);
 	void SetCutsceneMode(bool bEnable);
 	void SetCrouchIcon(bool IsCrouch);
+	void SetWeaponContainer(UTexture2D* Icon);
+	void SetSubWeaponContainer(UTexture2D* Icon, int32 SlotNum);
+	void SetBottomInv(UTexture2D* Icon, int32 SlotNum);
 	
 private:
 	void CreateInGameWidget();
 	
+protected:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UUserWidget> InGameWidgetClass;
 	UPROPERTY(EditDefaultsOnly)
