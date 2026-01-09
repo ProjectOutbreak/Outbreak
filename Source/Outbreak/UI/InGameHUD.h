@@ -3,16 +3,16 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Components/Image.h"
 #include "GameFramework/HUD.h"
-#include "Outbreak/Data/GameData.h"
-
 #include "InGameHUD.generated.h"
+
+class UOBWidget;
 
 UCLASS()
 class OUTBREAK_API AInGameHUD : public AHUD
 {
 	GENERATED_BODY()
-
 
 public:
 	virtual void BeginPlay() override;
@@ -25,16 +25,24 @@ public:
 	void DisplayCurrentHealth(int32 CurrentHealth);
 	void SetCutsceneMode(bool bEnable);
 	void SetCrouchIcon(bool IsCrouch);
-
-	UFUNCTION()
-	class UOBWidget* GetOBWidget() const { return OB_Widget;}
+	void SetWeaponContainer(UTexture2D* Icon);
+	void SetSubWeaponContainer(UTexture2D* Icon, int32 SlotNum);
+	void SetBottomInv(UTexture2D* Icon, int32 SlotNum);
+	
+private:
+	void CreateInGameWidget();
+	
 protected:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UUserWidget> InGameWidgetClass;
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UUserWidget> PerformanceWidgetClass;
 
 	UPROPERTY()
-	FPlayerData PlayerData;
-private:
-	UPROPERTY()
-	class UOBWidget* OB_Widget;
+	TObjectPtr<UOBWidget> InGameWidgetInstance;
+	
+public:
+	// ~ Begin Getter & Setter
+	TObjectPtr<UOBWidget> GetInGameWidget() const { return InGameWidgetInstance;}
+	// ~ End Getter & Setter
 };

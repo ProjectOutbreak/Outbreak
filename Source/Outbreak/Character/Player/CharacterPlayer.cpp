@@ -3,12 +3,9 @@
 #include "CharacterPlayer.h"
 #include "EnhancedInputSubsystems.h"
 #include "Camera/CameraComponent.h"
-#include "PaperSprite.h"
-#include "Components/SceneCaptureComponent2D.h"
-#include "Engine/TextureRenderTarget2D.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/PostProcessComponent.h"
-#include "Components/TextRenderComponent.h"
+#include "Engine/DamageEvents.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -16,7 +13,6 @@
 #include "Outbreak/Component/CharacterUIComponent.h"
 #include "Outbreak/Component/EquipmentController.h"
 #include "Outbreak/Data/PlayerControlData.h"
-#include "Outbreak/Game/Controller/InGamePlayerController.h"
 #include "Outbreak/Game/Equipment/Weapon/M4.h"
 #include "Outbreak/Game/Equipment/Weapon/Knife.h"
 #include "Outbreak/Game/Equipment/Weapon/Granade.h"
@@ -85,6 +81,16 @@ void ACharacterPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	DOREPLIFETIME(ThisClass, PlayerType);
 }
 
+void ACharacterPlayer::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+	
+	if (!CachedController)
+	{
+		CachedController = NewController;
+	}
+}
+
 void ACharacterPlayer::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
@@ -147,15 +153,6 @@ void ACharacterPlayer::BeginPlay()
 			UIRig->SetPlayerName(GetName());
 		}
 		SetPlayerControl(CurrentCharacterControlType);
-		
-		if (const AInGamePlayerController* PC = Cast<AInGamePlayerController>(GetController()))
-		{
-			CachedHUD = Cast<AInGameHUD>(PC->GetHUD());
-			if (!CachedHUD)
-			{
-				UE_LOG(LogTemp, Warning, TEXT("[%s] Failed to cast HUD"), CURRENT_CONTEXT);
-			}
-		}
 	}
 
 	// TODO : For Test. Remove later.
@@ -184,10 +181,18 @@ void ACharacterPlayer::BeginPlay()
 	}
 }
 
-void ACharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+void ACharacterPlayer::Die()
 {
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
+	if (!HasAuthority()) return;
+	
+	AController* SavedController = GetController();
+	
+	if (AInGameMode* Gm = Cast<AInGameMode>(GetWorld()->GetAuthGameMode()))
+	{
+		Gm->OnPlayerDie(this, SavedController);
+	}
+	
+	Super::Die();
 }
 
 void ACharacterPlayer::OnRep_Die()
@@ -200,7 +205,30 @@ void ACharacterPlayer::OnRep_Die()
 		GetMesh()->SetSimulatePhysics(true);
 	}
 	
-	DetachFromControllerPendingDestroy();
+	ClearInputMappings();
+}
+
+void ACharacterPlayer::OnRep_CurrentHealth()
+{
+	Super::OnRep_CurrentHealth();
+	
+	if (const APlayerController* PC = Cast<APlayerController>(CachedController))
+	{
+		if (AInGameHUD* HUD = Cast<AInGameHUD>(PC->GetHUD()))
+		{
+			HUD->DisplayCurrentHealth(CurrentHealth);
+		}
+	}
+}
+
+void ACharacterPlayer::OnRep_Controller()
+{
+	Super::OnRep_Controller();
+	
+	if (!CachedController)
+	{
+		CachedController = GetController();
+	}
 }
 
 void ACharacterPlayer::ChangePlayerControl()
@@ -226,13 +254,11 @@ void ACharacterPlayer::SetPlayerControl(EPlayerControlType InPlayerControlType)
 
 	SetPlayerControlData(NewCharacterControl);
 
-	const APlayerController* PlayerController = CastChecked<APlayerController>(GetController());
-	UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer());
-	if (Subsystem)
+	const APlayerController* PlayerController = CastChecked<APlayerController>(CachedController);
+	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
 	{
 		Subsystem->ClearAllMappings();
-		const UInputMappingContext* NewMappingContext = NewCharacterControl->InputMappingContext;
-		if (NewMappingContext)
+		if (const UInputMappingContext* NewMappingContext = NewCharacterControl->InputMappingContext)
 		{
 			Subsystem->AddMappingContext(NewMappingContext, 0);
 		}
@@ -260,6 +286,20 @@ void ACharacterPlayer::SetPlayerControlData(const UPlayerControlData* InPlayerCo
 	CameraBoom->bDoCollisionTest = InPlayerControlData->bDoCollisionTest;
 }
 
+void ACharacterPlayer::ClearInputMappings() const
+{
+	if (IsLocallyControlled())
+	{
+		if (const APlayerController* PC = Cast<APlayerController>(CachedController))
+		{
+			if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer()))
+			{
+				Subsystem->ClearAllMappings();
+			}
+		}
+	}
+}
+
 void ACharacterPlayer::SetupCollision()
 {
 	Super::SetupCollision();
@@ -271,7 +311,6 @@ void ACharacterPlayer::SetupCollision()
 	MeshComp->SetCollisionObjectType(ECollisionChannel::ECC_Pawn);
 	MeshComp->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
 	MeshComp->bOwnerNoSee = true;
-	// MeshComp->SetHiddenInGame(true);
 }
 
 void ACharacterPlayer::SetupMovement()
@@ -284,4 +323,18 @@ void ACharacterPlayer::SetupMovement()
 	MovementComp->MaxStepHeight = 50.f;
 	MovementComp->SetWalkableFloorAngle(55.f);
 	MovementComp->bUseControllerDesiredRotation = true;
+}
+
+void ACharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
+	
+#if !UE_BUILD_SHIPPING
+	PlayerInputComponent->BindKey(EKeys::P, IE_Pressed, this, &ThisClass::Server_DebugTakeDamage);
+#endif
+}
+
+void ACharacterPlayer::Server_DebugTakeDamage_Implementation()
+{
+	TakeDamage(10.0f, FDamageEvent(), CachedController, this);
 }

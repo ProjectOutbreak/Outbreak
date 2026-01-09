@@ -7,6 +7,7 @@
 #include "Outbreak/Character/Player/CharacterPlayer.h"
 #include "Outbreak/Manager/CharacterSpawnManager.h"
 #include "Outbreak/Manager/SoundManager.h"
+#include "Pawn/OutbreakSpectatorPawn.h"
 #include "OutbreakGameLiftSubsystem.h"
 #include "Utilities/DebugHelper.h"
 
@@ -28,16 +29,40 @@ void AInGameMode::BeginPlay()
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	SpawnManager = GetWorld()->SpawnActor<ACharacterSpawnManager>(SpawnManagerClass, SpawnParams);
 
-		if (SpawnManager && !SpawnManager->IsActivated())
+	if (SpawnManager && !SpawnManager->IsActivated())
+	{
+		if (APlayerController* HostPC = UGameplayStatics::GetPlayerController(GetWorld(), 0))
 		{
-			if (APlayerController* HostPC = UGameplayStatics::GetPlayerController(GetWorld(), 0))
+			FTimerHandle TimerHandle;
+			FTimerDelegate TimerDelegate;
+          
+			TimerDelegate.BindUObject(this, &AInGameMode::ActivateSpawnManagerForPlayer, HostPC);
+			GetWorld()->GetTimerManager().SetTimer(TimerHandle, TimerDelegate, 1.0f, false);
+		}
+	}
+}
+
+void AInGameMode::OnPlayerDie(ACharacter* DeadCharacter, AController* Controller)
+{
+	if (APlayerController* PC = Cast<APlayerController>(Controller))
+	{
+		PC->UnPossess();
+
+		if (OutbreakSpectatorClass)
+		{
+			FActorSpawnParameters SpawnParams;
+			SpawnParams.Owner = PC;
+			SpawnParams.Instigator = GetInstigator();
+			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+			const FVector SpawnLocation = DeadCharacter->GetActorLocation() + FVector(0, 0, 500);
+			const FRotator SpawnRotation = DeadCharacter->GetActorRotation();
+
+			if (AOutbreakSpectatorPawn* NewSpectator = GetWorld()->SpawnActor<AOutbreakSpectatorPawn>(OutbreakSpectatorClass, SpawnLocation, SpawnRotation, SpawnParams))
 			{
-				FTimerHandle TimerHandle;
-				FTimerDelegate TimerDelegate;
-	          
-				TimerDelegate.BindUObject(this, &AInGameMode::ActivateSpawnManagerForPlayer, HostPC);
-				GetWorld()->GetTimerManager().SetTimer(TimerHandle, TimerDelegate, 1.0f, false);
+				PC->Possess(NewSpectator);
 			}
+		}
 	}
 }
 
@@ -65,6 +90,7 @@ void AInGameMode::ProceedToNextLevel() const
 	{
 		UE_LOG(LogTemp, Warning, TEXT("게임 종료"));
 		// TODO: 대기방 레벨로 이동 코드 작성
+		// 단, 마지막 페이즈는 보스 처치시 게임이 완료 됨(SafeZoneCollision이 없음)
 	}
 	GetWorld()->ServerTravel(NextLevelName, true);
 }

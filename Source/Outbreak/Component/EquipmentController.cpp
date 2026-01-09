@@ -14,6 +14,7 @@
 #include "Outbreak/UI/InGameHUD.h"
 #include "Outbreak/Util/Define.h"
 #include "Outbreak/Util/EnumHelper.h"
+#include "Outbreak/UI/WeaponContainer.h"
 #include "Utilities/DebugHelper.h"
 
 UEquipmentController::UEquipmentController()
@@ -83,6 +84,8 @@ void UEquipmentController::EquipBySlot(const int32 SlotNumber)
 
 void UEquipmentController::AddEquipment(const TObjectPtr<AEquipmentBase>& Equipment)
 {
+	AInGameHUD* Hud = GetInGameHUD();
+
 	if (!IsValid(Equipment)) return;
 	
 	EEquipmentType EquipmentType = Equipment->GetEquipmentType();
@@ -118,6 +121,16 @@ void UEquipmentController::AddEquipment(const TObjectPtr<AEquipmentBase>& Equipm
 					Equip(SecondPrimaryWeapon);
 				}
 			}
+			UTexture2D* Icon = Equipment->GetEquipmentIcon();
+			if (Icon)
+			{
+				// Hud->SetWeaponContainer(Icon);
+				UE_LOG(LogTemp, Log, TEXT("Icon Load Success"));
+			}
+				else
+				{
+					UE_LOG(LogTemp, Log, TEXT("Icon Load Fail"));
+				}
 			break;
 		}
 		
@@ -125,13 +138,25 @@ void UEquipmentController::AddEquipment(const TObjectPtr<AEquipmentBase>& Equipm
 		{
 			AWeaponBase* NewSecondaryWeapon = Cast<AWeaponBase>(Equipment);
 			if (!NewSecondaryWeapon) return;
-		
+				
+
+				
 			if (IsValid(SecondaryWeapon))
 			{
 				SecondaryWeapon->Destroy();
 			}
 			SecondaryWeapon = NewSecondaryWeapon;
 			Equip(SecondaryWeapon);
+			UTexture2D* Icon = Equipment->GetEquipmentIcon();
+			if (Icon)
+			{
+				// Hud->SetSubWeaponContainer(Icon,2 );
+				UE_LOG(LogTemp, Log, TEXT("Sub/Icon Load Success"));
+			}
+			else
+			{
+				UE_LOG(LogTemp, Log, TEXT("Sub/Icon Load Fail"));
+			}
 			break;
 		}
 		
@@ -146,6 +171,16 @@ void UEquipmentController::AddEquipment(const TObjectPtr<AEquipmentBase>& Equipm
 			}
 			ThrowableWeapon = NewThrowableWeapon;
 			Equip(ThrowableWeapon);
+				UTexture2D* Icon = Equipment->GetEquipmentIcon();
+				if (Icon)
+				{
+					// Hud->SetBottomInv(Icon,1);
+					UE_LOG(LogTemp, Log, TEXT("Throw/Icon Load Success"));
+				}
+				else
+				{
+					UE_LOG(LogTemp, Log, TEXT("Throw/Icon Load Fail"));
+				}
 			break;
 		}
 		
@@ -158,17 +193,47 @@ void UEquipmentController::AddEquipment(const TObjectPtr<AEquipmentBase>& Equipm
 			{
 				FirstMedicine = NewMedicine;
 				Equip(FirstMedicine);
+				UTexture2D* Icon = Equipment->GetEquipmentIcon();
+				if (Icon)
+				{
+					// Hud->SetBottomInv(Icon,2);
+					UE_LOG(LogTemp, Log, TEXT("Med1/Icon Load Success"));
+				}
+				else
+				{
+					UE_LOG(LogTemp, Log, TEXT("Med1/Icon Load Fail"));
+				}
 			}
 			else if (!IsValid(SecondMedicine))
 			{
 				SecondMedicine = NewMedicine;
 				Equip(SecondMedicine);
+				UTexture2D* Icon = Equipment->GetEquipmentIcon();
+				if (Icon)
+				{
+					// Hud->SetBottomInv(Icon,3);
+					UE_LOG(LogTemp, Log, TEXT("Med2/Icon Load Success"));
+				}
+				else
+				{
+					UE_LOG(LogTemp, Log, TEXT("Med2/Icon Load Fail"));
+				}
 			}
 			else
 			{
 				FirstMedicine->Destroy();
 				FirstMedicine = NewMedicine;
 				Equip(FirstMedicine);
+				UTexture2D* Icon = Equipment->GetEquipmentIcon();
+				if (Icon)
+				{
+					// Hud->SetBottomInv(Icon,2);
+					UE_LOG(LogTemp, Log, TEXT("Med1/Icon Load Success"));
+				}
+				else
+				{
+					UE_LOG(LogTemp, Log, TEXT("Med1/Icon Load Fail"));
+				}
 			}
 			break;
 		}
@@ -176,6 +241,7 @@ void UEquipmentController::AddEquipment(const TObjectPtr<AEquipmentBase>& Equipm
 			UE_LOG(LogTemp, Warning, TEXT("[%s] Invalid Equipment Type: %s"), CURRENT_CONTEXT, *EnumHelper::EnumToString(EquipmentType));
 			return;
 	}
+
 }
 
 void UEquipmentController::HandleUse()

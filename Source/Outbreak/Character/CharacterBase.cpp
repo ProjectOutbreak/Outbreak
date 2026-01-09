@@ -10,6 +10,7 @@
 #include "Outbreak/Public/Utilities/DebugHelper.h"
 #include "Outbreak/UI/InGameHUD.h"
 #include "Outbreak/Component/FootStepComponent.h"
+#include "Outbreak/Game/Framework/InGameMode.h"
 #include "Player/CharacterPlayer.h"
 
 ACharacterBase::ACharacterBase()
@@ -61,19 +62,6 @@ float ACharacterBase::TakeDamage(const float Damage, FDamageEvent const& DamageE
 	return DamageAmount;
 }
 
-void ACharacterBase::OnRep_CurrentHealth()
-{
-	if (!this->IsA(ACharacterPlayer::StaticClass())) return;
-		
-	if (APlayerController* PC = Cast<APlayerController>(GetController()))
-	{
-		if (AInGameHUD* HUD = Cast<AInGameHUD>(PC->GetHUD()))
-		{
-			HUD->DisplayCurrentHealth(CurrentHealth);
-		}
-	}
-}
-
 void ACharacterBase::InitCharacterData()
 {
 	// Implement in derived classes
@@ -81,49 +69,36 @@ void ACharacterBase::InitCharacterData()
 
 bool ACharacterBase::IsDead() const
 {
-	if (CurrentHealth <= 0)
-	{
-		return true;
-	}
-	return false;
+	return true ? bIsDead || CurrentHealth <= 0 : false;
 }
 
 void ACharacterBase::Die()
 {
-	if (!HasAuthority())
-		return;
-
+	if (!HasAuthority()) return;
+	
 	bIsDead = true;
-
 	OnRep_Die();
 }
 
-void ACharacterBase::OnRagdoll()
+void ACharacterBase::OnRagdoll() const
 {
 	const FVector LastVelocity = GetCharacterMovement()->Velocity;
-
-	if (const AAIController* AIController = Cast<AAIController>(GetController()))
-	{
-		if (UBrainComponent* BrainComponent = AIController->GetBrainComponent())
-		{
-			BrainComponent->StopLogic("Death");
-		}
-	}
-
+	
 	GetCharacterMovement()->DisableMovement();
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	GetMesh()->SetSimulatePhysics(true);
 	GetMesh()->SetCollisionProfileName(TEXT("Ragdoll"));
 	GetMesh()->AddImpulse(LastVelocity, NAME_None, true);
-
-	SetLifeSpan(10.0f);
 }
 
 void ACharacterBase::OnRep_Die()
 {
 	OnRagdoll();
+	SetLifeSpan(10.0f);
 }
+
+void ACharacterBase::OnRep_CurrentHealth() { }
 
 float ACharacterBase::GetDamageMultiplier(const EPhysicalSurface SurfaceType)
 {

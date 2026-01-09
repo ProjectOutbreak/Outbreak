@@ -1,11 +1,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
+
 #include "CoreMinimal.h"
 #include "Outbreak/Character/CharacterBase.h"
 #include "Outbreak/Data/GameData.h"
 #include "CharacterZombie.generated.h"
 
+class USphereComponent;
 class AAIController;
 class ACharacterPlayer;
 class AZombieAIComponent;
@@ -27,14 +29,15 @@ public:
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 	virtual void PostInitializeComponents() override;
 
-	UFUNCTION(BlueprintCallable, Category="Zombie|Attack")
-	void AnimNotify_Attack();
+	void EnableAttackCollision();
+	void DisableAttackCollision();
 	
-	FORCEINLINE FZombieData* GetZombieData() { return &ZombieData; }
-
 	FOnZombieDeathSignature OnDeathDelegate;
 
 protected:
+	UFUNCTION()
+	void OnAttackOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	
 	virtual void InitCharacterData() override;
 	virtual void SetupCollision() override;
 	virtual void SetupMovement() override;
@@ -44,14 +47,17 @@ protected:
 	UFUNCTION()
 	void OnRep_ZombieData();
 	void ApplyZombieData();
-
-private:
-	void PerformAttack();
 	
 // --------------------
 // Variables
 // --------------------
 protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Combat")
+	TObjectPtr<USphereComponent> RightHandCollision;
+	
+	UPROPERTY()
+	TArray<AActor*> AlreadyHitActors;
+	
 	EZombieType ZombieType = EZombieType::None;
 	EZombieSubType ZombieSubType = EZombieSubType::None;
 	float DefaultCapsuleRadius = 10.0f;
@@ -72,4 +78,9 @@ protected:
 private:
 	UPROPERTY()
 	TObjectPtr<USoundCue> DeadSoundCue;
+	
+public:
+	// ~ Begin Getter & Setter
+	FORCEINLINE FZombieData* GetZombieData() { return &ZombieData; }
+	// ~ End Getter & Setter
 };

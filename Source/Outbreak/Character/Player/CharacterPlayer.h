@@ -28,9 +28,13 @@ class OUTBREAK_API ACharacterPlayer : public ACharacterBase, public IGenericTeam
 // --------------------
 public:
 	ACharacterPlayer();
+	
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
+	
+	//~ Begin APawn Interface.
+	virtual void PossessedBy(AController* NewController) override;
 	virtual void PostInitializeComponents() override;
+	//~ End APawn Interface.
 
 	void ChangePlayerControl();
 	void HandleUse() const { EquipmentController->HandleUse(); }
@@ -38,7 +42,6 @@ public:
 	void HandleReload() const { EquipmentController->HandleReload(); }
 	void HandleEquipBySlot(const int32 SlotNumber) const { EquipmentController->EquipBySlot(SlotNumber); }
 	void HandleToggleFireMode() const { EquipmentController->HandleToggleFireMode(); }
-	TObjectPtr<class AInGameHUD> GetHud() const { return CachedHUD; }
 
 	void UpdateToxicAuraEffect(float Intensity);
 	
@@ -47,14 +50,23 @@ protected:
 	virtual void InitCharacterData() override;
 	virtual void SetupCollision() override;
 	virtual void SetupMovement() override;
-	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
+
+	virtual void Die() override;
 	virtual void OnRep_Die() override;
+	virtual void OnRep_CurrentHealth() override;
+	virtual void OnRep_Controller() override;
 	
 	virtual FGenericTeamId GetGenericTeamId() const override { return TeamId; }
 
 private:
 	void SetPlayerControl(EPlayerControlType InPlayerControlType);
 	void SetPlayerControlData(const class UPlayerControlData* InPlayerControlData);
+	void ClearInputMappings() const;
+
+	// ~ For Debugging
+	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
+	UFUNCTION(Server, Reliable)
+	void Server_DebugTakeDamage();
 
 public:
 	bool GetIsCutscenePlaying() const { return bIsCutscenePlaying; }
@@ -111,8 +123,7 @@ protected:
 
 private:
 	UPROPERTY()
-	TObjectPtr<AInGameHUD> CachedHUD;
-	
+	TObjectPtr<AController> CachedController;
 	UPROPERTY()
 	TObjectPtr<UMaterialInstanceDynamic> ToxicAuraMID;
 	

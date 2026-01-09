@@ -29,6 +29,7 @@ public:
 	
 	UFUNCTION(BlueprintCallable) void TriggerFootStepLeft();
 	UFUNCTION(BlueprintCallable) void TriggerFootStepRight();
+	
 protected:
 	virtual void InitCharacterData();
 	virtual void SetupCollision();
@@ -39,9 +40,10 @@ protected:
 	void ApplyToxicTick();
 	void ClearToxicEffect();
 
+	virtual void Die();
+	
 private:
-	void Die();
-	void OnRagdoll();
+	void OnRagdoll() const;
 	
 // --------------------
 // Variables

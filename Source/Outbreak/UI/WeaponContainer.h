@@ -3,7 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "SubweaponContainer.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/Image.h"
 #include "WeaponContainer.generated.h"
 
 /**
@@ -16,11 +18,21 @@ class OUTBREAK_API UWeaponContainer : public UUserWidget
 
 public:
 	void SetAmmoText(int32 CurrentAmmo, int32 TotalAmmo);
+	void SetWeaponIcon(UTexture2D* Icon);
+	void SetSubslotIcon(UTexture2D* Icon, int32 SubslotNum);
 protected:
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* CurrentAmmoText;
 	
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* TotalAmmoText;
-	
+
+	UPROPERTY(meta = (BindWidget))
+	UImage* MainWeaponIcon;
+
+	UPROPERTY(meta = (BindWidget))
+	USubweaponContainer* SubSlot1;
+
+	UPROPERTY(meta = (BindWidget))
+	USubweaponContainer* SubSlot2;
 };

@@ -2,6 +2,7 @@
 
 #include "CharacterZombie.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/SphereComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
@@ -19,6 +20,17 @@ ACharacterZombie::ACharacterZombie()
 	CharacterType = ECharacterType::Zombie;
 	AIControllerClass = AZombieAIComponent::StaticClass();
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+	
+	RightHandCollision = CreateDefaultSubobject<USphereComponent>(TEXT("RightHandCollision"));
+	RightHandCollision->SetupAttachment(GetMesh(), TEXT("hand_r_socket"));
+    
+	RightHandCollision->SetHiddenInGame(false);
+	RightHandCollision->SetSphereRadius(40.0f);
+	RightHandCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	RightHandCollision->SetCollisionObjectType(ECC_WorldDynamic);
+	RightHandCollision->SetCollisionResponseToAllChannels(ECR_Ignore);
+	RightHandCollision->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+	RightHandCollision->OnComponentBeginOverlap.AddDynamic(this, &ACharacterZombie::OnAttackOverlapBegin);
 	
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh> DefaultMesh(TEXT("/Game/Art/Characters/Zombies/Meshes/SKM_Zombie_Normal_001.SKM_Zombie_Normal_001"));
 	if (DefaultMesh.Succeeded())
@@ -78,63 +90,38 @@ void ACharacterZombie::PostInitializeComponents()
 #endif
 }
 
-void ACharacterZombie::AnimNotify_Attack()
+void ACharacterZombie::OnAttackOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (HasAuthority())
+	if (OtherActor && OtherActor != this && !AlreadyHitActors.Contains(OtherActor))
 	{
-		PerformAttack();
-	}
-}
-
-void ACharacterZombie::PerformAttack()
-{
-	const FZombieData* Data = GetZombieData();
-	if (!Data) return;
-    
-	const FName AttackSocketName = TEXT("hand_r_socket");
-	FVector StartLocation = GetMesh()->GetSocketLocation(AttackSocketName);
-
-	const float TraceLength = Data->AttackRange;
-	FVector EndLocation = StartLocation + GetActorForwardVector() * TraceLength;
-
-	TArray<AActor*> ActorsToIgnore;
-	ActorsToIgnore.Add(this);
-    
-	FHitResult HitResult;
-    
-	bool bHit = UKismetSystemLibrary::SphereTraceSingle(
-		GetWorld(),
-		StartLocation,
-		EndLocation,
-		30.0f,
-		ETraceTypeQuery::TraceTypeQuery1,
-		false,
-		ActorsToIgnore,
-		EDrawDebugTrace::ForDuration,
-		HitResult,
-		true,
-		FLinearColor::Red,
-		FLinearColor::Green,
-		0.5f
-	);
-
-	if (bHit)
-	{
-		if (ACharacterPlayer* HitPlayer = Cast<ACharacterPlayer>(HitResult.GetActor()))
+		if (ACharacterPlayer* HitPlayer = Cast<ACharacterPlayer>(OtherActor))
 		{
 			if (HitPlayer->IsDead()) return;
 
-			const float DamageAmount = Data->AttackDamage;
-          
+			AlreadyHitActors.Add(OtherActor);
+
+			const FZombieData* Data = GetZombieData();
 			UGameplayStatics::ApplyDamage(
 				HitPlayer,
-				DamageAmount,
+				Data ? Data->AttackDamage : 10.0f,
 				GetController(),
 				this,
-				nullptr
+				UDamageType::StaticClass()
 			);
 		}
 	}
+}
+
+void ACharacterZombie::EnableAttackCollision()
+{
+	AlreadyHitActors.Empty();
+	RightHandCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+}
+
+void ACharacterZombie::DisableAttackCollision()
+{
+	RightHandCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void ACharacterZombie::SetupCollision()
