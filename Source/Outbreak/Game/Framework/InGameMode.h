@@ -24,7 +24,6 @@ public:
 	UFUNCTION()
 	void ProceedToNextLevel() const;
 
-	FORCEINLINE TObjectPtr<class ACharacterSpawnManager> GetSpawnManager() const { return SpawnManager; }
 	void Logout(AController* Exiting) override;
 protected:
 	void ActivateSpawnManagerForPlayer(APlayerController* PlayerToTarget);
