@@ -5,6 +5,7 @@
 
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Net/UnrealNetwork.h"
 #include "Outbreak/Character/Player/CharacterPlayer.h"
 #include "Outbreak/Character/Zombie/CharacterZombie.h"
 #include "Outbreak/Game/Framework/DefaultPlayerState.h"
@@ -24,6 +25,12 @@ void AFirableBase::Tick(const float DeltaSeconds)
 	{
 		RecoverRecoil(DeltaSeconds);
 	}
+}
+void AFirableBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AFirableBase, CurrentFireType);
 }
 
 
@@ -254,6 +261,11 @@ int32 AFirableBase::GetReservedAmmo() const
 
 EFireType AFirableBase::ToggleFireMode()
 {
+	if (!HasAuthority())
+	{
+		Server_ToggleFireMode();
+		return CurrentFireType;
+	}
 	// TODO : Single, Burst, Auto 세 가지 타입 가능하게 수정
 	for (int32 i = 0; i < FirableData.FireTypes.Num(); i++)
 	{
@@ -271,4 +283,9 @@ EFireType AFirableBase::ToggleFireMode()
 bool AFirableBase::IsActive() const
 {
 	return bIsReloading || bIsFiring;
+}
+
+void AFirableBase::Server_ToggleFireMode_Implementation()
+{
+	ToggleFireMode();
 }
