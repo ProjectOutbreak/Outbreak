@@ -53,9 +53,6 @@ void UPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		bIsSwapOut = EquipmentController->GetIsSwapOut();
 		CurrentAmmoInMag = EquipmentController->GetCurrentAmmoInMag();
 		FireType = EquipmentController->GetCurrentFireType();
-		if (const AEquipmentBase* EquippedItem = EquipmentController->GetCurrentEquippedItem())
-		{
-			CurrentEquipmentType = EquippedItem->GetEquipmentType();
-		}
+		CurrentEquipmentType = EquipmentController->GetCurrentEquippedType();
 	}
 }
