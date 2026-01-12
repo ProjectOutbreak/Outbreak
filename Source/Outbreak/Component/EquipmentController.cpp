@@ -328,7 +328,10 @@ void UEquipmentController::HandleToggleFireMode()
 	}
 
 	AFirableBase* CurrentFirable = Cast<AFirableBase>(CurrentEquippedItem);
-	CurrentFireType = CurrentFirable->ToggleFireMode();
+	if (CurrentFirable)
+	{
+		CurrentFireType = CurrentFirable->ToggleFireMode();
+	}
 }
 
 void UEquipmentController::Equip(const TObjectPtr<AEquipmentBase>& Equipment)
