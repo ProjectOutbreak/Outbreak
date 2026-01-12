@@ -241,7 +241,7 @@ void AInGamePlayerController::TogglePauseMenu()
 
 	if (AInGameHUD* HUD = Cast<AInGameHUD>(GetHUD()))
 	{
-		if (UOBWidget* W = HUD->GetOBWidget())
+		if (UOBWidget* W = HUD->GetInGameWidget())
 		{
 			if (bMenuOpen)
 			{

@@ -7,7 +7,7 @@
 #include "Outbreak/Character/Player/CharacterPlayer.h"
 #include "Outbreak/Manager/CharacterSpawnManager.h"
 #include "Outbreak/Manager/SoundManager.h"
-#include "Utilities/DebugHelper.h"
+#include "Pawn/OutbreakSpectatorPawn.h"
 
 AInGameMode::AInGameMode()
 {
@@ -36,6 +36,30 @@ void AInGameMode::BeginPlay()
           
 			TimerDelegate.BindUObject(this, &AInGameMode::ActivateSpawnManagerForPlayer, HostPC);
 			GetWorld()->GetTimerManager().SetTimer(TimerHandle, TimerDelegate, 1.0f, false);
+		}
+	}
+}
+
+void AInGameMode::OnPlayerDie(ACharacter* DeadCharacter, AController* Controller)
+{
+	if (APlayerController* PC = Cast<APlayerController>(Controller))
+	{
+		PC->UnPossess();
+
+		if (OutbreakSpectatorClass)
+		{
+			FActorSpawnParameters SpawnParams;
+			SpawnParams.Owner = PC;
+			SpawnParams.Instigator = GetInstigator();
+			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+			const FVector SpawnLocation = DeadCharacter->GetActorLocation() + FVector(0, 0, 500);
+			const FRotator SpawnRotation = DeadCharacter->GetActorRotation();
+
+			if (AOutbreakSpectatorPawn* NewSpectator = GetWorld()->SpawnActor<AOutbreakSpectatorPawn>(OutbreakSpectatorClass, SpawnLocation, SpawnRotation, SpawnParams))
+			{
+				PC->Possess(NewSpectator);
+			}
 		}
 	}
 }

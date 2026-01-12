@@ -16,3 +16,32 @@ void UWeaponContainer::SetAmmoText(int32 CurrentAmmo, int32 TotalAmmo)
 		TotalAmmoText->SetText(FText::FromString(TotalAmmoStr));
 	}
 }
+void UWeaponContainer::SetWeaponIcon(UTexture2D* Icon)
+{
+	if (IsValid(MainWeaponIcon))
+	{
+		if (Icon)
+		{
+			MainWeaponIcon->SetBrushFromTexture(Icon);
+			MainWeaponIcon->SetVisibility(ESlateVisibility::Visible);
+		}
+		else
+		{
+			MainWeaponIcon->SetVisibility(ESlateVisibility::Hidden);
+		}
+	}
+}
+
+void UWeaponContainer::SetSubslotIcon(UTexture2D* Icon, int32 SubslotNum)
+{
+	if (SubslotNum == 1)
+	{
+		SubSlot1 -> SetWeaponIcon(Icon);
+	}
+	else if (SubslotNum == 2)
+	{
+		SubSlot2 ->SetWeaponIcon(Icon);
+	}
+}
+
+

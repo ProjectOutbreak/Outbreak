@@ -21,3 +21,16 @@ AGranade::AGranade()
 		EquipmentType = EEquipmentType::ThrowableWeapon;
 	}
 }
+
+UTexture2D* AGranade::GetEquipmentIcon() const
+{
+	if (ThrowableData.WeaponIcon.IsNull())
+	{
+		return nullptr;
+	}
+    
+	UTexture2D* LoadedIcon = ThrowableData.WeaponIcon.LoadSynchronous();
+
+    
+	return LoadedIcon;
+}

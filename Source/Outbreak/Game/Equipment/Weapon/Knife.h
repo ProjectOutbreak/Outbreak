@@ -10,5 +10,6 @@ class OUTBREAK_API AKnife : public AMeleeBase
 	GENERATED_BODY()
 	
 public:
-	AKnife();	
+	AKnife();
+	virtual UTexture2D* GetEquipmentIcon() const override;
 };
