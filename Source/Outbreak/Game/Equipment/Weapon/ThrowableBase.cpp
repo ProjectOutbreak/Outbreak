@@ -23,7 +23,8 @@ void AThrowableBase::OnEndUse()
 
 bool AThrowableBase::CanUse() const
 {
-	return !bIsThrowing && CurrentAmmo > 0;
+	float TimeSinceLastThrow = GetWorld()->GetTimeSeconds() - LastThrowTime;
+	return !bIsThrowing && (CurrentAmmo > 0) && (TimeSinceLastThrow >= ThrowCooldown);
 }
 
 bool AThrowableBase::IsActive() const
@@ -61,6 +62,11 @@ void AThrowableBase::Throw()
 
 	if(HasAuthority())
 	{
+		float TimeNow = GetWorld()->GetTimeSeconds();
+		if (TimeNow - LastThrowTime < 0.1f)
+		{
+			return; 
+		}
 		if (!ThrowableData.ProjectileClass)
 		{
 			bIsThrowing = false;
@@ -90,6 +96,7 @@ void AThrowableBase::Throw()
 		{
 			Projectile->InitializeProjectile(CameraRotation.Vector(), ThrowableData);
 		}
+		LastThrowTime = TimeNow;
 	}
 	bIsThrowing = false;	
 }

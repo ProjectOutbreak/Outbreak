@@ -104,25 +104,14 @@ void AFirableBase::ProcessFire()
 			}
 		}
 	}
-
-	const ACharacterPlayer* OwnerCharacter = Cast<ACharacterPlayer>(GetOwner());
-	if (!OwnerCharacter) return;
-	
-	APlayerController* PC = Cast<APlayerController>(OwnerCharacter->GetController());
-	if (!PC) return;
-	
-	const float HorizontalRecoil = UKismetMathLibrary::RandomFloatInRange(-FirableData.HorizontalRecoil, FirableData.HorizontalRecoil);
-
-	PC->AddPitchInput(-FirableData.VerticalRecoil);
-	PC->AddYawInput(HorizontalRecoil);
-
-	bIsRecoiling = true;
-
-	GetWorldTimerManager().ClearTimer(RecoilResetTimer);
-	GetWorldTimerManager().SetTimer(RecoilResetTimer, FTimerDelegate::CreateLambda([&]()
+	if (HasAuthority())
 	{
-		bIsRecoiling = false;
-	}), RecoilRecoveryTime, false);
+		Client_ApplyRecoil();
+	}
+	else 
+	{
+		ApplyRecoilLogic(); 
+	}
 }
 
 void AFirableBase::StartReload(const FOnReloadFinished& DoneCallback)
@@ -133,7 +122,12 @@ void AFirableBase::StartReload(const FOnReloadFinished& DoneCallback)
 	OnReloadFinishedCallback = DoneCallback;
 	bIsReloading = true;
 	EquipmentMesh->PlayAnimation(CurrentAmmoInMag == 0 ? ReloadEmptyAnim : ReloadAnim, false);
-	
+
+	if (HasAuthority())
+	{
+		bool bIsReloadEmpty = (CurrentAmmoInMag == 0);
+		Multicast_PlayReloadAnim(bIsReloadEmpty);
+	}
 	// TODO : Manage Reload Duration
 	const float ReloadDuration = 2.0f;
 	FTimerHandle ReloadTimerHandle;
@@ -197,7 +191,42 @@ void AFirableBase::Multicast_PlayFireEffects_Implementation(const FVector Muzzle
     
 	DrawDebugLine(GetWorld(), GetActorLocation(), HitResult.TraceEnd, HitResult.GetActor() ? FColor::Green : FColor::Red, false, 0.5f, 0, 0.5f);
 }
+void AFirableBase::Client_ApplyRecoil_Implementation()
+{
+	ApplyRecoilLogic();
+}
+void AFirableBase::ApplyRecoilLogic()
+{
+	const ACharacterPlayer* OwnerCharacter = Cast<ACharacterPlayer>(GetOwner());
+	if (!OwnerCharacter) return;
+    
+	APlayerController* PC = Cast<APlayerController>(OwnerCharacter->GetController());
+	if (!PC || !PC->IsLocalController()) return;
 
+	const float HorizontalRecoil = UKismetMathLibrary::RandomFloatInRange(-FirableData.HorizontalRecoil, FirableData.HorizontalRecoil);
+
+	PC->AddPitchInput(-FirableData.VerticalRecoil);
+	PC->AddYawInput(HorizontalRecoil);
+
+	bIsRecoiling = true;
+
+	GetWorldTimerManager().ClearTimer(RecoilResetTimer);
+	GetWorldTimerManager().SetTimer(RecoilResetTimer, FTimerDelegate::CreateLambda([&]()
+	{
+	   bIsRecoiling = false;
+	}), RecoilRecoveryTime, false);
+}
+void AFirableBase::Multicast_PlayReloadAnim_Implementation(bool bIsReloadEmpty)
+{
+	if (EquipmentMesh)
+	{
+		UAnimationAsset* AnimToPlay = bIsReloadEmpty ? ReloadEmptyAnim : ReloadAnim;
+		if (AnimToPlay)
+		{
+			EquipmentMesh->PlayAnimation(AnimToPlay, false);
+		}
+	}
+}
 void AFirableBase::RecoverRecoil(const float DeltaTime)
 {
 	const ACharacterPlayer* OwnerCharacter = Cast<ACharacterPlayer>(GetOwner());

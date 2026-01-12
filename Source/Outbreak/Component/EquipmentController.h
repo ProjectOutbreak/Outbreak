@@ -59,7 +59,7 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
+	
 private:
 	void Equip(const TObjectPtr<class AEquipmentBase>& Equipment);
 
@@ -69,6 +69,17 @@ private:
 	UFUNCTION()
 	void HandleAmmoChanged();
 
+	UFUNCTION(Server, Reliable)
+	void Server_EquipBySlot(int32 SlotNumber);
+	UFUNCTION(Server, Reliable)
+	void Server_HandleUse();
+	UFUNCTION(Server, Reliable)
+	void Server_HandleEndUse();
+	UFUNCTION(Server, Reliable)
+	void Server_HandleReload();
+
+	UFUNCTION()
+	void OnRep_CurrentEquippedType();
 	UFUNCTION()
 	void OnRep_CurrentEquippedItem();
 	UFUNCTION()
@@ -83,7 +94,9 @@ private:
 	void OnRep_FirstMedicine();
 	UFUNCTION()
 	void OnRep_SecondMedicine();
-	
+
+public:
+	FORCEINLINE EEquipmentType GetCurrentEquippedType() const { return CurrentEquippedType; }
 
 // --------------------
 // Variables
@@ -92,6 +105,9 @@ protected:
 	UPROPERTY(Transient)
 	TObjectPtr<ACharacterPlayer> CachedOwner;
 	TWeakObjectPtr<AInGameHUD> CachedHUD;
+
+	UPROPERTY(ReplicatedUsing = OnRep_CurrentEquippedType, BlueprintReadOnly, Category = "Equipment")
+	EEquipmentType CurrentEquippedType = EEquipmentType::None;
 	
 	UPROPERTY(EditAnywhere, ReplicatedUsing = OnRep_CurrentEquippedItem)
 	TObjectPtr<class AEquipmentBase> CurrentEquippedItem = nullptr;
@@ -115,8 +131,9 @@ protected:
 	TObjectPtr<class AMedicineBase> SecondMedicine = nullptr;
 
 private:
-	bool bIsOnUse = false;
+	UPROPERTY(Replicated)
 	bool bIsReload = false;
+	bool bIsOnUse = false;
 	bool bIsSwapOut = false;
 	bool bIsSwapIn = false;
 	EFireType CurrentFireType = EFireType::None;

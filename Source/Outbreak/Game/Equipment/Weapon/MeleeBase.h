@@ -35,7 +35,7 @@ protected:
 	void PerformHitDetection();
 
 	UFUNCTION(NetMulticast, Unreliable)
-	void Multicast_AttackAnim(UAnimMontage* MontageToPlay);
+	void Multicast_AttackAnim(ACharacter* InOwner, UAnimMontage* MontageToPlay);
 
 
 protected:

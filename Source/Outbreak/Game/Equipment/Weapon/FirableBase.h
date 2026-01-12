@@ -46,8 +46,13 @@ private:
 	void Server_ProcessHit(const FHitResult& HitResult);
 	UFUNCTION(NetMulticast, Unreliable)
 	void Multicast_PlayFireEffects(const FVector MuzzleLocation, const FHitResult& HitResult);
-	
+	UFUNCTION(Client, Reliable)
+	void Client_ApplyRecoil();
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_PlayReloadAnim(bool bIsReloadEmpty);
+
 	void RecoverRecoil(float DeltaTime);
+	void ApplyRecoilLogic();
 	int32 GetReservedAmmo() const;
 	
 // --------------------

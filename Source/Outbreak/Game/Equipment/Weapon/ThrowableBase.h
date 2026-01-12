@@ -39,5 +39,7 @@ protected:
 	int32 CurrentAmmo = 3;
 
 	bool bIsThrowing = false;
+	float LastThrowTime = 0.0f;
+	float ThrowCooldown = 1.0f;
 	
 };
