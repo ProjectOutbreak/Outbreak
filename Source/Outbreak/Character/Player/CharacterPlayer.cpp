@@ -13,6 +13,7 @@
 #include "Outbreak/Component/CharacterUIComponent.h"
 #include "Outbreak/Component/EquipmentController.h"
 #include "Outbreak/Data/PlayerControlData.h"
+#include "Outbreak/Game/Controller/InGamePlayerController.h"
 #include "Outbreak/Game/Equipment/Weapon/M4.h"
 #include "Outbreak/Game/Equipment/Weapon/Knife.h"
 #include "Outbreak/Game/Equipment/Weapon/Granade.h"
@@ -156,12 +157,6 @@ void ACharacterPlayer::BeginPlay()
 		
 		if (AInGamePlayerController* PC = Cast<AInGamePlayerController>(GetController()))
 		{
-			CachedHUD = Cast<AInGameHUD>(PC->GetHUD());
-			if (!CachedHUD)
-			{
-				UE_LOG(LogTemp, Warning, TEXT("[%s] Failed to cast HUD"), CURRENT_CONTEXT);
-			}
-
 			if (PC->PlayerCameraManager)
 			{
 				PC->PlayerCameraManager->ViewPitchMin = -15.0f; 
@@ -325,7 +320,6 @@ void ACharacterPlayer::SetupCollision()
 	MeshComp->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	MeshComp->SetCollisionObjectType(ECollisionChannel::ECC_Pawn);
 	MeshComp->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
-	MeshComp->bOwnerNoSee = true;
 }
 
 void ACharacterPlayer::SetupMovement()
