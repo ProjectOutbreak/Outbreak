@@ -35,16 +35,8 @@ void AStagingGameMode::PostLogin(APlayerController* NewPlayer)
 	Super::PostLogin(NewPlayer);
 	ConnectedPlayers++;
 
-	UE_LOG(LogTemp, Warning, TEXT("플레이어 집결 : 현재 %d명"), ConnectedPlayers);
-	if (!bIsTravelling)
-	{
-		if (!GetWorld()->GetTimerManager().IsTimerActive(TravelTimerHandle))
-		{
-			UE_LOG(LogTemp, Warning, TEXT(">>> Detected New Player...Travelling to New Level..."));
-			// 2.0f초 딜레이 후 이동 (안전성 확보)
-			GetWorld()->GetTimerManager().SetTimer(TravelTimerHandle, this, &AStagingGameMode::ImmediateTravelToGame, 2.0f, false);
-		}
-	}}
+	UE_LOG(LogTemp, Warning, TEXT("[StagingGameMode] Connected Players : %d"), ConnectedPlayers);
+}
 
 void AStagingGameMode::Logout(AController* Exiting)
 {
@@ -54,7 +46,7 @@ void AStagingGameMode::Logout(AController* Exiting)
 	{
 		ConnectedPlayers--;
 	}
-	UE_LOG(LogTemp, Warning, TEXT("플레이어 이탈. 현재 인원: %d명"), ConnectedPlayers);
+	UE_LOG(LogTemp, Warning, TEXT("[StagingGameMode] Player Logout. Connected Players: %d명"), ConnectedPlayers);
 
 	if (ConnectedPlayers <= 0)
 	{
@@ -135,5 +127,26 @@ void AStagingGameMode::ImmediateTravelToGame()
 		UE_LOG(LogTemp, Warning, TEXT(">>> ServerTravel 시작!"));
 		// 현재 접속한 모두를 데리고 이동
 		World->ServerTravel(MapPath);
+	}
+}
+void AStagingGameMode::RequestStartGame()
+{
+	// Get Client's Request of StartGame
+	if (bIsTravelling) return; 
+
+	if (!HasAuthority()) return;
+
+	
+	UE_LOG(LogTemp, Warning, TEXT("[StagingGameMode] Host Player request to start Game... Travelling to InGame Map.."));
+    
+	FString TargetMapPath = TEXT("/Game/Maps/L_TestBed_Play"); 
+	FString Options = TEXT("?listen"); 
+
+	bIsTravelling = true;
+    
+	UWorld* World = GetWorld();
+	if (World)
+	{
+		World->ServerTravel(TargetMapPath + Options);
 	}
 }

@@ -19,6 +19,8 @@ public:
 	virtual void Logout(AController* Exiting) override;
 	virtual void PreLogin(const FString& Options, const FString& Address, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage) override;
 
+	UFUNCTION()
+	void RequestStartGame();
 protected:
 	void StartMatchIfReady();
 	void ImmediateTravelToGame();

@@ -1,5 +1,5 @@
 ﻿#include "LobbyPlayerController.h"
-#include "Outbreak/Game/Framework/LobbyGameMode.h"
+#include "Outbreak/Game/Framework/StagingGameMode.h"
 
 void ALobbyPlayerController::RequestStartGame()
 {
@@ -8,8 +8,8 @@ void ALobbyPlayerController::RequestStartGame()
 
 void ALobbyPlayerController::Server_RequestStartGame_Implementation()
 {
-	if (ALobbyGameMode* GM = Cast<ALobbyGameMode>(GetWorld()->GetAuthGameMode()))
+	if (AStagingGameMode* GM = Cast<AStagingGameMode>(GetWorld()->GetAuthGameMode()))
 	{
-		GM->StartGame();
+		GM->RequestStartGame();
 	}
 }

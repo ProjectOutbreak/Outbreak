@@ -4,6 +4,7 @@
 #include "GameFramework/PlayerController.h"
 #include "LobbyPlayerController.generated.h"
 
+class AStagingGameMode;
 UCLASS()
 class OUTBREAK_API ALobbyPlayerController : public APlayerController
 {

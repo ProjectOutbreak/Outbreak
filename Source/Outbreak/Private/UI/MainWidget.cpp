@@ -5,21 +5,24 @@
 #include "OnlineSessionSettings.h"
 #include "OnlineSubsystemUtils.h"
 #include "Components/Button.h"
+#include "Components/CheckBox.h"
 #include "Components/EditableTextBox.h"
 #include "Components/TextBlock.h"
 #include "Components/WidgetSwitcher.h"
 #include "HAL/PlatformApplicationMisc.h"
 #include "Kismet/GameplayStatics.h"
 #include "Outbreak/Game/Framework/LobbyGameMode.h"
-#include "Subsystems/SessionSubsystem.h"
+#include "Game/Framework/OutbreakSessionSubsystem.h"
 #include "Utilities/DebugHelper.h"
+
+const FName KEY_ROOM_CODE(TEXT("ROOM_CODE"));
 
 void UMainWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 	
 	BindSessionSubsystemCallbacks();
-
+	
 	if (Button_CreateLobby)	Button_CreateLobby->OnClicked.AddDynamic(this, &UMainWidget::OnClickCreateGameButton);
 	if (Button_JoinLobby)		Button_JoinLobby->OnClicked.AddDynamic(this, &UMainWidget::OnClickJoinGameButton);
 	if (Button_SinglePlay)	Button_SinglePlay->OnClicked.AddDynamic(this, &UMainWidget::OnClickSinglePlayButton);
@@ -78,41 +81,41 @@ FString UMainWidget::GenerateRandomLobbyCode(int32 Length)
 void UMainWidget::BindSessionSubsystemCallbacks()
 {
 	UGameInstance* GameInstance = GetGameInstance();
-	SessionsSubsystem = GameInstance->GetSubsystem<USessionSubsystem>();
+	SessionsSubsystem = GameInstance->GetSubsystem<UOutbreakSessionSubsystem>();
 	if (SessionsSubsystem)
 	{
-		SessionsSubsystem->OnSessionCreateComplete.AddDynamic(this, &ThisClass::OnCreateSession);
-		SessionsSubsystem->OnSessionSearchFinished.AddUObject(this, &ThisClass::OnFindSession);
-		SessionsSubsystem->OnSessionJoinComplete.AddUObject(this, &ThisClass::OnJoinSession);
-		SessionsSubsystem->OnSessionDestroyComplete.AddDynamic(this, &ThisClass::OnDestroySession);
+		SessionsSubsystem->OnCreateSessionComplete.AddDynamic(this, &ThisClass::OnCreateSession);
+		SessionsSubsystem->OnFindSessionsComplete.AddDynamic(this, &ThisClass::OnFindSession);
+		SessionsSubsystem->OnJoinSessionComplete.AddDynamic(this, &ThisClass::OnJoinSession);
+		SessionsSubsystem->OnDestroySessionComplete.AddDynamic(this, &ThisClass::OnDestroySession);
 		SessionsSubsystem->OnSessionError.AddDynamic(this, &ThisClass::OnSessionError);
-		SessionsSubsystem->OnSessionStart.AddDynamic(this, &ThisClass::OnStartSession);
+
+		//SessionsSubsystem->OnSessionStart.AddDynamic(this, &ThisClass::OnStartSession);
 	}
+	UE_LOG(LogTemp, Warning, TEXT("[UI] MainWidget Created & Bound!"));
 }
 
 void UMainWidget::RemoveSessionSubsystemCallbacks()
 {
 	if (SessionsSubsystem)
 	{
-		SessionsSubsystem->OnSessionCreateComplete.RemoveDynamic(this, &ThisClass::OnCreateSession);
-		SessionsSubsystem->OnSessionDestroyComplete.RemoveDynamic(this, &ThisClass::OnDestroySession);
+		SessionsSubsystem->OnCreateSessionComplete.RemoveDynamic(this, &ThisClass::OnCreateSession);
+		SessionsSubsystem->OnFindSessionsComplete.RemoveDynamic(this, &ThisClass::OnFindSession);
+		SessionsSubsystem->OnJoinSessionComplete.RemoveDynamic(this, &ThisClass::OnJoinSession);
+		SessionsSubsystem->OnDestroySessionComplete.RemoveDynamic(this, &ThisClass::OnDestroySession);
 		SessionsSubsystem->OnSessionError.RemoveDynamic(this, &ThisClass::OnSessionError);
-		SessionsSubsystem->OnSessionStart.RemoveDynamic(this, &ThisClass::OnStartSession);
-		SessionsSubsystem->OnSessionSearchFinished.RemoveAll(this);
-		SessionsSubsystem->OnSessionJoinComplete.RemoveAll(this);
+		//SessionsSubsystem->OnSessionStart.RemoveDynamic(this, &ThisClass::OnStartSession);
 	}
 }
+
+// -------------------------- Callback ------------------------------- // 
 
 void UMainWidget::OnCreateSession(bool bWasSuccessful)
 {
 	if (bWasSuccessful)
 	{
-		PRINT_WITH_CURRENT_CONTEXT("Session Created Successfully. Opening Listen Server...");
-
-		const FString LobbyLevelName = "L_Lobby";
-		const FString Option = "?listen";
-		UGameplayStatics::OpenLevel(GetWorld(), FName(*LobbyLevelName + Option));
-	}		
+		PRINT_WITH_CURRENT_CONTEXT("Session Created Successfully.");
+	}     
 	else
 	{
 		PRINT_WITH_CURRENT_CONTEXT("Failed to Create Session");
@@ -120,62 +123,52 @@ void UMainWidget::OnCreateSession(bool bWasSuccessful)
 	}
 }
 
-void UMainWidget::OnFindSession(const TArray<FOnlineSessionSearchResult>& SessionResults, bool bWasSuccessful)
+void UMainWidget::OnFindSession(const TArray<FBlueprintSessionResult>& SessionResults, bool bWasSuccessful)
 {
 	if (SessionsSubsystem == nullptr)
 	{
-		PRINT_WITH_CURRENT_CONTEXT("SessionsSubsystem is nullptr");
 		SetButtonsEnabled(true);
 		return;
 	}
-	const FString& LobbyCode = ETB_LobbyCode->GetText().ToString();
+    
+	const FString LobbyCode = ETB_LobbyCode->GetText().ToString().ToUpper();
 
 	if (!bWasSuccessful || SessionResults.Num() == 0)
 	{
 		SetButtonsEnabled(true);
-		Debug::Print(FString::Printf(TEXT("Failed to find session with LobbyCode %s on [OnFindSession]"), *LobbyCode));
+		PRINT_WITH_CURRENT_CONTEXT(FString::Printf(TEXT("Failed to find session or No Results for: %s"), *LobbyCode));
 		return;
 	}
 
-	for (auto Result : SessionResults)
+	PRINT_WITH_CURRENT_CONTEXT(FString::Printf(TEXT("Found %d Sessions. Checking codes..."), SessionResults.Num()));
+
+	for (const FBlueprintSessionResult& Result : SessionResults)
 	{
-		FString SettingsValue;
-		FString Code;
-		Result.Session.SessionSettings.Get(USessionSubsystem::KEY_LOBBY_CODE, Code);
-		const FString Owner = Result.Session.OwningUserName;
-		const int32 Ping = Result.PingInMs;
+		FString FoundCode;
+		// BlueprintResult.OnlineResult 로 원본 접근
+		Result.OnlineResult.Session.SessionSettings.Get(KEY_ROOM_CODE, FoundCode);
 
-		const FString DebugMsg = FString::Printf(TEXT("Found Session - Code: %s, Owner: %s, Ping: %d"), *Code, *Owner, Ping);
-		PRINT_WITH_CURRENT_CONTEXT(DebugMsg);
-
-		Result.Session.SessionSettings.Get(SessionsSubsystem->KEY_LOBBY_CODE, SettingsValue);
-		if (SettingsValue == LobbyCode)
+		if (FoundCode == LobbyCode)
 		{
-			Result.Session.SessionSettings.bUseLobbiesIfAvailable = true;
-			Result.Session.SessionSettings.bUsesPresence = true;
-			SessionsSubsystem->JoinSession(Result);
-			
+			PRINT_WITH_CURRENT_CONTEXT(FString::Printf(TEXT("Match Found! Joining: %s"), *FoundCode));
+			SessionsSubsystem->JoinSession(Result); // Join 호출
 			return;
 		}
 	}
+
 	PRINT_WITH_CURRENT_CONTEXT("No matched lobby code among results");
 	SetButtonsEnabled(true);
 }
-
-void UMainWidget::OnJoinSession(EOnJoinSessionCompleteResult::Type Result)
+void UMainWidget::OnJoinSession(int32 Result)
 {
+	EOnJoinSessionCompleteResult::Type ResultEnum = (EOnJoinSessionCompleteResult::Type)Result;
 	SetButtonsEnabled(true);
 
 	if (Result != EOnJoinSessionCompleteResult::Success)
 	{
-		const FString Reason = FString::Printf(TEXT("Join failed: %s (LAN=%d, OSS=%s)"), 
-			JoinSessionResultToText(Result), 
-			(int32)SessionsSubsystem->IsLanEnvironment(),
-			Online::GetSubsystem(GetWorld()) ? *Online::GetSubsystem(GetWorld())->GetSubsystemName().ToString() : TEXT("None"));
-		
-		PRINT_WITH_CURRENT_CONTEXT(Reason);
-		return;
-	}
+		FString FailReason = JoinSessionResultToText(ResultEnum);
+		PRINT_WITH_CURRENT_CONTEXT(FString::Printf(TEXT("Join Failed: %s"), *FailReason));
+		return;	}
 
 	const IOnlineSubsystem* Subsystem = Online::GetSubsystem(GetWorld());
 	if (!Subsystem)
@@ -211,12 +204,13 @@ void UMainWidget::OnJoinSession(EOnJoinSessionCompleteResult::Type Result)
 void UMainWidget::OnDestroySession(bool bWasSuccessful)
 {
 	const FString DebugMsg = FString::Printf(TEXT("Session Destroyed: %s"), bWasSuccessful ? TEXT("Success") : TEXT("Failure"));
-	PRINT_WITH_CURRENT_CONTEXT(DebugMsg);
+	PRINT_WITH_CURRENT_CONTEXT(FString::Printf(TEXT("Session Destroyed: %d"), bWasSuccessful));
 }
 
 void UMainWidget::OnSessionError(const FString& Reason)
 {
-	PRINT_WITH_CURRENT_CONTEXT(Reason);
+	PRINT_WITH_CURRENT_CONTEXT(FString::Printf(TEXT("Session Error: %s"), *Reason));
+	SetButtonsEnabled(true);
 }
 
 void UMainWidget::OnStartSession(bool bWasSuccessful)
@@ -225,10 +219,12 @@ void UMainWidget::OnStartSession(bool bWasSuccessful)
 	PRINT_WITH_CURRENT_CONTEXT(DebugMsg);
 }
 
+// -------------------------- Button Click Event ------------------------------- // 
+
 void UMainWidget::OnClickCreateGameButton()
 {
 	SetButtonsEnabled(false);
-	
+    
 	if (ETB_LobbyCode->GetText().IsEmpty())
 	{
 		CachedCreatedLobbyCode = GenerateRandomLobbyCode(5);
@@ -237,11 +233,23 @@ void UMainWidget::OnClickCreateGameButton()
 	{
 		CachedCreatedLobbyCode = ETB_LobbyCode->GetText().ToString().ToUpper();
 	}
-	
+    
 	if (SessionsSubsystem)
 	{
-		int NumPublicConnections = 4;
-		SessionsSubsystem->CreateSession(NumPublicConnections, CachedCreatedLobbyCode);
+		int32 NumPublicConnections = 4;
+       
+		bool bUseDedicated = false;
+		if (CheckBox_UseDedicated)
+		{
+			bUseDedicated = CheckBox_UseDedicated->IsChecked();
+		}
+		else
+		{
+			bUseDedicated = false; 
+		}
+
+		PRINT_WITH_CURRENT_CONTEXT(FString::Printf(TEXT("Hosting Game... Dedicated: %d"), bUseDedicated));
+		SessionsSubsystem->HostGame(CachedCreatedLobbyCode, NumPublicConnections, bUseDedicated);
 	}
 }
 
@@ -255,7 +263,7 @@ void UMainWidget::OnClickJoinGameButton()
 	SetButtonsEnabled(false);
 	if (SessionsSubsystem)
 	{
-		SessionsSubsystem->FindSessions(10000, ETB_LobbyCode->GetText().ToString().ToUpper());
+		SessionsSubsystem->FindSessions(100, ETB_LobbyCode->GetText().ToString().ToUpper());
 	}
 }
 
