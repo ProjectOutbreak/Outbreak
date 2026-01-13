@@ -16,7 +16,7 @@ void UOutbreakGameLiftSubsystem::OnStartGameSession(Aws::GameLift::Server::Model
 		if (World)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("GameLift: Traveling to Gameplay Map..."));
-			World->ServerTravel(TEXT("/Game/Maps/L_TestBed_Play?listen"));
+			World->ServerTravel(TEXT("/Game/Maps/L_Lobby?listen"));
 		}
 		else
         {
