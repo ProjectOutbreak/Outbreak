@@ -52,18 +52,21 @@ void AMeleeBase::OnUse()
 	if (!CanUse()) return;
 	bIsAttacking = true;
 	
-	Multicast_AttackAnim(MeleeData.AttackMontage);
+	if (HasAuthority())
+	{
+		Multicast_AttackAnim(Cast<ACharacter>(GetOwner()), MeleeData.AttackMontage);
+	}
 }
 
-void AMeleeBase::Multicast_AttackAnim_Implementation(UAnimMontage* MontageToPlay)
+void AMeleeBase::Multicast_AttackAnim_Implementation(ACharacter* InOwner, UAnimMontage* MontageToPlay)
 {
 	if (AttackSound)
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, AttackSound, GetActorLocation());
 	}
-	if (CachedOwnerCharacter && MontageToPlay)
+	if (InOwner && MontageToPlay)
 	{
-		UAnimInstance* AnimInstance = CachedOwnerCharacter->GetMesh()->GetAnimInstance();
+		UAnimInstance* AnimInstance = InOwner->GetMesh()->GetAnimInstance();
 		if (AnimInstance)
 		{
 			AnimInstance->Montage_Play(MontageToPlay);
@@ -150,7 +153,3 @@ void AMeleeBase::PerformHitDetection()
 		}
 	}
 }
-
-
-
-

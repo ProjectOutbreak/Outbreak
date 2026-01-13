@@ -13,6 +13,7 @@
 #include "Outbreak/Component/CharacterUIComponent.h"
 #include "Outbreak/Component/EquipmentController.h"
 #include "Outbreak/Data/PlayerControlData.h"
+#include "Outbreak/Game/Controller/InGamePlayerController.h"
 #include "Outbreak/Game/Equipment/Weapon/M4.h"
 #include "Outbreak/Game/Equipment/Weapon/Knife.h"
 #include "Outbreak/Game/Equipment/Weapon/Granade.h"
@@ -153,6 +154,15 @@ void ACharacterPlayer::BeginPlay()
 			UIRig->SetPlayerName(GetName());
 		}
 		SetPlayerControl(CurrentCharacterControlType);
+		
+		if (AInGamePlayerController* PC = Cast<AInGamePlayerController>(GetController()))
+		{
+			if (PC->PlayerCameraManager)
+			{
+				PC->PlayerCameraManager->ViewPitchMin = -15.0f; 
+				PC->PlayerCameraManager->ViewPitchMax = 20.0f; 
+			}
+		}
 	}
 
 	// TODO : For Test. Remove later.
@@ -310,7 +320,6 @@ void ACharacterPlayer::SetupCollision()
 	MeshComp->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	MeshComp->SetCollisionObjectType(ECollisionChannel::ECC_Pawn);
 	MeshComp->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
-	MeshComp->bOwnerNoSee = true;
 }
 
 void ACharacterPlayer::SetupMovement()
