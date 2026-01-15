@@ -110,6 +110,8 @@ void ACharacterZombie::OnAttackOverlapBegin(UPrimitiveComponent* OverlappedComp,
 				UDamageType::StaticClass()
 			);
 		}
+		
+		OnAttackOtherCharacter.Broadcast(OtherActor);
 	}
 }
 

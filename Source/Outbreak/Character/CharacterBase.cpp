@@ -176,8 +176,7 @@ void ACharacterBase::SetupMovement()
 
 void ACharacterBase::ApplyToxicDamage(float DamagePerSecond, float Duration)
 {
-	if (!HasAuthority())
-		return;
+	if (!HasAuthority()) return;
 
 	GetWorldTimerManager().ClearTimer(ToxicTickTimerHandle);
 	GetWorldTimerManager().ClearTimer(ToxicDurationTimerHandle);
