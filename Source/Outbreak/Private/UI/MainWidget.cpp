@@ -162,13 +162,15 @@ void UMainWidget::OnFindSession(const TArray<FBlueprintSessionResult>& SessionRe
 void UMainWidget::OnJoinSession(int32 Result)
 {
 	EOnJoinSessionCompleteResult::Type ResultEnum = (EOnJoinSessionCompleteResult::Type)Result;
-	SetButtonsEnabled(true);
 
 	if (Result != EOnJoinSessionCompleteResult::Success)
 	{
+		SetButtonsEnabled(true); 
 		FString FailReason = JoinSessionResultToText(ResultEnum);
 		PRINT_WITH_CURRENT_CONTEXT(FString::Printf(TEXT("Join Failed: %s"), *FailReason));
-		return;	}
+		UE_LOG(LogTemp, Error, TEXT("[%s] Join Failed: %s"), *FString(__FUNCTION__), *FailReason);
+		return;
+	}
 
 	const IOnlineSubsystem* Subsystem = Online::GetSubsystem(GetWorld());
 	if (!Subsystem)
@@ -194,11 +196,7 @@ void UMainWidget::OnJoinSession(int32 Result)
 		Address += TEXT(":7777");
 	}
 	PRINT_WITH_CURRENT_CONTEXT(FString::Printf(TEXT("Joining session at address: %s"), *Address));
-
-	if (APlayerController* PC = GetGameInstance()->GetFirstLocalPlayerController())
-	{
-		PC->ClientTravel(Address, ETravelType::TRAVEL_Absolute);
-	}
+	UE_LOG(LogTemp, Log, TEXT("[%s] Steam Lobby Joined! Waiting for Subsystem to handle Travel..."), *FString(__FUNCTION__));
 }
 
 void UMainWidget::OnDestroySession(bool bWasSuccessful)
