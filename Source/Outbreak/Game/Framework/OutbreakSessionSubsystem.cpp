@@ -28,8 +28,6 @@ void UOutbreakSessionSubsystem::Initialize(FSubsystemCollectionBase& Collection)
         SessionInterface = Subsystem->GetSessionInterface();
         if (SessionInterface.IsValid())
         {
-            SessionInterface->OnFindSessionsCompleteDelegates.AddUObject(this, &UOutbreakSessionSubsystem::OnFindSessionsCompleted);
-            SessionInterface->OnJoinSessionCompleteDelegates.AddUObject(this, &UOutbreakSessionSubsystem::OnJoinSessionCompleted);
             SessionInterface->OnSessionParticipantLeftDelegates.AddUObject(this, &UOutbreakSessionSubsystem::OnSessionParticipantLeft);
             SessionInterface->OnSessionParticipantJoinedDelegates.AddUObject(this, &UOutbreakSessionSubsystem::OnSessionParticipantJoined);
 
@@ -266,24 +264,33 @@ void UOutbreakSessionSubsystem::OnJoinSessionCompleted(FName SessionName, EOnJoi
         return;
     }
     FNamedOnlineSession* Session = SessionInterface->GetNamedSession(SessionName);
+    if (!Session)
+    {
+        OnSessionError.Broadcast(TEXT("[OnJoinSessionCompleted] Session Not Found"));
+        return;
+    }
     
     FString ServerIP;
     FString GameSessionId;
     int32 ServerPort = 0;
 
-    if (Session && 
-        Session->SessionSettings.Get(FName("ServerIP"), ServerIP) &&
-        Session->SessionSettings.Get(FName("ServerPort"), ServerPort) &&
-        Session->SessionSettings.Get(FName("GameSessionId"), GameSessionId)) 
+    // Judge Dedicated or Listen Server
+    bool bHasDedicatedInfo = 
+            Session->SessionSettings.Get(FName("GameSessionId"), GameSessionId) &&
+            Session->SessionSettings.Get(FName("SERVER_IP"), ServerIP) &&
+            Session->SessionSettings.Get(FName("SERVER_PORT"), ServerPort);
+    
+    if (bHasDedicatedInfo && !GameSessionId.IsEmpty() && !ServerIP.IsEmpty()) 
     {
-        UE_LOG(LogTemp, Warning, TEXT("[Join] AWS Dedicated Server Found! IP: %s:%d, SessionID: %s"), *ServerIP, ServerPort, *GameSessionId);
-        UE_LOG(LogTemp, Log, TEXT("[Join] Requesting Ticket from Lambda..."));
+        UE_LOG(LogTemp, Warning, TEXT("[OnJoinSessionCompleted] AWS Dedicated Server Found! IP: %s:%d, SessionID: %s"), *ServerIP, ServerPort, *GameSessionId);
+        UE_LOG(LogTemp, Log, TEXT("[OnJoinSessionCompleted] Requesting Ticket from Lambda..."));
 
         RequestJoinTicket(GameSessionId, ServerIP, ServerPort);
     }
     else
     {
-        UE_LOG(LogTemp, Warning, TEXT("[Join] No AWS Info found. Attempting P2P Connection..."));
+        // Listen Server Logic
+        UE_LOG(LogTemp, Warning, TEXT("[OnJoinSessionCompleted] No AWS Info found. Attempting P2P Connection..."));
 
         FString ConnectInfo;
         if (SessionInterface->GetResolvedConnectString(SessionName, ConnectInfo))
@@ -300,7 +307,7 @@ void UOutbreakSessionSubsystem::RequestGameSession()
 {
     if (!IsSessionOwner()) 
     {
-       UE_LOG(LogTemp, Warning, TEXT("[Client] Only Host can request GameSession."));
+       UE_LOG(LogTemp, Warning, TEXT("[RequestGameSession] Only Host can request GameSession."));
         OnSessionError.Broadcast(TEXT("[RequestGameSession] Only Host can request GameSession."));
        return;
     }
@@ -308,30 +315,30 @@ void UOutbreakSessionSubsystem::RequestGameSession()
     TArray<FString> LobbyMembers = GetSteamLobbyMembers();
     if (LobbyMembers.Num() == 0)
     {
-        UE_LOG(LogTemp, Error, TEXT("[Session] No Lobby Members Found (Steam Error?)"));
+        UE_LOG(LogTemp, Error, TEXT("[RequestGameSession] No Lobby Members Found (Steam Error?)"));
         OnSessionError.Broadcast(TEXT("Steam Error: Lobby Members Not Found"));
         return;
     }
     UOutbreakAuthSubsystem* AuthSys = GetGameInstance()->GetSubsystem<UOutbreakAuthSubsystem>();
     if (!AuthSys)
     {
-        UE_LOG(LogTemp, Error, TEXT("[Steam] AuthSystem Error"));
-        OnSessionError.Broadcast(TEXT("[Steam] AuthSystem Error"));
+        UE_LOG(LogTemp, Error, TEXT("[RequestGameSession] AuthSystem Error"));
+        OnSessionError.Broadcast(TEXT("[RequestGameSession] AuthSystem Error"));
         return;
     }
     // Get Steam Ticket from SteamAuth
     FString ticket = AuthSys->GetSteamAuthTicket();
     if (ticket.IsEmpty())
     {
-        UE_LOG(LogTemp, Error, TEXT("[Steam] Steam Ticket is not found. Check Out Steam Client! "));
-        OnSessionError.Broadcast(TEXT("[Steam] Steam Ticket is not found. Check Out Steam Client! "));
+        UE_LOG(LogTemp, Error, TEXT("[RequestGameSession] Steam Ticket is not found. Check Out Steam Client! "));
+        OnSessionError.Broadcast(TEXT("[RequestGameSession] Steam Ticket is not found. Check Out Steam Client! "));
         return;
     }
     // Get URL from GConfig
     FString RequestURL = GetAwsLambdaUrl();
     if (RequestURL.IsEmpty())
     {
-        UE_LOG(LogTemp, Error, TEXT("[AWS] Lambda URL is missing in Game.ini"));
+        UE_LOG(LogTemp, Error, TEXT("[RequestGameSession] Lambda URL is missing in Game.ini"));
         OnSessionError.Broadcast(TEXT("Config Error: Missing Lambda URL"));
         return;
     }
@@ -363,7 +370,7 @@ void UOutbreakSessionSubsystem::RequestGameSession()
     HttpRequest->SetTimeout(15.0f);
 
     HttpRequest->OnProcessRequestComplete().BindUObject(this, &UOutbreakSessionSubsystem::OnGameSessionResponseReceived);
-    UE_LOG(LogTemp, Log, TEXT("[AWS] Requesting GameSession..."));
+    UE_LOG(LogTemp, Log, TEXT("[RequestGameSession] Requesting GameSession..."));
     HttpRequest->ProcessRequest();
 }
 
@@ -378,7 +385,7 @@ void UOutbreakSessionSubsystem::RequestJoinTicket(FString SessionId, FString IP,
     FString RequestURL = GetAwsLambdaUrl();
     if (RequestURL.IsEmpty())
     {
-        UE_LOG(LogTemp, Error, TEXT("[AWS] Lambda URL is missing in Game.ini"));
+        UE_LOG(LogTemp, Error, TEXT("[RequestGameSession] Lambda URL is missing in Game.ini"));
         OnSessionError.Broadcast(TEXT("Config Error: Missing Lambda URL"));
         return;
     }
