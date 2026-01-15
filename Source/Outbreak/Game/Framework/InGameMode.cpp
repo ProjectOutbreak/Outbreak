@@ -72,6 +72,11 @@ void AInGameMode::OnPlayerDie(ACharacter* DeadCharacter, AController* Controller
 			}
 		}
 	}
+	
+	if (IsGameOver())
+	{
+		GameOver();
+	}
 }
 
 void AInGameMode::ProceedToNextLevel() const
@@ -141,4 +146,40 @@ void AInGameMode::RefreshSpawnManagerTargets() const
 	{
 		SpawnManagerInstance->Deactivate();
 	}
+}
+
+bool AInGameMode::IsGameOver() const
+{
+	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+	{
+		if (const APlayerController* PC = It->Get())
+		{
+			const ACharacterPlayer* PlayerCharacter = Cast<ACharacterPlayer>(PC->GetPawn());
+            
+			if (PlayerCharacter && !PlayerCharacter->IsDead())
+			{
+				return false;
+			}
+		}
+	}
+	
+	return true;
+}
+
+void AInGameMode::GameOver()
+{
+	PRINT_WITH_CURRENT_CONTEXT(TEXT("Game Over!"));
+	
+	if (SpawnManagerInstance)
+	{
+		SpawnManagerInstance->Deactivate();
+	}
+
+	// TODO : GameOver UI RPC
+    
+	FTimerHandle RestartTimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(RestartTimerHandle, [this]()
+	{
+		// TODO : Travel To Lobby with clients
+	}, 5.0f, false);
 }

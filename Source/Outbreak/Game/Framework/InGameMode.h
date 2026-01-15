@@ -27,6 +27,8 @@ public:
 private:
 	void DelayedRefreshSpawnManagerTargets();
 	void RefreshSpawnManagerTargets() const;
+	bool IsGameOver() const;
+	void GameOver();
 
 	UPROPERTY(EditDefaultsOnly, Category = "Config")
 	TSubclassOf<AOutbreakSpectatorPawn> OutbreakSpectatorClass;
