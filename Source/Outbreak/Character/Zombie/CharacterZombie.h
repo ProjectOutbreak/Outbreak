@@ -13,8 +13,6 @@ class ACharacterPlayer;
 class AZombieAIComponent;
 class USoundCue;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnZombieDeathSignature, AActor*, DeadActor);
-
 UCLASS()
 class OUTBREAK_API ACharacterZombie : public ACharacterBase
 {
@@ -28,8 +26,6 @@ public:
 
 	void EnableAttackCollision();
 	void DisableAttackCollision();
-	
-	FOnZombieDeathSignature OnDeathDelegate;
 
 protected:
 	UFUNCTION()

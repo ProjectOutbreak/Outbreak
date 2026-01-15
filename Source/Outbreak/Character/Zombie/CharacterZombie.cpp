@@ -173,8 +173,6 @@ void ACharacterZombie::OnRep_Die()
 	
 	if (HasAuthority())
 	{
-		OnDeathDelegate.Broadcast(this);
-		
 		if (LastDamagePlayer)
 		{
 			if (ADefaultPlayerState* PS = LastDamagePlayer->GetPlayerState<ADefaultPlayerState>())

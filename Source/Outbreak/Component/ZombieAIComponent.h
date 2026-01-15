@@ -27,17 +27,21 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 private:
-	// Setup Functions
+	// ~ Begin Setup Functions
 	void SetupAIPerception();
 	void SetupStateMachine();
-	// ~Setup Functions
+	// ~ End Setup Functions
 
-	// Delegate Handler
+	// ~ Begin Delegate Handler
 	UFUNCTION()
 	void OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus);
 	UFUNCTION()
 	void HandleOwnerDeath(AActor* DeadActor);
-	// ~Delegate Handler
+	UFUNCTION()
+	void HandleTargetDeath(AActor* DeadActor);
+	// ~ End Delegate Handler
+	
+	void FindNewTarget();
 
 	UPROPERTY(Replicated)
 	TObjectPtr<ACharacterPlayer> CurrentTargetPlayer;
