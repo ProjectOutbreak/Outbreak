@@ -18,11 +18,7 @@ public:
 	virtual void NativeInitializeAnimation() override;
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 
-	void PlayAttackMontage();
-	void OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted);
-	void PlayScreamingMontage(FOnMontageEnded& OnMontageEndedDelegate);
-
-	bool IsAttacking() const { return bIsAttacking; }
+	void PlayAlertMontage(FOnMontageEnded OnMontageEndedDelegate = FOnMontageEnded());
 
 protected:
 	UPROPERTY(EditDefaultsOnly)

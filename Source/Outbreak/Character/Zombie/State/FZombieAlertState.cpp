@@ -9,14 +9,16 @@ void FZombieAlertState::Enter(const EZombieStateType PreviousState)
 	Super::Enter(PreviousState);
 
 	if (!Owner->HasAuthority()) return;
-
-	UZombieAnimInstance* AnimInst = GetAnimInstance();
-	if (!AnimInst) return;
-
-	FOnMontageEnded MontageEndedDelegate;
-	MontageEndedDelegate.BindRaw(this, &FZombieAlertState::OnScreamingMontageEnded);
 	
-	AnimInst->PlayScreamingMontage(MontageEndedDelegate);
+	Owner->SetIsAlert(true);
+	
+	if (UZombieAnimInstance* AnimInst = GetAnimInstance())
+	{
+		FOnMontageEnded MontageEndedDelegate;
+		MontageEndedDelegate.BindRaw(this, &FZombieAlertState::OnAlertMontageEnded);
+		
+		AnimInst->PlayAlertMontage(MontageEndedDelegate);
+	}
 }
 
 void FZombieAlertState::Execute(const EZombieStateType CurrentState, const float DeltaTime)
@@ -28,12 +30,10 @@ void FZombieAlertState::Exit(const EZombieStateType NextState)
 {
 	Super::Exit(NextState);
 	
-	if (!Owner->HasAuthority()) return;
-
-	Owner->StopAnimMontage();
+	Owner->SetIsAlert(false);
 }
 
-void FZombieAlertState::OnScreamingMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+void FZombieAlertState::OnAlertMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
 	Fsm->ChangeState(EZombieStateType::Chase);
 }

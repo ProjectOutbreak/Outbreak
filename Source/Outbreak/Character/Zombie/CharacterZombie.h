@@ -20,9 +20,6 @@ class OUTBREAK_API ACharacterZombie : public ACharacterBase
 {
 	GENERATED_BODY()
 
-// --------------------
-// Functions
-// --------------------
 public:
 	ACharacterZombie();
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
@@ -42,45 +39,45 @@ protected:
 	virtual void SetupCollision() override;
 	virtual void SetupMovement() override;
 	virtual void OnRep_Die() override;
+	
 	virtual void SetMesh(ECharacterBodyType MeshType);
 
-	UFUNCTION()
-	void OnRep_ZombieData();
 	void ApplyZombieData();
 	
-// --------------------
-// Variables
-// --------------------
-protected:
+	// ~ Begin Replicated Variables
+	UFUNCTION()
+	void OnRep_ZombieData();
+	UPROPERTY(ReplicatedUsing = OnRep_ZombieData)
+	FZombieData ZombieData;
+	
+	UPROPERTY(Replicated)
+	bool bIsAttacking = false;
+	UPROPERTY(Replicated)
+	bool bIsAlert = false;
+	// ~ End Replicated Variables
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Combat")
 	TObjectPtr<USphereComponent> RightHandCollision;
 	
 	UPROPERTY()
 	TArray<AActor*> AlreadyHitActors;
 	
+	UPROPERTY()
+	AController* LastDamagePlayer;
+	
+	UPROPERTY()
+	TObjectPtr<USoundCue> DeadSoundCue;
+	
 	EZombieType ZombieType = EZombieType::None;
 	EZombieSubType ZombieSubType = EZombieSubType::None;
 	float DefaultCapsuleRadius = 10.0f;
 	float DefaultCapsuleHalfHeight = 96.0f;
 
-	// Replicated Variables
-	UPROPERTY(ReplicatedUsing = OnRep_ZombieData)
-	FZombieData ZombieData;
-	UPROPERTY(Replicated)
-	bool bIsAttacking = false;
-	UPROPERTY(Replicated)
-	bool bIsScreaming = false;
-	// ~Replicated Variables
-
-	UPROPERTY()
-	AController* LastDamagePlayer;
-
-private:
-	UPROPERTY()
-	TObjectPtr<USoundCue> DeadSoundCue;
-	
 public:
 	// ~ Begin Getter & Setter
 	FORCEINLINE FZombieData* GetZombieData() { return &ZombieData; }
+	FORCEINLINE bool IsAttacking() const { return bIsAttacking; }
+	void SetIsAttacking(const bool bInIsAttacking);
+	void SetIsAlert(const bool bInIsAlert);
 	// ~ End Getter & Setter
 };
