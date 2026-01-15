@@ -20,7 +20,6 @@ void ACharacterSpawnManager::BeginPlay()
 	Super::BeginPlay();
 
 	DataTableHelper::LoadDataTableToMap(ZombieDataTable, ZombieDataMap);
-	DataTableHelper::LoadDataTableToMap(PlayerDataTable, PlayerDataMap);
 
 	UpdateSettingData();
 	UpdateWaveData();
@@ -44,12 +43,11 @@ void ACharacterSpawnManager::SetWaveId(FName InWaveId)
 	}
 }
 
-void ACharacterSpawnManager::Activate(const TObjectPtr<ACharacterPlayer>& InTarget)
+void ACharacterSpawnManager::Activate()
 {
 	if (!HasAuthority() || bIsActivated)
 		return;
 	
-	Target = InTarget;
 	bIsActivated = true;
 	GetWorld()->GetTimerManager().SetTimer(
 		SpawnTimerHandle,
@@ -112,6 +110,28 @@ FWaveData ACharacterSpawnManager::GetWaveData(const int32 WaveIndex)
 	return WavesData.Waves[WaveIndex];
 }
 
+FVector ACharacterSpawnManager::GetPlayersCentroid() const
+{
+	if (ActivePlayers.IsEmpty())
+	{
+		return FVector::ZeroVector;
+	}
+
+	FVector SumLocation = FVector::ZeroVector;
+	int32 ValidPlayerCount = 0;
+
+	for (AActor* PlayerActor : ActivePlayers)
+	{
+		if (IsValid(PlayerActor))
+		{
+			SumLocation += PlayerActor->GetActorLocation();
+			ValidPlayerCount++;
+		}
+	}
+
+	return (ValidPlayerCount > 0) ? (SumLocation / static_cast<float>(ValidPlayerCount)) : FVector::ZeroVector;
+}
+
 FVector ACharacterSpawnManager::FindRandomSpawnLocation(float MinDistance, float MaxDistance)
 {
 	// Find the Radius
@@ -128,6 +148,8 @@ FVector ACharacterSpawnManager::FindRandomSpawnLocation(float MinDistance, float
 
 	// find the ring with spheres to find valid random spawn positions
 	TArray<FVector> PossibleLocation;
+	
+	FVector CenterLocation = GetPlayersCentroid();
 
 	for (int32 i = 0; i < Amount; ++i)
 	{
@@ -138,7 +160,7 @@ FVector ACharacterSpawnManager::FindRandomSpawnLocation(float MinDistance, float
 		FRotator YawRot(0.0f, YawAngle, 0.0f);
 		FVector Forward = YawRot.Vector();
 		
-		FVector Start = Target->GetActorLocation() + (Distance * Forward);
+		FVector Start = CenterLocation + (Distance * Forward);
 		FVector End = Start;
 		Start.Z += Data->SpawnHeightLimit;
 		End.Z -= Data->SpawnHeightLimit;
@@ -146,7 +168,10 @@ FVector ACharacterSpawnManager::FindRandomSpawnLocation(float MinDistance, float
 		TArray<FHitResult> HitResults;
 		FCollisionQueryParams Params;
 		Params.AddIgnoredActor(this);
-		Params.AddIgnoredActor(Target); 
+		for (AActor* _ : ActivePlayers)
+		{
+			Params.AddIgnoredActors(ActivePlayers);
+		}
 		
 		FCollisionObjectQueryParams ObjectTypes;
 		ObjectTypes.AddObjectTypesToQuery(ECC_WorldStatic);
@@ -215,7 +240,7 @@ FVector ACharacterSpawnManager::FindRandomSpawnLocation(float MinDistance, float
 					bool Comparing = false;
 					for (const FVector& PossibleHeight : PossibleHeights)
 					{
-						float A = FMath::Abs(PossibleHeight.Z - Target->GetActorLocation().Z);
+						float A = FMath::Abs(PossibleHeight.Z - CenterLocation.Z);
 						if (Comparing && A < OptimalDistance)
 						{
 							OptimalDistance = A;
@@ -289,10 +314,10 @@ FVector ACharacterSpawnManager::GetRandomLocationInRadius(const FVector& Optimal
 void ACharacterSpawnManager::SpawnEnemies()
 {
 	if (!HasAuthority()) return;
-	
-	if (!Target)
+
+	const FVector CenterLocation = GetPlayersCentroid();
+	if (CenterLocation.IsZero())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[%s] Target not found!"), CURRENT_CONTEXT);
 		return;
 	}
 
@@ -324,8 +349,7 @@ void ACharacterSpawnManager::SpawnEnemies()
 			}
 
 			SpawnLocation.Z += EnemyData.CapsuleHalfHeight;
-			FVector TargetLocation = Target->GetActorLocation();
-			FRotator LookAtRotation = UKismetMathLibrary::FindLookAtRotation(SpawnLocation, TargetLocation);
+			FRotator LookAtRotation = UKismetMathLibrary::FindLookAtRotation(SpawnLocation, CenterLocation);
 			FTransform SpawnTransform;
 			SpawnTransform.SetLocation(SpawnLocation);
 			SpawnTransform.SetRotation(FQuat(LookAtRotation));
@@ -353,17 +377,5 @@ FZombieData* ACharacterSpawnManager::GetZombieData(const EZombieSubType Type)
 	}
 	
 	UE_LOG(LogTemp, Error, TEXT("[%s] No Zombie data found for type: %d"), CURRENT_CONTEXT, (int32)Type);
-	return nullptr;
-}
-
-FPlayerData* ACharacterSpawnManager::GetPlayerData(const EPlayerType Type)
-{
-	const FString RowName = EnumHelper::EnumToString(Type);
-	if (PlayerDataMap.Contains(RowName))
-	{
-		return PlayerDataMap[RowName];
-	}
-
-	UE_LOG(LogTemp, Error, TEXT("[%s] No Player data found for type: %d"), CURRENT_CONTEXT, (int32)Type);
 	return nullptr;
 }

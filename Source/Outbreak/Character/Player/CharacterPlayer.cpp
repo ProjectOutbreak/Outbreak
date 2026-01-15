@@ -22,8 +22,8 @@
 #include "Outbreak/Game/Framework/InGameMode.h"
 #include "Outbreak/Game/Framework/InGameState.h"
 #include "Outbreak/Manager/CharacterSpawnManager.h"
-#include "Outbreak/Public/Utilities/DebugHelper.h"
 #include "Outbreak/UI/InGameHUD.h"
+#include "Outbreak/Util/DataTableHelper.h"
 
 ACharacterPlayer::ACharacterPlayer()
 {
@@ -105,23 +105,7 @@ void ACharacterPlayer::InitCharacterData()
 {
 	Super::InitCharacterData();
 	
-	if (HasAuthority())
-	{
-		const AInGameMode* GameMode = Cast<AInGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
-		if (!GameMode)
-		{
-			UE_LOG(LogTemp, Error, TEXT("[%s] GameMode is null!"), CURRENT_CONTEXT);
-			return;
-		}
-		ACharacterSpawnManager* SpawnManager = GameMode->GetSpawnManager();
-		if (!SpawnManager)
-		{
-			UE_LOG(LogTemp, Error, TEXT("[%s] SpawnManager is null!"), CURRENT_CONTEXT);
-			return;
-		}
-
-		PlayerData = *SpawnManager->GetPlayerData(PlayerType);
-	}
+	DataTableHelper::LoadDataTableToMap(PlayerDataTable, PlayerDataMap);
 	
 	CurrentHealth = PlayerData.MaxHealth;
 	CurrentExtraHealth = 0;
@@ -146,8 +130,6 @@ void ACharacterPlayer::BeginPlay()
 	
 	if (IsLocallyControlled())
 	{
-		const FString DebugMsg = FString::Printf(TEXT("Player Name : %s"), *GetName());
-		PRINT_WITH_CURRENT_CONTEXT(DebugMsg);
 
 		if (ACharacterUIComponent* UIRig = Cast<ACharacterUIComponent>(UIComponent->GetChildActor()))
 		{

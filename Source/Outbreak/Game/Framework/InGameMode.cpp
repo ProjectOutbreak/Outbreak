@@ -8,6 +8,7 @@
 #include "Outbreak/Manager/CharacterSpawnManager.h"
 #include "Outbreak/Manager/SoundManager.h"
 #include "Pawn/OutbreakSpectatorPawn.h"
+#include "Utilities/DebugHelper.h"
 
 AInGameMode::AInGameMode()
 {
@@ -22,22 +23,31 @@ void AInGameMode::BeginPlay()
 	{
 		SM->StartMainBgmShuffle(false, 0.6f);
 	}
-	
-	FActorSpawnParameters SpawnParams;
-	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	SpawnManager = GetWorld()->SpawnActor<ACharacterSpawnManager>(SpawnManagerClass, SpawnParams);
+}
 
-	if (SpawnManager && !SpawnManager->IsActivated())
+void AInGameMode::PostLogin(APlayerController* NewPlayer)
+{
+	Super::PostLogin(NewPlayer);
+	
+	PRINT_WITH_CURRENT_CONTEXT(FString::Printf(TEXT("Player Joined: %s"), *NewPlayer->GetName()));
+	
+	if (!SpawnManagerInstance)
 	{
-		if (APlayerController* HostPC = UGameplayStatics::GetPlayerController(GetWorld(), 0))
-		{
-			FTimerHandle TimerHandle;
-			FTimerDelegate TimerDelegate;
-          
-			TimerDelegate.BindUObject(this, &AInGameMode::ActivateSpawnManagerForPlayer, HostPC);
-			GetWorld()->GetTimerManager().SetTimer(TimerHandle, TimerDelegate, 1.0f, false);
-		}
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		SpawnManagerInstance = GetWorld()->SpawnActor<ACharacterSpawnManager>(SpawnManagerClass, SpawnParams);
 	}
+	
+	DelayedRefreshSpawnManagerTargets();
+}
+
+void AInGameMode::Logout(AController* Exiting)
+{
+	Super::Logout(Exiting);
+	
+	PRINT_WITH_CURRENT_CONTEXT(FString::Printf(TEXT("Player Left: %s"), *Exiting->GetName()));
+	
+	DelayedRefreshSpawnManagerTargets();
 }
 
 void AInGameMode::OnPlayerDie(ACharacter* DeadCharacter, AController* Controller)
@@ -93,13 +103,42 @@ void AInGameMode::ProceedToNextLevel() const
 	GetWorld()->ServerTravel(NextLevelName, true);
 }
 
-void AInGameMode::ActivateSpawnManagerForPlayer(APlayerController* PlayerToTarget)
+void AInGameMode::DelayedRefreshSpawnManagerTargets()
 {
-	if (SpawnManager && !SpawnManager->IsActivated() && IsValid(PlayerToTarget))
+	FTimerHandle TimerHandle;
+	FTimerDelegate TimerDelegate;
+          
+	TimerDelegate.BindUObject(this, &AInGameMode::RefreshSpawnManagerTargets);
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, TimerDelegate, 1.0f, false);
+}
+
+void AInGameMode::RefreshSpawnManagerTargets() const
+{
+	if (!SpawnManagerInstance) return;
+
+	TArray<AActor*> PlayerPawns;
+	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
 	{
-		if (ACharacterPlayer* TargetPlayer = Cast<ACharacterPlayer>(PlayerToTarget->GetPawn()))
+		if (const APlayerController* PC = It->Get())
 		{
-			SpawnManager->Activate(TargetPlayer);
+			if (APawn* P = PC->GetPawn())
+			{
+				PlayerPawns.Add(P);
+			}
 		}
+	}
+
+	if (PlayerPawns.Num() > 0)
+	{
+		SpawnManagerInstance->UpdateActivePlayers(PlayerPawns);
+        
+		if (!SpawnManagerInstance->IsActivated())
+		{
+			SpawnManagerInstance->Activate();
+		}
+	}
+	else
+	{
+		SpawnManagerInstance->Deactivate();
 	}
 }

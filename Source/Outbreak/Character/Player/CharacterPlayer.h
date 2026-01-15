@@ -99,7 +99,11 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Player|Control")
 	TMap<EPlayerControlType, TObjectPtr<UPlayerControlData>> PlayerControlMap;
 	
-
+	UPROPERTY(EditDefaultsOnly, Category="Player|Data Tables")
+	TObjectPtr<UDataTable> PlayerDataTable;
+	
+	TMap<FString, FPlayerData*> PlayerDataMap;
+	
 	// TODO : for test. delete later
 	UPROPERTY()
 	TObjectPtr<AWeaponBase> SpawnedWeapon;
