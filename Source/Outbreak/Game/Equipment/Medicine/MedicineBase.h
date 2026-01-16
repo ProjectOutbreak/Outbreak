@@ -27,6 +27,7 @@ public:
 	virtual void UseOnTarget(TObjectPtr<class ACharacterPlayer> TargetCharacter);
 	virtual UTexture2D* GetEquipmentIcon() const override;
 
+	const FMedicineData& GetMedicineData() const { return MedicineData; }
 protected:
 	UFUNCTION()
 	void OnUseComplete();
@@ -46,9 +47,6 @@ protected:
 	EMedicineType MedicineType;
 	FMedicineData MedicineData;
 	bool bIsUsing = false;
-
-	UPROPERTY()
-	int32 CurrentCount;
 	
 	UPROPERTY()
 	TObjectPtr<UAudioComponent> AudioComp;

@@ -42,8 +42,11 @@ public:
 	void HandleReload() const { EquipmentController->HandleReload(); }
 	void HandleEquipBySlot(const int32 SlotNumber) const { EquipmentController->EquipBySlot(SlotNumber); }
 	void HandleToggleFireMode() const { EquipmentController->HandleToggleFireMode(); }
-
+	
 	void UpdateToxicAuraEffect(float Intensity);
+
+	UFUNCTION(Server, Reliable)
+	void Server_PickupEquipment(class AEquipmentBase* NewEquipment);
 	
 protected:
 	virtual void BeginPlay() override;

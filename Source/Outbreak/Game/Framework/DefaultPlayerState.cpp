@@ -82,6 +82,106 @@ void ADefaultPlayerState::AddAmmo(EFirableType Type, const int32 InInAmountToAdd
 	}
 }
 
+int32 ADefaultPlayerState::GetThrowableCount(EThrowableType Type) const
+{
+	const FThrowableCount* FoundItem = ThrowableInventory.FindByPredicate([Type](const FThrowableCount& Item){
+		return Item.Type == Type;
+	});
+	return FoundItem ? FoundItem->Count : 0;
+}
+
+void ADefaultPlayerState::AddThrowable(EThrowableType Type, int32 Amount)
+{
+	if (GetLocalRole() != ROLE_Authority) return;
+
+	FThrowableCount* FoundItem = ThrowableInventory.FindByPredicate([Type](const FThrowableCount& Item){
+		return Item.Type == Type;
+	});
+
+	if (FoundItem)
+	{
+		FoundItem->Count += Amount;
+	}
+	else
+	{
+		FThrowableCount NewItem;
+		NewItem.Type = Type;
+		NewItem.Count = Amount;
+		ThrowableInventory.Add(NewItem);
+	}
+    OnInventoryChangedDelegate.Broadcast();
+	ForceNetUpdate();
+}
+
+bool ADefaultPlayerState::ConsumeThrowable(EThrowableType Type, int32 Amount)
+{
+	if (GetLocalRole() != ROLE_Authority) return false;
+
+	FThrowableCount* FoundItem = ThrowableInventory.FindByPredicate([Type](const FThrowableCount& Item){
+		return Item.Type == Type;
+	});
+
+	if (FoundItem && FoundItem->Count >= Amount)
+	{
+		FoundItem->Count -= Amount;
+		OnInventoryChangedDelegate.Broadcast();
+		ForceNetUpdate();
+		return true;
+	}
+	return false;
+}
+int32 ADefaultPlayerState::GetMedicineCount(EMedicineType Type) const
+{
+	const FMedicineCount* FoundItem = MedicineInventory.FindByPredicate([Type](const FMedicineCount& Item){
+		return Item.Type == Type;
+	});
+	return FoundItem ? FoundItem->Count : 0;
+}
+
+void ADefaultPlayerState::AddMedicine(EMedicineType Type, int32 Amount)
+{
+	if (GetLocalRole() != ROLE_Authority) return;
+
+	FMedicineCount* FoundItem = MedicineInventory.FindByPredicate([Type](const FMedicineCount& Item){
+		return Item.Type == Type;
+	});
+
+	if (FoundItem)
+	{
+		FoundItem->Count += Amount;
+	}
+	else
+	{
+		FMedicineCount NewItem;
+		NewItem.Type = Type;
+		NewItem.Count = Amount;
+		MedicineInventory.Add(NewItem);
+	}
+
+	OnInventoryChangedDelegate.Broadcast();
+	ForceNetUpdate();
+}
+
+bool ADefaultPlayerState::ConsumeMedicine(EMedicineType Type, int32 Amount)
+{
+	if (GetLocalRole() != ROLE_Authority) return false;
+
+	FMedicineCount* FoundItem = MedicineInventory.FindByPredicate([Type](const FMedicineCount& Item){
+		return Item.Type == Type;
+	});
+
+	if (FoundItem && FoundItem->Count >= Amount)
+	{
+		FoundItem->Count -= Amount;
+		OnInventoryChangedDelegate.Broadcast();
+		ForceNetUpdate();
+		return true;
+	}
+	return false;
+}
+
+
+
 void ADefaultPlayerState::BeginPlay()
 {
 	Super::BeginPlay();
@@ -98,7 +198,15 @@ void ADefaultPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 	
 	DOREPLIFETIME(ThisClass, ZombieKills);
 	DOREPLIFETIME_CONDITION(ThisClass, ReserveAmmoArray, COND_OwnerOnly);
+	DOREPLIFETIME_CONDITION(ThisClass, ThrowableInventory, COND_OwnerOnly);
+	DOREPLIFETIME_CONDITION(ThisClass, MedicineInventory, COND_OwnerOnly);
 }
+
+void ADefaultPlayerState::OnRep_Inventory()
+{
+	OnInventoryChangedDelegate.Broadcast();
+}
+
 
 void ADefaultPlayerState::OnRep_ZombieKills()
 {

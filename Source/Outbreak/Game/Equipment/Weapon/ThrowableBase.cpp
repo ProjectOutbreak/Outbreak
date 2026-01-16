@@ -5,6 +5,8 @@
 
 #include "ThrowableProjectile.h"
 #include "GameFramework/Character.h"
+#include "Outbreak/Character/Player/CharacterPlayer.h"
+#include "Outbreak/Game/Framework/DefaultPlayerState.h"
 
 AThrowableBase::AThrowableBase()
 {
@@ -23,8 +25,16 @@ void AThrowableBase::OnEndUse()
 
 bool AThrowableBase::CanUse() const
 {
-	float TimeSinceLastThrow = GetWorld()->GetTimeSeconds() - LastThrowTime;
-	return !bIsThrowing && (CurrentAmmo > 0) && (TimeSinceLastThrow >= ThrowCooldown);
+	ACharacterPlayer* OwnerCharacter = Cast<ACharacterPlayer>(GetOwner());
+	if (OwnerCharacter)
+	{
+		if (ADefaultPlayerState* PS = OwnerCharacter->GetPlayerState<ADefaultPlayerState>())
+		{
+			float TimeSinceLastThrow = GetWorld()->GetTimeSeconds() - LastThrowTime;
+			return !bIsThrowing && (PS->GetThrowableCount(ThrowableData.ThrowableType) > 0 && (TimeSinceLastThrow >= ThrowCooldown));
+		}
+	}
+	return false;
 }
 
 bool AThrowableBase::IsActive() const
@@ -54,54 +64,66 @@ void AThrowableBase::Multicast_ThrowAnim_Implementation(UAnimMontage* MontageToP
 
 void AThrowableBase::Throw()
 {
-	if (CurrentAmmo <= 0)
-	{
-		bIsThrowing = false;
-		return;
-	}
+    ACharacterPlayer* OwnerCharacter = Cast<ACharacterPlayer>(GetOwner());
+    if (!OwnerCharacter) return;
 
-	if(HasAuthority())
-	{
-		float TimeNow = GetWorld()->GetTimeSeconds();
-		if (TimeNow - LastThrowTime < 0.1f)
-		{
-			return; 
-		}
-		if (!ThrowableData.ProjectileClass)
-		{
-			bIsThrowing = false;
-			return;
-		}
-		ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
-		if (!OwnerCharacter) return;
+    ADefaultPlayerState* PS = OwnerCharacter->GetPlayerState<ADefaultPlayerState>();
+    if (!PS) return;
+	
+    int32 CurrentCount = PS->GetThrowableCount(ThrowableData.ThrowableType);
+    if (CurrentCount <= 0)
+    {
+        bIsThrowing = false;
+        return;
+    }
+    if (HasAuthority())
+    {
+        float TimeNow = GetWorld()->GetTimeSeconds();
+        
+        if (TimeNow - LastThrowTime < 0.1f)
+        {
+            return; 
+        }
 
-		CurrentAmmo--;
+        if (!ThrowableData.ProjectileClass)
+        {
+            bIsThrowing = false;
+            return;
+        }
+    	
+        if (PS->ConsumeThrowable(ThrowableData.ThrowableType, 1))
+        {
+            FVector CameraLocation;
+            FRotator CameraRotation;
+            
+            if (OwnerCharacter->GetController())
+            {
+                OwnerCharacter->GetController()->GetPlayerViewPoint(CameraLocation, CameraRotation);
+            }
+            else
+            {
+                CameraLocation = OwnerCharacter->GetActorLocation();
+                CameraRotation = OwnerCharacter->GetActorRotation();
+            }
 
-		FVector CameraLocation;
-		FRotator CameraRotation;
-		OwnerCharacter->GetController()->GetPlayerViewPoint(CameraLocation, CameraRotation);
+            FVector SpawnLocation = CameraLocation + (CameraRotation.Vector() * 50.0f);
+            
+            FActorSpawnParameters SpawnParams;
+            SpawnParams.Owner = OwnerCharacter;
+            SpawnParams.Instigator = OwnerCharacter;
 
-		FVector SpawnLocation = CameraLocation + (CameraRotation.Vector() * 50.0f);	FActorSpawnParameters SpawnParams;
-		SpawnParams.Owner = OwnerCharacter;
-		SpawnParams.Instigator = OwnerCharacter;
-
-		AThrowableProjectile* Projectile = GetWorld()->SpawnActor<AThrowableProjectile>(
-			ThrowableData.ProjectileClass,
-			SpawnLocation,
-			CameraRotation,
-			SpawnParams
-			);
-
-		if (Projectile)
-		{
-			Projectile->InitializeProjectile(CameraRotation.Vector(), ThrowableData);
-		}
-		LastThrowTime = TimeNow;
-	}
-	bIsThrowing = false;	
+            AThrowableProjectile* Projectile = GetWorld()->SpawnActor<AThrowableProjectile>(
+                ThrowableData.ProjectileClass,
+                SpawnLocation,
+                CameraRotation,
+                SpawnParams
+            );
+        	if (Projectile)
+            {
+                Projectile->InitializeProjectile(CameraRotation.Vector(), ThrowableData);
+            }
+        	LastThrowTime = TimeNow;
+        }
+    }
+	bIsThrowing = false;
 }
-
-
-
-
-
