@@ -83,8 +83,8 @@ void ACharacterBase::OnRagdoll() const
 	GetCharacterMovement()->DisableMovement();
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
-	GetMesh()->SetSimulatePhysics(true);
 	GetMesh()->SetCollisionProfileName(TEXT("Ragdoll"));
+	GetMesh()->SetSimulatePhysics(true);
 	GetMesh()->AddImpulse(LastVelocity, NAME_None, true);
 }
 
