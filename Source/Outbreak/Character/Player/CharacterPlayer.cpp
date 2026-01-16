@@ -8,20 +8,14 @@
 #include "Engine/DamageEvents.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
-#include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 #include "Outbreak/Component/CharacterUIComponent.h"
 #include "Outbreak/Component/EquipmentController.h"
 #include "Outbreak/Data/PlayerControlData.h"
 #include "Outbreak/Game/Controller/InGamePlayerController.h"
-#include "Outbreak/Game/Equipment/Weapon/M4.h"
-#include "Outbreak/Game/Equipment/Weapon/Knife.h"
-#include "Outbreak/Game/Equipment/Weapon/Granade.h"
-#include "Outbreak/Game/Equipment/Medicine/FirstAidKit.h"
 #include "Outbreak/Game/Equipment/Weapon/WeaponBase.h"
 #include "Outbreak/Game/Framework/InGameMode.h"
 #include "Outbreak/Game/Framework/InGameState.h"
-#include "Outbreak/Manager/CharacterSpawnManager.h"
 #include "Outbreak/UI/InGameHUD.h"
 #include "Outbreak/Util/DataTableHelper.h"
 
@@ -34,28 +28,6 @@ ACharacterPlayer::ACharacterPlayer()
 	PostProcessComponent = CreateDefaultSubobject<UPostProcessComponent>(TEXT("PostProcessComponent"));
 	PostProcessComponent->SetupAttachment(RootComponent);
 	PostProcessComponent->bEnabled = true;
-	
-	// TODO : for test. delete later
-	static ConstructorHelpers::FClassFinder<AM4> WeaponClassRef(TEXT("/Game/Blueprints/Equipment/BP_M4.BP_M4_C"));
-	if (WeaponClassRef.Class)
-	{
-		WeaponToSpawn = WeaponClassRef.Class;
-	}
-	static ConstructorHelpers::FClassFinder<AKnife> KnifeClassRef(TEXT("/Game/Blueprints/Equipment/BP_Knife.BP_Knife_C"));
-	if (KnifeClassRef.Class)
-	{
-		KnifeToSpawn = KnifeClassRef.Class;
-	}
-	static ConstructorHelpers::FClassFinder<AGranade> GrenadeClassRef(TEXT("/Game/Blueprints/Equipment/BP_Granade.BP_Granade_C"));
-	if (GrenadeClassRef.Class)
-	{
-		GrenadeToSpawn = GrenadeClassRef.Class;
-	}
-	static ConstructorHelpers::FClassFinder<AEquipmentBase> HealClassRef(TEXT("/Game/Blueprints/Equipment/BP_FirstAidKit.BP_FirstAidKit_C"));
-	if (HealClassRef.Class)
-	{
-		HealToSpawn = HealClassRef.Class;
-	}
 	
 	CharacterType = ECharacterType::Player;
 
@@ -145,31 +117,6 @@ void ACharacterPlayer::BeginPlay()
 				PC->PlayerCameraManager->ViewPitchMax = 20.0f; 
 			}
 		}
-	}
-
-	// TODO : For Test. Remove later.
-	if (HasAuthority() && IsValid(WeaponToSpawn) && IsValid(KnifeToSpawn) && IsValid(GrenadeToSpawn) && IsValid(HealToSpawn))
-	{
-		const FVector SpawnLocation = GetActorLocation();
-		const FRotator SpawnRotation = GetActorRotation();
-
-		FActorSpawnParameters SpawnParams;
-		SpawnParams.Owner = this;
-		SpawnParams.Instigator = GetInstigator();
-
-		SpawnedWeapon = GetWorld()->SpawnActor<AWeaponBase>(WeaponToSpawn, SpawnLocation, SpawnRotation, SpawnParams);
-		KnifeWeapon = GetWorld()->SpawnActor<AWeaponBase>(KnifeToSpawn, SpawnLocation, SpawnRotation, SpawnParams);
-		GrenadeWeapon = GetWorld()->SpawnActor<AWeaponBase>(GrenadeToSpawn, SpawnLocation, SpawnRotation, SpawnParams);
-		HealWeapon = GetWorld()->SpawnActor<AEquipmentBase>(HealToSpawn, SpawnLocation, SpawnRotation, SpawnParams);
-
-		if (IsValid(SpawnedWeapon) && IsValid(KnifeWeapon) && IsValid(GrenadeWeapon) && IsValid(HealWeapon))
-		{
-			EquipmentController->AddEquipment(SpawnedWeapon);
-			EquipmentController->AddEquipment(KnifeWeapon);
-			EquipmentController->AddEquipment(GrenadeWeapon);
-			EquipmentController->AddEquipment(HealWeapon);
-		}
-		EquipmentController->UnEquipCurrentEquipment();
 	}
 }
 
@@ -328,4 +275,12 @@ void ACharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 void ACharacterPlayer::Server_DebugTakeDamage_Implementation()
 {
 	TakeDamage(10.0f, FDamageEvent(), CachedController, this);
+}
+
+void ACharacterPlayer::Server_PickupEquipment_Implementation(class AEquipmentBase* NewEquipment)
+{
+	if (EquipmentController && IsValid(NewEquipment))
+	{
+		EquipmentController->PickupEquipment(NewEquipment);
+	}
 }
