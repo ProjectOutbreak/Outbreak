@@ -16,7 +16,6 @@ AGranade::AGranade()
 		if (Data)
 		{
 			ThrowableData = *Data;
-			CurrentAmmo = ThrowableData.MaxCount;
 		}
 		EquipmentType = EEquipmentType::ThrowableWeapon;
 	}
