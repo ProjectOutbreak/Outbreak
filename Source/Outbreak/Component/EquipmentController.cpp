@@ -259,6 +259,7 @@ void UEquipmentController::PickupEquipment(class AEquipmentBase* NewItem)
 	if (!IsValid(NewItem)) return;
 	if (!GetOwner()->HasAuthority()) return;
 
+	if (NewItem->GetOwner() != nullptr && NewItem->GetOwner() != CachedOwner) return;
 	AEquipmentBase* CurrentItem = nullptr;
 	EEquipmentType Type = NewItem->GetEquipmentType();
 
@@ -360,10 +361,11 @@ void UEquipmentController::PickupEquipment(class AEquipmentBase* NewItem)
 			PS->AddMedicine(MedicineNew->GetMedicineData().MedicineType, MedicineNew->GetMedicineData().MaxCount);
 		}
 	}
-	NewItem->SetPhysicsStatus(false);
 	NewItem->SetOwner(CachedOwner); 
 	NewItem->SetInstigator(CachedOwner);
+	NewItem->SetPhysicsStatus(false);
 	AddEquipment(NewItem);
+	NewItem->ForceNetUpdate();
 }
 
 void UEquipmentController::DropEquipment(class AEquipmentBase* ItemToDrop)
@@ -460,60 +462,78 @@ void UEquipmentController::HandleToggleFireMode()
 
 void UEquipmentController::Equip(const TObjectPtr<AEquipmentBase>& Equipment)
 {
-	UnEquipCurrentEquipment();
+    if (GetOwner() && GetOwner()->HasAuthority())
+    {
+        EquipInternal(Equipment);
+    }
+}
 
-	CurrentEquippedItem = Equipment;
+void UEquipmentController::EquipInternal(AEquipmentBase* Equipment)
+{
+    if (!IsValid(Equipment) || !IsValid(CachedOwner))
+    {
+        return;
+    }
 
-	if (IsValid(CurrentEquippedItem) && IsValid(CachedOwner))
-	{
-		if (GetOwner()->HasAuthority())
-		{
-			CurrentEquippedType = CurrentEquippedItem->GetEquipmentType();
-		}
-		FName SocketName = TEXT("Weapon_M4");
+    UnEquipCurrentEquipment();
+    CurrentEquippedItem = Equipment;
 
-		switch (CurrentEquippedItem->GetEquipmentType())
-		{
-			case EEquipmentType::SecondaryWeapon:
-				SocketName = TEXT("Weapon_Knife");
-				break;
-			case EEquipmentType::ThrowableWeapon:
-				SocketName = TEXT("Weapon_Granade");
-				break;
-			case EEquipmentType::Medicine:
-				SocketName = TEXT("Weapon_FirstAidKit");
-				break;
-			case EEquipmentType::PrimaryWeapon:
-			default:
-				SocketName = TEXT("Weapon_M4");
-				break;
-		}
-		CurrentEquippedItem->AttachToComponent(CachedOwner->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, SocketName);
-		CurrentEquippedItem->SetActorHiddenInGame(false);
+    if (GetOwner() && GetOwner()->HasAuthority())
+    {
+        CurrentEquippedType = CurrentEquippedItem->GetEquipmentType();
+    }
 
-		if (AFirableBase* NewFirableWeapon = Cast<AFirableBase>(CurrentEquippedItem))
-		{
-			CurrentFireType = NewFirableWeapon->GetCurrentFireType();
-			CurrentAmmoInMag = NewFirableWeapon->GetCurrentAmmoInMag();
-			NewFirableWeapon->OnPlayerAmmoChangedDelegate.AddDynamic(this, &UEquipmentController::HandleAmmoChanged);
+    FName SocketName = TEXT("Weapon_M4");
 
-			if (ADefaultPlayerState* PS = CachedOwner->GetPlayerState<ADefaultPlayerState>())
-			{
-				PS->OnPlayerAmmoChangedDelegate.AddDynamic(this, &UEquipmentController::HandleAmmoChanged);
-			}
-		}
-		
-		CurrentEquippedItem->OnEquip();
-		HandleAmmoChanged();
-		UE_LOG(LogTemp, Log, TEXT("[%s] Equipped: %s"), CURRENT_CONTEXT, *CurrentEquippedItem->GetName());
-	}
-	else
-	{
-		if (GetOwner()->HasAuthority())
-		{
-			CurrentEquippedType = EEquipmentType::None;
-		}
-	}
+    switch (CurrentEquippedItem->GetEquipmentType())
+    {
+        case EEquipmentType::SecondaryWeapon:
+            SocketName = TEXT("Weapon_Knife");
+            break;
+        case EEquipmentType::ThrowableWeapon:
+            SocketName = TEXT("Weapon_Granade");
+            break;
+        case EEquipmentType::Medicine:
+            SocketName = TEXT("Weapon_FirstAidKit");
+            break;
+        case EEquipmentType::PrimaryWeapon:
+        default:
+            SocketName = TEXT("Weapon_M4");
+            break;
+    }
+
+    CurrentEquippedItem->AttachToComponent(
+        CachedOwner->GetMesh(), 
+        FAttachmentTransformRules::SnapToTargetNotIncludingScale, 
+        SocketName
+    );
+    
+    CurrentEquippedItem->SetActorHiddenInGame(false);
+    if (USkeletalMeshComponent* EquipMesh = CurrentEquippedItem->FindComponentByClass<USkeletalMeshComponent>())
+    {
+        EquipMesh->SetVisibility(true);
+        EquipMesh->SetHiddenInGame(false);
+    }
+
+    if (AFirableBase* NewFirableWeapon = Cast<AFirableBase>(CurrentEquippedItem))
+    {
+        CurrentFireType = NewFirableWeapon->GetCurrentFireType();
+        CurrentAmmoInMag = NewFirableWeapon->GetCurrentAmmoInMag();
+        NewFirableWeapon->OnPlayerAmmoChangedDelegate.AddDynamic(this, &UEquipmentController::HandleAmmoChanged);
+
+        if (ADefaultPlayerState* PS = CachedOwner->GetPlayerState<ADefaultPlayerState>())
+        {
+            PS->OnPlayerAmmoChangedDelegate.AddDynamic(this, &UEquipmentController::HandleAmmoChanged);
+        }
+    }
+    
+    CurrentEquippedItem->OnEquip();
+    HandleAmmoChanged();
+    
+    UE_LOG(LogTemp, Log, TEXT("[%s] Equipped: %s (Authority: %s)"), 
+           CURRENT_CONTEXT, 
+           *CurrentEquippedItem->GetName(),
+           GetOwner()->HasAuthority() ? TEXT("YES") : TEXT("NO"));
 }
 
 void UEquipmentController::UnEquipCurrentEquipment()
@@ -604,7 +624,14 @@ void UEquipmentController::OnRep_CurrentEquippedItem()
 {
 	if (IsValid(CurrentEquippedItem))
 	{
-		Equip(CurrentEquippedItem); 
+		FTimerHandle TempHandle;
+		GetWorld()->GetTimerManager().SetTimer(TempHandle, [this]()
+		{
+			if (IsValid(CurrentEquippedItem))
+			{
+				EquipInternal(CurrentEquippedItem);
+			}
+		}, 0.1f, false);
 	}
 	else
 	{
@@ -637,26 +664,50 @@ void UEquipmentController::Server_HandleReload_Implementation()
 
 void UEquipmentController::OnRep_FirstPrimaryWeapon()
 {
+	if (CurrentEquippedItem == FirstPrimaryWeapon && IsValid(FirstPrimaryWeapon))
+	{
+		EquipInternal(FirstPrimaryWeapon);
+	}
 }
 
 void UEquipmentController::OnRep_SecondPrimaryWeapon()
 {
+	if (CurrentEquippedItem == SecondPrimaryWeapon && IsValid(SecondPrimaryWeapon))
+	{
+		EquipInternal(SecondPrimaryWeapon);
+	}
 }
 
 void UEquipmentController::OnRep_SecondaryWeapon()
 {
+	if (CurrentEquippedItem == SecondaryWeapon && IsValid(SecondaryWeapon))
+	{
+		EquipInternal(SecondaryWeapon);
+	}
 }
 
 void UEquipmentController::OnRep_ThrowableWeapon()
 {
+	if (CurrentEquippedItem == ThrowableWeapon && IsValid(ThrowableWeapon))
+	{
+		EquipInternal(ThrowableWeapon);
+	}
 }
 
 void UEquipmentController::OnRep_FirstMedicine()
 {
+	if (CurrentEquippedItem == FirstMedicine && IsValid(FirstMedicine))
+	{
+		EquipInternal(FirstMedicine);
+	}
 }
 
 void UEquipmentController::OnRep_SecondMedicine()
 {
+	if (CurrentEquippedItem == SecondMedicine && IsValid(SecondMedicine))
+	{
+		EquipInternal(SecondMedicine);
+	}
 }
 
 AInGameHUD* UEquipmentController::GetInGameHUD()

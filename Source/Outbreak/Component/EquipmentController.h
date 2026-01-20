@@ -64,6 +64,7 @@ protected:
 private:
 	void Equip(const TObjectPtr<class AEquipmentBase>& Equipment);
 	void DropEquipment(class AEquipmentBase* ItemToDrop);
+	void EquipInternal(AEquipmentBase* Equipment);
 	
 	UFUNCTION()
 	void OnReloadFinished() { bIsReload = false; }

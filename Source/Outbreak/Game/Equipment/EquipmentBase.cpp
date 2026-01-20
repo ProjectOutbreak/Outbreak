@@ -40,6 +40,10 @@ void AEquipmentBase::Tick(float DeltaTime)
 
 void AEquipmentBase::Interact_Implementation(APawn* InstigatorPawn)
 {
+	if (!InteractionBox->IsSimulatingPhysics()) 
+	{
+		return;
+	}
 	if (ACharacterPlayer* Player = Cast<ACharacterPlayer>(InstigatorPawn))
 	{
 		Player->Server_PickupEquipment(this);
@@ -54,12 +58,18 @@ void AEquipmentBase::SetPhysicsStatus(bool bIsGround)
 		InteractionBox->SetCollisionProfileName(TEXT("BlockAllDynamic"));
 		InteractionBox->SetSimulatePhysics(true);
 		SetActorHiddenInGame(false);
+        
+		if (EquipmentMesh)
+		{
+			EquipmentMesh->SetVisibility(true);
+		}
 	}
 	else
 	{
 		InteractionBox->SetSimulatePhysics(false);
 		InteractionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		InteractionBox->SetCollisionProfileName(TEXT("NoCollision"));
+		// visibility는 여기서 설정하지 않음 (Equip에서 처리)
 	}
 }
 
