@@ -56,7 +56,7 @@ void ACharacterZombie::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 
 	DOREPLIFETIME(ThisClass, ZombieData);
 	DOREPLIFETIME(ThisClass, bIsAttacking);
-	DOREPLIFETIME(ThisClass, bIsScreaming);
+	DOREPLIFETIME(ThisClass, bIsAlert);
 }
 
 void ACharacterZombie::InitCharacterData()
@@ -110,6 +110,8 @@ void ACharacterZombie::OnAttackOverlapBegin(UPrimitiveComponent* OverlappedComp,
 				UDamageType::StaticClass()
 			);
 		}
+		
+		OnAttackOtherCharacter.Broadcast(OtherActor);
 	}
 }
 
@@ -173,8 +175,6 @@ void ACharacterZombie::OnRep_Die()
 	
 	if (HasAuthority())
 	{
-		OnDeathDelegate.Broadcast(this);
-		
 		if (LastDamagePlayer)
 		{
 			if (ADefaultPlayerState* PS = LastDamagePlayer->GetPlayerState<ADefaultPlayerState>())
@@ -227,6 +227,20 @@ void ACharacterZombie::SetMesh(const ECharacterBodyType MeshType)
 void ACharacterZombie::OnRep_ZombieData()
 {
 	ApplyZombieData();
+}
+
+void ACharacterZombie::SetIsAttacking(const bool bInIsAttacking)
+{
+	if (!HasAuthority()) return;
+	
+	bIsAttacking = bInIsAttacking;
+}
+
+void ACharacterZombie::SetIsAlert(const bool bInIsAlert)
+{
+	if (!HasAuthority()) return;
+	
+	bIsAlert = bInIsAlert;
 }
 
 void ACharacterZombie::ApplyZombieData()

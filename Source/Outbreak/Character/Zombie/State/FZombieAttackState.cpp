@@ -1,5 +1,4 @@
 ﻿#include "FZombieAttackState.h"
-#include "Outbreak/Animation/ZombieAnimInstance.h"
 #include "Outbreak/Character/Zombie/CharacterZombie.h"
 
 FZombieAttackState::FZombieAttackState(const TSharedPtr<TStateMachine<EZombieStateType>>& InFsm, ACharacterZombie* InOwner): FZombieBaseState(InFsm, EZombieStateType::Attack, InOwner) { }
@@ -9,11 +8,8 @@ void FZombieAttackState::Enter(const EZombieStateType PreviousState)
 	Super::Enter(PreviousState);
 
 	if (!Owner->HasAuthority()) return;
-
-	UZombieAnimInstance* AnimInst = GetAnimInstance();
-	if (!AnimInst) return;
-
-	AnimInst->PlayAttackMontage();
+	
+	Owner->SetIsAttacking(true);
 }
 
 void FZombieAttackState::Execute(const EZombieStateType CurrentState, const float DeltaTime)
@@ -22,18 +18,15 @@ void FZombieAttackState::Execute(const EZombieStateType CurrentState, const floa
 	
 	if (IsOutOfAttackRange())
 	{
-		Owner->StopAnimMontage();
-		ChangeState(EZombieStateType::Alert);
+		ChangeState(EZombieStateType::Chase);
 	}
 }
 
 void FZombieAttackState::Exit(const EZombieStateType NextState)
 {
 	Super::Exit(NextState);
-
-	if (!Owner->HasAuthority()) return;
-
-	Owner->StopAnimMontage();
+	
+	Owner->SetIsAttacking(false);
 }
 
 bool FZombieAttackState::IsOutOfAttackRange()

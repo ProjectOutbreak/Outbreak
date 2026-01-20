@@ -25,24 +25,27 @@ public:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-	virtual FGenericTeamId GetGenericTeamId() const override { return TeamId; }
-
-	FORCEINLINE TObjectPtr<ACharacterPlayer> GetTarget() const { return CurrentTargetPlayer; }
 
 private:
-	// Setup Functions
+	// ~ Begin Setup Functions
 	void SetupAIPerception();
 	void SetupStateMachine();
-	// ~Setup Functions
+	// ~ End Setup Functions
 
-	// Delegate Handler
+	// ~ Begin Delegate Handler
 	UFUNCTION()
 	void OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus);
 	UFUNCTION()
 	void HandleOwnerDeath(AActor* DeadActor);
-	// ~Delegate Handler
+	UFUNCTION()
+	void HandleTargetDeath(AActor* DeadActor);
+	// ~ End Delegate Handler
 	
-protected:
+	void FindNewTarget();
+
+	UPROPERTY(Replicated)
+	TObjectPtr<ACharacterPlayer> CurrentTargetPlayer;
+	
 	UPROPERTY()
 	TObjectPtr<class ACharacterZombie> OwnerZombie;
 	
@@ -54,8 +57,10 @@ protected:
 	
 	TSharedPtr<FZombieStateMachine> StateMachine;
 	FGenericTeamId TeamId = 1;
-
-private:
-	UPROPERTY(Replicated)
-	TObjectPtr<ACharacterPlayer> CurrentTargetPlayer;
+	
+public:
+	// ~ Begin Getter & Setter
+	FORCEINLINE virtual FGenericTeamId GetGenericTeamId() const override { return TeamId; }
+	FORCEINLINE TObjectPtr<ACharacterPlayer> GetTarget() const { return CurrentTargetPlayer; }
+	// ~ End Getter & Setter
 };

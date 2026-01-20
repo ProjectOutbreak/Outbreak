@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "ToxicAttackAbility.h"
+#include "Outbreak/Character/Player/CharacterPlayer.h"
 
 UToxicAttackAbility::UToxicAttackAbility()
 {
@@ -10,25 +10,23 @@ UToxicAttackAbility::UToxicAttackAbility()
 
 void UToxicAttackAbility::OnEquip()
 {
-	ACharacterBase* OwnerCharacter = Cast<ACharacterBase>(GetOwner());
-	if (OwnerCharacter)
+	if (ACharacterBase* OwnerCharacter = Cast<ACharacterBase>(GetOwner()))
 	{
-		OwnerCharacter->OnAttackHit.AddDynamic(this, &UToxicAttackAbility::HandleOwnerAttackHit);
+		OwnerCharacter->OnAttackOtherCharacter.AddDynamic(this, &UToxicAttackAbility::HandleAttackOtherCharacter);
 	}
 }
 
 void UToxicAttackAbility::OnUnequip()
 {
-	ACharacterBase* OwnerCharacter = Cast<ACharacterBase>(GetOwner());
-	if (OwnerCharacter)
+	if (ACharacterBase* OwnerCharacter = Cast<ACharacterBase>(GetOwner()))
 	{
-		OwnerCharacter->OnAttackHit.RemoveDynamic(this, &UToxicAttackAbility::HandleOwnerAttackHit);
+		OwnerCharacter->OnAttackOtherCharacter.RemoveDynamic(this, &UToxicAttackAbility::HandleAttackOtherCharacter);
 	}
 }
 
-void UToxicAttackAbility::HandleOwnerAttackHit(AActor* HitActor, const FHitResult& HitResult)
+void UToxicAttackAbility::HandleAttackOtherCharacter(AActor* HitActor)
 {
-	if (ACharacterBase* Character = Cast<ACharacterBase>(HitActor))
+	if (ACharacterPlayer* Character = Cast<ACharacterPlayer>(HitActor))
 	{
 		Character->ApplyToxicDamage(ToxicDamagePerSecond, ToxicDuration);
 	}

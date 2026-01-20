@@ -20,12 +20,11 @@ class OUTBREAK_API ACharacterSpawnManager : public AActor
 public:
 	ACharacterSpawnManager();
 	FZombieData* GetZombieData(const EZombieSubType Type);
-	FPlayerData* GetPlayerData(const EPlayerType Type);
 	
 	void SetSettingId(FName InSettingId);
 	void SetWaveId(FName InWaveId);
 
-	void Activate(const TObjectPtr<ACharacterPlayer>& InTarget);
+	void Activate();
 	void Deactivate();
 
 	bool IsActivated() const { return bIsActivated; }
@@ -45,6 +44,7 @@ private:
 	FORCEINLINE bool IsExceededEnemyLimit() const { return SpawnedEnemies >= SpawnerSettingData.MaxEnemies; }
 	
 	FWaveData GetWaveData(const int32 WaveIndex);
+	FVector GetPlayersCentroid() const;
 	FVector FindRandomSpawnLocation(float MinDistance, float MaxDistance);
 	FVector GetRandomLocationInRadius(const FVector& OptimalHeight, float Radius, bool bDebug) const;
 	void SpawnEnemies();
@@ -54,7 +54,7 @@ private:
 // --------------------
 private:
 	UPROPERTY()
-	TObjectPtr<ACharacter> Target;
+	TArray<AActor*> ActivePlayers;
 	
 	int32 SpawnedEnemies = 0;
 
@@ -66,7 +66,6 @@ private:
 	int32 CurrentWaveIndex = 0;
 	
 	TMap<FString, FZombieData*> ZombieDataMap;
-	TMap<FString, FPlayerData*> PlayerDataMap;
 
 	FTimerHandle SpawnTimerHandle;
 	bool bIsActivated = false;
@@ -75,10 +74,13 @@ private:
 	UPROPERTY(EditAnywhere, Category="Data Tables")
 	TObjectPtr<UDataTable> ZombieDataTable;
 	UPROPERTY(EditAnywhere, Category="Data Tables")
-	TObjectPtr<UDataTable> PlayerDataTable;
-	UPROPERTY(EditAnywhere, Category="Data Tables")
 	TObjectPtr<UDataTable> SpawnerSettingDataTable;
 	UPROPERTY(EditAnywhere, Category="Data Tables")
 	TObjectPtr<UDataTable> WaveDataTable;
 	// ~Data Tables
+	
+public:
+	// ~ Begin Getter & Setter
+	void UpdateActivePlayers(const TArray<AActor*>& InPlayers) { ActivePlayers = InPlayers; }
+	// ~ End Getter & Setter
 };

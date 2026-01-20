@@ -18,7 +18,7 @@ public:
 
 protected:
 	UFUNCTION()
-	void HandleOwnerAttackHit(AActor* HitActor, const FHitResult& HitResult);
+	void HandleAttackOtherCharacter(AActor* HitActor);
 
 private:
 	float ToxicDamagePerSecond = 1.0f;

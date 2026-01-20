@@ -13,5 +13,5 @@ public:
 	virtual void Exit(EZombieStateType NextState) override;
 
 private:
-	void OnScreamingMontageEnded(UAnimMontage* Montage, bool bInterrupted);
+	void OnAlertMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 };

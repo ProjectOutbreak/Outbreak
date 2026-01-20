@@ -1,17 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "CharacterBase.h"
-#include "AIController.h"
-#include "BrainComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Engine/DamageEvents.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Outbreak/Public/Utilities/DebugHelper.h"
-#include "Outbreak/UI/InGameHUD.h"
 #include "Outbreak/Component/FootStepComponent.h"
-#include "Outbreak/Game/Framework/InGameMode.h"
-#include "Player/CharacterPlayer.h"
 
 ACharacterBase::ACharacterBase()
 {
@@ -69,7 +64,7 @@ void ACharacterBase::InitCharacterData()
 
 bool ACharacterBase::IsDead() const
 {
-	return true ? bIsDead || CurrentHealth <= 0 : false;
+	return bIsDead || CurrentHealth <= 0;
 }
 
 void ACharacterBase::Die()
@@ -78,6 +73,7 @@ void ACharacterBase::Die()
 	
 	bIsDead = true;
 	OnRep_Die();
+	OnCharacterDeathDelegate.Broadcast(this);
 }
 
 void ACharacterBase::OnRagdoll() const
@@ -127,7 +123,7 @@ void ACharacterBase::ApplyDamage(int32 DamageAmount)
 	const int32 RemainingDamage = DamageAmount - DamageAbsorbedByExtraHealth;
 	CurrentHealth = FMath::Max(0, CurrentHealth - RemainingDamage);
 	OnRep_CurrentHealth();
-
+	
 	if (IsDead())
 	{
 		Die();
@@ -180,8 +176,7 @@ void ACharacterBase::SetupMovement()
 
 void ACharacterBase::ApplyToxicDamage(float DamagePerSecond, float Duration)
 {
-	if (!HasAuthority())
-		return;
+	if (!HasAuthority()) return;
 
 	GetWorldTimerManager().ClearTimer(ToxicTickTimerHandle);
 	GetWorldTimerManager().ClearTimer(ToxicDurationTimerHandle);
