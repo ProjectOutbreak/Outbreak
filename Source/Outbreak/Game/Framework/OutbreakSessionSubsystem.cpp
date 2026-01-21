@@ -70,6 +70,18 @@ void UOutbreakSessionSubsystem::HandleNetworkFailure(UWorld* InWorld, UNetDriver
     ENetworkFailure::Type FailureType, const FString& ErrorString)
 {
     OnSessionError.Broadcast(FString::Printf(TEXT("Network Failure: %s"), *ErrorString));
+    UE_LOG(LogTemp, Warning, TEXT("[HandleNetworkFaileure] Type : %d, Msg : %s"), (int32)FailureType , *ErrorString);
+
+    // delete Session Info from Client
+    if (SessionInterface.IsValid())
+    {
+        auto ExistingSession = SessionInterface->GetNamedSession(NAME_GameSession);
+        if (ExistingSession != nullptr)
+        {
+            UE_LOG(LogTemp, Warning, TEXT("[HandleNetworkFailure] Destroying Zombie Session..."));
+            SessionInterface->DestroySession(NAME_GameSession);
+        }
+    }
 }
 
 bool UOutbreakSessionSubsystem::IsLanEnvironment() const
