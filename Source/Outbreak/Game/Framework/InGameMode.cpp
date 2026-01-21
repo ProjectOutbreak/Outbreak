@@ -8,6 +8,8 @@
 #include "Outbreak/Manager/CharacterSpawnManager.h"
 #include "Outbreak/Manager/SoundManager.h"
 #include "Pawn/OutbreakSpectatorPawn.h"
+#include "OutbreakGameLiftSubsystem.h"
+#include "Utilities/DebugHelper.h"
 
 AInGameMode::AInGameMode()
 {
@@ -22,29 +24,51 @@ void AInGameMode::BeginPlay()
 	{
 		SM->StartMainBgmShuffle(false, 0.6f);
 	}
-	
-	FActorSpawnParameters SpawnParams;
-	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	SpawnManager = GetWorld()->SpawnActor<ACharacterSpawnManager>(SpawnManagerClass, SpawnParams);
-
-	if (SpawnManager && !SpawnManager->IsActivated())
-	{
-		if (APlayerController* HostPC = UGameplayStatics::GetPlayerController(GetWorld(), 0))
-		{
-			FTimerHandle TimerHandle;
-			FTimerDelegate TimerDelegate;
-          
-			TimerDelegate.BindUObject(this, &AInGameMode::ActivateSpawnManagerForPlayer, HostPC);
-			GetWorld()->GetTimerManager().SetTimer(TimerHandle, TimerDelegate, 1.0f, false);
-		}
-	}
 }
 
-void AInGameMode::OnPlayerDie(AController* Controller)
+void AInGameMode::PostLogin(APlayerController* NewPlayer)
+{
+	Super::PostLogin(NewPlayer);
+	
+	PRINT_WITH_CURRENT_CONTEXT(FString::Printf(TEXT("Player Joined: %s"), *NewPlayer->GetName()));
+	
+	if (!SpawnManagerInstance)
+	{
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		SpawnManagerInstance = GetWorld()->SpawnActor<ACharacterSpawnManager>(SpawnManagerClass, SpawnParams);
+	}
+	
+	DelayedRefreshSpawnManagerTargets();
+}
+
+
+void AInGameMode::OnPlayerDie(ACharacter* DeadCharacter, AController* Controller)
 {
 	if (APlayerController* PC = Cast<APlayerController>(Controller))
 	{
-		PC->StartSpectatingOnly();
+		PC->UnPossess();
+
+		if (OutbreakSpectatorClass)
+		{
+			FActorSpawnParameters SpawnParams;
+			SpawnParams.Owner = PC;
+			SpawnParams.Instigator = GetInstigator();
+			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+			const FVector SpawnLocation = DeadCharacter->GetActorLocation() + FVector(0, 0, 500);
+			const FRotator SpawnRotation = DeadCharacter->GetActorRotation();
+
+			if (AOutbreakSpectatorPawn* NewSpectator = GetWorld()->SpawnActor<AOutbreakSpectatorPawn>(OutbreakSpectatorClass, SpawnLocation, SpawnRotation, SpawnParams))
+			{
+				PC->Possess(NewSpectator);
+			}
+		}
+	}
+	
+	if (IsGameOver())
+	{
+		GameOver();
 	}
 }
 
@@ -77,13 +101,114 @@ void AInGameMode::ProceedToNextLevel() const
 	GetWorld()->ServerTravel(NextLevelName, true);
 }
 
-void AInGameMode::ActivateSpawnManagerForPlayer(APlayerController* PlayerToTarget)
+void AInGameMode::Logout(AController* Exiting)
 {
-	if (SpawnManager && !SpawnManager->IsActivated() && IsValid(PlayerToTarget))
+	Super::Logout(Exiting);
+
+	PRINT_WITH_CURRENT_CONTEXT(FString::Printf(TEXT("Player Left: %s"), *Exiting->GetName()));
+	DelayedRefreshSpawnManagerTargets();
+	
+	if (!IsRunningDedicatedServer()) return;
+
+	int32 RemainingPlayers = 0;
+	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
 	{
-		if (ACharacterPlayer* TargetPlayer = Cast<ACharacterPlayer>(PlayerToTarget->GetPawn()))
+		APlayerController* PC = Iterator->Get();
+		if (PC && PC != Exiting)
 		{
-			SpawnManager->Activate(TargetPlayer);
+			RemainingPlayers++;
 		}
 	}
+
+	UE_LOG(LogTemp, Warning, TEXT("[InGameMode] Player Logout. Remaining: %d"), RemainingPlayers);
+	if (RemainingPlayers <= 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[InGameMode] All players left. Server Shutting Down..."));
+		if (UGameInstance* GI = GetGameInstance())
+		{
+			if (UOutbreakGameLiftSubsystem* GameLiftSys = GI->GetSubsystem<UOutbreakGameLiftSubsystem>())
+			{
+				GameLiftSys->EndGameServer();
+			}
+		}
+	}
+}
+
+void AInGameMode::DelayedRefreshSpawnManagerTargets()
+{
+	FTimerHandle TimerHandle;
+	FTimerDelegate TimerDelegate;
+          
+	TimerDelegate.BindUObject(this, &AInGameMode::RefreshSpawnManagerTargets);
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, TimerDelegate, 1.0f, false);
+}
+
+void AInGameMode::RefreshSpawnManagerTargets() const
+{
+	if (!SpawnManagerInstance) return;
+
+	TArray<AActor*> PlayerPawns;
+	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+	{
+		if (const APlayerController* PC = It->Get())
+		{
+			if (APawn* P = PC->GetPawn())
+			{
+				PlayerPawns.Add(P);
+			}
+		}
+	}
+
+	if (PlayerPawns.Num() > 0)
+	{
+		SpawnManagerInstance->UpdateActivePlayers(PlayerPawns);
+        
+		if (!SpawnManagerInstance->IsActivated())
+		{
+			SpawnManagerInstance->Activate();
+		}
+	}
+	else
+	{
+		SpawnManagerInstance->Deactivate();
+	}
+}
+
+bool AInGameMode::IsGameOver() const
+{
+	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+	{
+		if (const APlayerController* PC = It->Get())
+		{
+			const ACharacterPlayer* PlayerCharacter = Cast<ACharacterPlayer>(PC->GetPawn());
+            
+			if (PlayerCharacter && !PlayerCharacter->IsDead())
+			{
+				return false;
+			}
+		}
+	}
+	
+	return true;
+}
+
+void AInGameMode::GameOver()
+{
+	PRINT_WITH_CURRENT_CONTEXT(TEXT("Game Over!"));
+	if (bHasGameOverTriggered) return;
+	bHasGameOverTriggered = true;
+	if (SpawnManagerInstance)
+	{
+		SpawnManagerInstance->Deactivate();
+	}
+
+	// TODO : GameOver UI RPC
+    
+	FTimerHandle RestartTimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(RestartTimerHandle, [this]()
+	{
+		// TODO : Travel To Lobby with clients
+		FString LobbyMap = "/Game/Maps/L_Lobby?listen";
+		GetWorld()->ServerTravel(LobbyMap);
+	}, 5.0f, false);
 }

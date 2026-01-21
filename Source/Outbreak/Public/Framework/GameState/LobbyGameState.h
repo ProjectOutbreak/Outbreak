@@ -14,11 +14,14 @@ class OUTBREAK_API ALobbyGameState : public AGameStateBase
 	GENERATED_BODY()
 	
 public:
+	virtual void AddPlayerState(APlayerState* PlayerState) override;
 	virtual void RemovePlayerState(APlayerState* PlayerState) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-	
 	void UpdatePlayerList();
+	FOnPlayerListChangedSignature OnPlayerListChanged;
 	
+	UFUNCTION(BlueprintCallable)
+	TArray<FString> GetPlayerNames();
 protected:
 	UPROPERTY(ReplicatedUsing = OnRep_PlayerList)
 	TArray<FString> PlayerList;

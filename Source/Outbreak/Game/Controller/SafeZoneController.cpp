@@ -79,7 +79,7 @@ void ASafeZoneController::OnEndZoneEnter(UPrimitiveComponent* OverlappedComp, AA
 
 			if (PlayersInEndZone.Num() == TotalPlayers)
 			{
-				if (InGameModeRef && InGameModeRef->IsMatchInProgress())
+				if (InGameModeRef)
 				{
 					if (AInGameState* GS = GetWorld()->GetGameState<AInGameState>())
 					{
@@ -89,7 +89,6 @@ void ASafeZoneController::OnEndZoneEnter(UPrimitiveComponent* OverlappedComp, AA
 							UE_LOG(LogTemp, Warning, TEXT("Spawner is Deleted!"))
 						}
 					}
-					InGameModeRef->EndMatch();
 					InGameModeRef->ProceedToNextLevel();
 				}
 			}

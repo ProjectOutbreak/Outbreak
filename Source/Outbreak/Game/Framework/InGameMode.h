@@ -11,30 +11,35 @@ class ACharacterPlayer;
 class ACharacterSpawnManager;
 
 UCLASS()
-class OUTBREAK_API AInGameMode : public AGameMode
+class OUTBREAK_API AInGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
 
 public:
 	AInGameMode();
 	virtual void BeginPlay() override;
+	virtual void PostLogin(APlayerController* NewPlayer) override;
+	virtual void Logout(AController* Exiting) override;
 	
-	virtual void OnPlayerDie(AController* Controller);
-
-	UFUNCTION()
+	void OnPlayerDie(ACharacter* DeadCharacter, AController* Controller);
 	void ProceedToNextLevel() const;
-
-protected:
-	void ActivateSpawnManagerForPlayer(APlayerController* PlayerToTarget);
+	void GameOver();
 
 private:
-	UPROPERTY(EditAnywhere, Category = "Config")
+	void DelayedRefreshSpawnManagerTargets();
+	void RefreshSpawnManagerTargets() const;
+	bool IsGameOver() const;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Config")
+	TSubclassOf<AOutbreakSpectatorPawn> OutbreakSpectatorClass;
+	UPROPERTY(EditDefaultsOnly, Category = "Config")
 	TSubclassOf<ACharacterSpawnManager> SpawnManagerClass;
 	UPROPERTY()
-	TObjectPtr<ACharacterSpawnManager> SpawnManager;
-	
+	TObjectPtr<ACharacterSpawnManager> SpawnManagerInstance;
+
+	bool bHasGameOverTriggered = false;
 public:
 	// ~ Begin Getter & Setter
-	FORCEINLINE TObjectPtr<ACharacterSpawnManager> GetSpawnManager() const { return SpawnManager; }
+	FORCEINLINE TObjectPtr<ACharacterSpawnManager> GetSpawnManager() const { return SpawnManagerInstance; }
 	// ~ End Getter & Setter
 };

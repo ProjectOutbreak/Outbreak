@@ -1,7 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "ZombieAIComponent.h"
-
 #include "Net/UnrealNetwork.h"
 #include "Outbreak/Character/Zombie/CharacterZombie.h"
 #include "Outbreak/Character/Zombie/State/FZombieAlertState.h"
@@ -11,7 +10,6 @@
 #include "Outbreak/Character/Zombie/State/FZombieIdleState.h"
 #include "Outbreak/Character/Zombie/State/FZombieWanderState.h"
 #include "Outbreak/Util/Define.h"
-#include "Utilities/DebugHelper.h"
 
 AZombieAIComponent::AZombieAIComponent()
 {
@@ -50,15 +48,11 @@ void AZombieAIComponent::OnPossess(APawn* InPawn)
 	Super::OnPossess(InPawn);
 
 	OwnerZombie = Cast<ACharacterZombie>(InPawn);
-	if (!OwnerZombie)
-	{
-		PRINT_WITH_CURRENT_CONTEXT("Pawn is not ACharacterZombie");
-		return;
-	}
+	
 	SetupAIPerception();
 	SetupStateMachine();
 	
-	OwnerZombie->OnDeathDelegate.AddDynamic(this, &AZombieAIComponent::HandleOwnerDeath);
+	OwnerZombie->OnCharacterDeathDelegate.AddDynamic(this, &AZombieAIComponent::HandleOwnerDeath);
 }
 
 void AZombieAIComponent::Tick(float DeltaTime)
@@ -90,6 +84,7 @@ void AZombieAIComponent::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus St
 	{
 		const TObjectPtr<ACharacterPlayer> TargetPlayer = Cast<ACharacterPlayer>(Actor);
 		CurrentTargetPlayer = TargetPlayer;
+		CurrentTargetPlayer->OnCharacterDeathDelegate.AddUniqueDynamic(this, &AZombieAIComponent::HandleTargetDeath);
 
 		EZombieStateType CurrentState = EZombieStateType::None;
 		if (StateMachine.IsValid())
@@ -140,8 +135,59 @@ void AZombieAIComponent::SetupStateMachine()
 
 void AZombieAIComponent::HandleOwnerDeath(AActor* DeadActor)
 {
+	if (!HasAuthority()) return;
+
 	if (StateMachine.IsValid())
 	{
 		StateMachine->ChangeState(EZombieStateType::Die);
+	}
+}
+
+void AZombieAIComponent::HandleTargetDeath(AActor* DeadActor)
+{
+	if (!HasAuthority()) return;
+
+	if (CurrentTargetPlayer == DeadActor)
+	{
+		CurrentTargetPlayer->OnCharacterDeathDelegate.RemoveDynamic(this, &AZombieAIComponent::HandleTargetDeath);
+		CurrentTargetPlayer = nullptr;
+
+		FindNewTarget();
+	} 
+}
+
+void AZombieAIComponent::FindNewTarget()
+{
+	TArray<AActor*> PerceivedActors;
+	AIPerception->GetKnownPerceivedActors(UAISense_Sight::StaticClass(), PerceivedActors);
+
+	ACharacterPlayer* BestTarget = nullptr;
+	float MinDistance = MAX_FLT;
+
+	for (AActor* Actor : PerceivedActors)
+	{
+		ACharacterPlayer* Player = Cast<ACharacterPlayer>(Actor);
+		if (Player && !Player->IsDead())
+		{
+			float Distance = FVector::Dist(OwnerZombie->GetActorLocation(), Player->GetActorLocation());
+			if (Distance < MinDistance)
+			{
+				MinDistance = Distance;
+				BestTarget = Player;
+			}
+		}
+	}
+
+	if (BestTarget)
+	{
+		CurrentTargetPlayer = BestTarget;
+		CurrentTargetPlayer->OnCharacterDeathDelegate.AddUniqueDynamic(this, &AZombieAIComponent::HandleTargetDeath);
+		StateMachine->ChangeState(EZombieStateType::Chase);
+	}
+	else
+	{
+		CurrentTargetPlayer = nullptr;
+		StateMachine->ChangeState(EZombieStateType::Wander);
+		ClearFocus(EAIFocusPriority::Gameplay);
 	}
 }

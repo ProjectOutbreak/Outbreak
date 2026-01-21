@@ -5,11 +5,24 @@
 #include "Net/UnrealNetwork.h"
 #include "Subsystems/SessionSubsystem.h"
 
+void ALobbyGameState::AddPlayerState(APlayerState* PlayerState)
+{
+	Super::AddPlayerState(PlayerState);
+	if (OnPlayerListChanged.IsBound())
+	{
+		OnPlayerListChanged.Broadcast();
+	}
+}
+
 void ALobbyGameState::RemovePlayerState(APlayerState* PlayerState)
 {
 	Super::RemovePlayerState(PlayerState);
 	
-	UpdatePlayerList();
+	//UpdatePlayerList();
+	if (OnPlayerListChanged.IsBound())
+	{
+		OnPlayerListChanged.Broadcast();
+	}
 }
 
 void ALobbyGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -42,11 +55,32 @@ void ALobbyGameState::UpdatePlayerList()
 
 void ALobbyGameState::OnRep_PlayerList()
 {
-	if (const UGameInstance* GameInstance = GetGameInstance())
+	if (ALobbyGameState* GS = GetWorld()->GetGameState<ALobbyGameState>())
 	{
-		if (const USessionSubsystem* SessionSubsystem = GameInstance->GetSubsystem<USessionSubsystem>())
+		if (GS->OnPlayerListChanged.IsBound())
 		{
-			SessionSubsystem->OnPlayerListUpdated.Broadcast(PlayerList);
+			GS->OnPlayerListChanged.Broadcast();
 		}
 	}
+}
+
+TArray<FString> ALobbyGameState::GetPlayerNames()
+{
+	TArray<FString> Names;
+	for (APlayerState* PS : PlayerArray)
+	{
+		if (PS)
+		{
+			FString PName = PS->GetPlayerName();
+			if (PName.IsEmpty())
+			{
+				Names.Add(TEXT("Loading...")); 
+			}
+			else
+			{
+				Names.Add(PName);
+			}
+		}
+	}
+	return Names;
 }

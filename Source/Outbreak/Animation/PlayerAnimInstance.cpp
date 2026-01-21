@@ -5,6 +5,7 @@
 
 #include "KismetAnimationLibrary.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Outbreak/Character/Player/CharacterPlayer.h"
 
 void UPlayerAnimInstance::NativeInitializeAnimation()
@@ -30,6 +31,14 @@ void UPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
     
 	GroundSpeed = FVector(Velocity.X, Velocity.Y, 0.0f).Size();
 	bIsFalling = MovementComponent->IsFalling();
+
+	FRotator ControlRotation = OwnerCharacter->GetControlRotation();
+	FRotator ActorRotation = OwnerCharacter->GetActorRotation();
+
+	FRotator DeltaRotation = UKismetMathLibrary::NormalizedDeltaRotator(ControlRotation, ActorRotation);
+	AimPitch = DeltaRotation.Pitch;
+
+	bIsFirstPerson = OwnerCharacter->IsLocallyControlled();
     
 	const FVector CurrentAcceleration = MovementComponent->GetCurrentAcceleration();
 	const bool bIsAccelerating = !CurrentAcceleration.IsNearlyZero();
@@ -44,9 +53,6 @@ void UPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		bIsSwapOut = EquipmentController->GetIsSwapOut();
 		CurrentAmmoInMag = EquipmentController->GetCurrentAmmoInMag();
 		FireType = EquipmentController->GetCurrentFireType();
-		if (const AEquipmentBase* EquippedItem = EquipmentController->GetCurrentEquippedItem())
-		{
-			CurrentEquipmentType = EquippedItem->GetEquipmentType();
-		}
+		CurrentEquipmentType = EquipmentController->GetCurrentEquippedType();
 	}
 }

@@ -1,17 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "CharacterBase.h"
-#include "AIController.h"
-#include "BrainComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Engine/DamageEvents.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Outbreak/Public/Utilities/DebugHelper.h"
-#include "Outbreak/UI/InGameHUD.h"
 #include "Outbreak/Component/FootStepComponent.h"
-#include "Outbreak/Game/Framework/InGameMode.h"
-#include "Player/CharacterPlayer.h"
 
 ACharacterBase::ACharacterBase()
 {
@@ -62,19 +57,6 @@ float ACharacterBase::TakeDamage(const float Damage, FDamageEvent const& DamageE
 	return DamageAmount;
 }
 
-void ACharacterBase::OnRep_CurrentHealth()
-{
-	if (!this->IsA(ACharacterPlayer::StaticClass())) return;
-		
-	if (APlayerController* PC = Cast<APlayerController>(GetController()))
-	{
-		if (AInGameHUD* HUD = Cast<AInGameHUD>(PC->GetHUD()))
-		{
-			HUD->DisplayCurrentHealth(CurrentHealth);
-		}
-	}
-}
-
 void ACharacterBase::InitCharacterData()
 {
 	// Implement in derived classes
@@ -82,11 +64,7 @@ void ACharacterBase::InitCharacterData()
 
 bool ACharacterBase::IsDead() const
 {
-	if (CurrentHealth <= 0)
-	{
-		return true;
-	}
-	return false;
+	return bIsDead || CurrentHealth <= 0;
 }
 
 void ACharacterBase::Die()
@@ -95,6 +73,7 @@ void ACharacterBase::Die()
 	
 	bIsDead = true;
 	OnRep_Die();
+	OnCharacterDeathDelegate.Broadcast(this);
 }
 
 void ACharacterBase::OnRagdoll() const
@@ -114,6 +93,8 @@ void ACharacterBase::OnRep_Die()
 	OnRagdoll();
 	SetLifeSpan(10.0f);
 }
+
+void ACharacterBase::OnRep_CurrentHealth() { }
 
 float ACharacterBase::GetDamageMultiplier(const EPhysicalSurface SurfaceType)
 {
@@ -142,7 +123,7 @@ void ACharacterBase::ApplyDamage(int32 DamageAmount)
 	const int32 RemainingDamage = DamageAmount - DamageAbsorbedByExtraHealth;
 	CurrentHealth = FMath::Max(0, CurrentHealth - RemainingDamage);
 	OnRep_CurrentHealth();
-
+	
 	if (IsDead())
 	{
 		Die();
@@ -195,8 +176,7 @@ void ACharacterBase::SetupMovement()
 
 void ACharacterBase::ApplyToxicDamage(float DamagePerSecond, float Duration)
 {
-	if (!HasAuthority())
-		return;
+	if (!HasAuthority()) return;
 
 	GetWorldTimerManager().ClearTimer(ToxicTickTimerHandle);
 	GetWorldTimerManager().ClearTimer(ToxicDurationTimerHandle);

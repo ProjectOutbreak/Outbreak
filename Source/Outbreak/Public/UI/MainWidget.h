@@ -9,7 +9,7 @@
 
 class UWidgetSwitcher;
 class UTextBlock;
-class USessionSubsystem;
+class UOutbreakSessionSubsystem;
 class UEditableTextBox;
 class UButton;
 
@@ -37,6 +37,9 @@ protected:
 	
 	UPROPERTY(meta = (BindWidgetOptional), BlueprintReadWrite)
 	TObjectPtr<UWidgetSwitcher> WS_Main;
+
+	UPROPERTY(meta = (BindWidgetOptional)) 
+	class UCheckBox* CheckBox_UseDedicated;
 	// ~ End UMG
 	
 private:
@@ -50,9 +53,10 @@ private:
 	
 	UFUNCTION()
 	void OnCreateSession(bool bWasSuccessful);
-	void OnFindSession(const TArray<FOnlineSessionSearchResult>& SessionResults, bool bWasSuccessful);
-	void OnJoinSession(EOnJoinSessionCompleteResult::Type Result);
 	UFUNCTION()
+	void OnFindSession(const TArray<FBlueprintSessionResult>& SessionResults, bool bWasSuccessful);
+	UFUNCTION()
+	void OnJoinSession(int32 Result);	UFUNCTION()
 	void OnDestroySession(bool bWasSuccessful);
 	UFUNCTION()
 	void OnSessionError(const FString& Reason);
@@ -70,7 +74,7 @@ private:
 	// ~ End Button Callbacks
 	
 	UPROPERTY(Transient)
-	TObjectPtr<USessionSubsystem> SessionsSubsystem;
+	TObjectPtr<UOutbreakSessionSubsystem> SessionsSubsystem;
 	
 	FString CachedCreatedLobbyCode;
 };

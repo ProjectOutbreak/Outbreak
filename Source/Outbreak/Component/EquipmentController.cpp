@@ -36,6 +36,7 @@ void UEquipmentController::BeginPlay()
 void UEquipmentController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(ThisClass, CurrentEquippedType);
 	DOREPLIFETIME(ThisClass, CurrentEquippedItem);
 	DOREPLIFETIME(ThisClass, FirstPrimaryWeapon);
 	DOREPLIFETIME(ThisClass, SecondPrimaryWeapon);
@@ -43,6 +44,7 @@ void UEquipmentController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 	DOREPLIFETIME(ThisClass, ThrowableWeapon);
 	DOREPLIFETIME(ThisClass, FirstMedicine);
 	DOREPLIFETIME(ThisClass, SecondMedicine);
+	DOREPLIFETIME(ThisClass, bIsReload);
 }
 
 void UEquipmentController::EquipBySlot(const int32 SlotNumber)
@@ -78,6 +80,14 @@ void UEquipmentController::EquipBySlot(const int32 SlotNumber)
 
 	if (IsValid(TargetItem) && TargetItem != CurrentEquippedItem)
 	{
+		if (GetOwner() && !GetOwner()->HasAuthority())
+		{
+			CurrentEquippedType = TargetItem->GetEquipmentType();
+			CurrentEquippedItem = TargetItem;
+			Equip(TargetItem);
+			Server_EquipBySlot(SlotNumber);
+			return;
+		}
 		Equip(TargetItem);
 	}
 }
@@ -124,7 +134,7 @@ void UEquipmentController::AddEquipment(const TObjectPtr<AEquipmentBase>& Equipm
 			UTexture2D* Icon = Equipment->GetEquipmentIcon();
 			if (Icon)
 			{
-				Hud->SetWeaponContainer(Icon);
+				// Hud->SetWeaponContainer(Icon);
 				UE_LOG(LogTemp, Log, TEXT("Icon Load Success"));
 			}
 				else
@@ -150,7 +160,7 @@ void UEquipmentController::AddEquipment(const TObjectPtr<AEquipmentBase>& Equipm
 			UTexture2D* Icon = Equipment->GetEquipmentIcon();
 			if (Icon)
 			{
-				Hud->SetSubWeaponContainer(Icon,2 );
+				// Hud->SetSubWeaponContainer(Icon,2 );
 				UE_LOG(LogTemp, Log, TEXT("Sub/Icon Load Success"));
 			}
 			else
@@ -174,7 +184,7 @@ void UEquipmentController::AddEquipment(const TObjectPtr<AEquipmentBase>& Equipm
 				UTexture2D* Icon = Equipment->GetEquipmentIcon();
 				if (Icon)
 				{
-					Hud->SetBottomInv(Icon,1);
+					// Hud->SetBottomInv(Icon,1);
 					UE_LOG(LogTemp, Log, TEXT("Throw/Icon Load Success"));
 				}
 				else
@@ -196,7 +206,7 @@ void UEquipmentController::AddEquipment(const TObjectPtr<AEquipmentBase>& Equipm
 				UTexture2D* Icon = Equipment->GetEquipmentIcon();
 				if (Icon)
 				{
-					Hud->SetBottomInv(Icon,2);
+					// Hud->SetBottomInv(Icon,2);
 					UE_LOG(LogTemp, Log, TEXT("Med1/Icon Load Success"));
 				}
 				else
@@ -211,7 +221,7 @@ void UEquipmentController::AddEquipment(const TObjectPtr<AEquipmentBase>& Equipm
 				UTexture2D* Icon = Equipment->GetEquipmentIcon();
 				if (Icon)
 				{
-					Hud->SetBottomInv(Icon,3);
+					// Hud->SetBottomInv(Icon,3);
 					UE_LOG(LogTemp, Log, TEXT("Med2/Icon Load Success"));
 				}
 				else
@@ -227,7 +237,7 @@ void UEquipmentController::AddEquipment(const TObjectPtr<AEquipmentBase>& Equipm
 				UTexture2D* Icon = Equipment->GetEquipmentIcon();
 				if (Icon)
 				{
-					Hud->SetBottomInv(Icon,2);
+					// Hud->SetBottomInv(Icon,2);
 					UE_LOG(LogTemp, Log, TEXT("Med1/Icon Load Success"));
 				}
 				else
@@ -248,7 +258,11 @@ void UEquipmentController::HandleUse()
 {
 	if (!IsValid(CurrentEquippedItem))
 	{
-		UE_LOG(LogTemp, Log, TEXT("[%s] Not Valid Current Equipped Item"), CURRENT_CONTEXT);
+		return;
+	}
+	if (!GetOwner()->HasAuthority())
+	{
+		Server_HandleUse();
 		return;
 	}
 
@@ -264,6 +278,11 @@ void UEquipmentController::HandleEndUse()
 	if (!IsValid(CurrentEquippedItem))
 	{
 		UE_LOG(LogTemp, Log, TEXT("[%s] Not Valid Current Equipped Item"), CURRENT_CONTEXT);
+		return;
+	}
+	if (!GetOwner()->HasAuthority())
+	{
+		Server_HandleEndUse();
 		return;
 	}
 	CurrentEquippedItem->OnEndUse();
@@ -282,6 +301,11 @@ void UEquipmentController::HandleReload()
 	if (!CurrentFirable)
 	{
 		UE_LOG(LogTemp, Log, TEXT("[%s] Current Equipped Item is not a FirableBase"), CURRENT_CONTEXT);
+		return;
+	}
+	if (!GetOwner()->HasAuthority())
+	{
+		Server_HandleReload();
 		return;
 	}
 
@@ -304,7 +328,10 @@ void UEquipmentController::HandleToggleFireMode()
 	}
 
 	AFirableBase* CurrentFirable = Cast<AFirableBase>(CurrentEquippedItem);
-	CurrentFireType = CurrentFirable->ToggleFireMode();
+	if (CurrentFirable)
+	{
+		CurrentFireType = CurrentFirable->ToggleFireMode();
+	}
 }
 
 void UEquipmentController::Equip(const TObjectPtr<AEquipmentBase>& Equipment)
@@ -315,6 +342,10 @@ void UEquipmentController::Equip(const TObjectPtr<AEquipmentBase>& Equipment)
 
 	if (IsValid(CurrentEquippedItem) && IsValid(CachedOwner))
 	{
+		if (GetOwner()->HasAuthority())
+		{
+			CurrentEquippedType = CurrentEquippedItem->GetEquipmentType();
+		}
 		FName SocketName = TEXT("Weapon_M4");
 
 		switch (CurrentEquippedItem->GetEquipmentType())
@@ -352,6 +383,13 @@ void UEquipmentController::Equip(const TObjectPtr<AEquipmentBase>& Equipment)
 		HandleAmmoChanged();
 		UE_LOG(LogTemp, Log, TEXT("[%s] Equipped: %s"), CURRENT_CONTEXT, *CurrentEquippedItem->GetName());
 	}
+	else
+	{
+		if (GetOwner()->HasAuthority())
+		{
+			CurrentEquippedType = EEquipmentType::None;
+		}
+	}
 }
 
 void UEquipmentController::UnEquipCurrentEquipment()
@@ -376,7 +414,10 @@ void UEquipmentController::UnEquipCurrentEquipment()
 			OldMeleeWeapon->ResetAttack();
 		}
 	}
-	
+	if (GetOwner() && GetOwner()->HasAuthority())
+	{
+		CurrentEquippedType = EEquipmentType::None;
+	}
 	CurrentEquippedItem = nullptr;
 }
 
@@ -443,8 +484,31 @@ void UEquipmentController::OnRep_CurrentEquippedItem()
 	}
 	else
 	{
-		UnEquipCurrentEquipment(); 
+		UnEquipCurrentEquipment();
+		CurrentEquippedType = EEquipmentType::None;
 	}
+}
+
+void UEquipmentController::OnRep_CurrentEquippedType()
+{
+	UE_LOG(LogTemp, Warning, TEXT("CurrentEquippedType Replicated: %d"), (int32)CurrentEquippedType);
+}
+
+void UEquipmentController::Server_EquipBySlot_Implementation(int32 SlotNumber)
+{
+	EquipBySlot(SlotNumber);
+}
+void UEquipmentController::Server_HandleUse_Implementation()
+{
+	HandleUse();
+}
+void UEquipmentController::Server_HandleEndUse_Implementation()
+{
+	HandleEndUse();
+}
+void UEquipmentController::Server_HandleReload_Implementation()
+{
+	HandleReload();
 }
 
 void UEquipmentController::OnRep_FirstPrimaryWeapon()

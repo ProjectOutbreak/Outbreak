@@ -3,7 +3,6 @@
 #include "FZombieChaseState.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Navigation/PathFollowingComponent.h"
-#include "Outbreak/Animation/ZombieAnimInstance.h"
 #include "Outbreak/Character/Zombie/CharacterZombie.h"
 #include "Outbreak/Component/ZombieAIComponent.h"
 #include "Outbreak/Util/Define.h"
@@ -52,9 +51,6 @@ void FZombieChaseState::Execute(const EZombieStateType CurrentState, const float
 	Super::Execute(CurrentState, DeltaTime);
 
 	const TObjectPtr<ACharacterPlayer> CurrentTarget = GetTarget();
-
-	UZombieAnimInstance* AnimInst = GetAnimInstance();
-	if (!AnimInst) return;
 	
 	if (!Owner || !CurrentTarget)
 	{
@@ -65,14 +61,15 @@ void FZombieChaseState::Execute(const EZombieStateType CurrentState, const float
 	const FVector ZombieLocation = Owner->GetActorLocation();
 	const FVector PlayerLocation = CurrentTarget->GetActorLocation();
 	const float DistanceToPlayer = FVector::Dist(ZombieLocation, PlayerLocation);
+	const float AttackRange = Owner->GetZombieData()->AttackRange;
 
-	if (DistanceToPlayer <= Owner->GetZombieData()->AttackRange - 50.0f && !AnimInst->IsAttacking())
+	if (DistanceToPlayer <= AttackRange)
 	{
-		AnimInst->PlayAttackMontage();
+		Fsm->ChangeState(EZombieStateType::Attack);
 		return;
 	}
 
-	if (DistanceToPlayer > Owner->GetZombieData()->AttackRange)
+	if (DistanceToPlayer > AttackRange)
 	{
 		UpdateTimer += DeltaTime;
 		if (UpdateTimer >= UpdateInterval)
@@ -81,7 +78,7 @@ void FZombieChaseState::Execute(const EZombieStateType CurrentState, const float
 
 			if (CurrentChaseType == EChaseType::Straight)
 			{
-				const float AcceptanceRadius = Owner->GetZombieData()->AttackRange / 2.0f;
+				const float AcceptanceRadius = AttackRange / 2.0f;
 				AIController->MoveToActor(GetTarget(), AcceptanceRadius, true);	
 			}
 			else if (CurrentChaseType == EChaseType::Arc)
@@ -104,5 +101,4 @@ void FZombieChaseState::Exit(const EZombieStateType NextState)
 	Super::Exit(NextState);
 
 	AIController->GetPathFollowingComponent()->OnRequestFinished.Remove(DelegateHandle);
-	AIController->StopMovement();
 }

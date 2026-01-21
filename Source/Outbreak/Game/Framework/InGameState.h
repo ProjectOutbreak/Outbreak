@@ -5,7 +5,7 @@
 #include "InGameState.generated.h"
 
 UCLASS()
-class OUTBREAK_API AInGameState : public AGameState
+class OUTBREAK_API AInGameState : public AGameStateBase
 {
 	GENERATED_BODY()
 

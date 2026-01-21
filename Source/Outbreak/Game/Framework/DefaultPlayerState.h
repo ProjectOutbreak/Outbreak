@@ -24,13 +24,17 @@ public:
 	int32 GetReserveAmmo(EFirableType Type) const;
 	void ConsumeAmmo(EFirableType Type, int32 AmountToConsume);
 	void AddAmmo(EFirableType Type, int32 InInAmountToAdd = 0);
+	void SetIsDead(bool bDead);
 
+	UFUNCTION(BlueprintCallable)
+	bool IsDead() const {return bIsDead;}
+	
 	FOnPlayerAmmoChangedSignature OnPlayerAmmoChangedDelegate;
-
+	
 protected:
 	virtual void BeginPlay() override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
+	
 	UFUNCTION()
 	void OnRep_ZombieKills();
 	
@@ -49,6 +53,11 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UDataTable> AmmoDataTable;
 
+	UPROPERTY(ReplicatedUsing=OnRep_IsDead, BlueprintReadOnly)
+	bool bIsDead;
+
+	UFUNCTION()
+	void OnRep_IsDead();
 private:
 	void InitializeAmmo();
 };

@@ -24,6 +24,7 @@ public:
 	virtual bool CanUse() const override { return !bIsInUse && !bIsReloading && CurrentAmmoInMag > 0; }
 	virtual bool IsActive() const override;
 	virtual void StartReload(const FOnReloadFinished& DoneCallback);
+	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
 	bool CanReload() const;
 	int32 GetCurrentAmmoInMag() const { return CurrentAmmoInMag; }
@@ -46,8 +47,15 @@ private:
 	void Server_ProcessHit(const FHitResult& HitResult);
 	UFUNCTION(NetMulticast, Unreliable)
 	void Multicast_PlayFireEffects(const FVector MuzzleLocation, const FHitResult& HitResult);
-	
+	UFUNCTION(Client, Reliable)
+	void Client_ApplyRecoil();
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_PlayReloadAnim(bool bIsReloadEmpty);
+	UFUNCTION(Server, Reliable)
+	void Server_ToggleFireMode();
+
 	void RecoverRecoil(float DeltaTime);
+	void ApplyRecoilLogic();
 	int32 GetReservedAmmo() const;
 	
 // --------------------
@@ -71,6 +79,8 @@ protected:
 	
 	FFirableData FirableData;
 	int32 CurrentAmmoInMag = 30;
+
+	UPROPERTY(Replicated)
 	EFireType CurrentFireType = EFireType::Auto;
 	bool bIsReloading = false;
 	bool bIsFiring = false;

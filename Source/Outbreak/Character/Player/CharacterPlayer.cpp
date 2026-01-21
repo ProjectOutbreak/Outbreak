@@ -5,6 +5,7 @@
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/PostProcessComponent.h"
+#include "Engine/DamageEvents.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -21,8 +22,8 @@
 #include "Outbreak/Game/Framework/InGameMode.h"
 #include "Outbreak/Game/Framework/InGameState.h"
 #include "Outbreak/Manager/CharacterSpawnManager.h"
-#include "Outbreak/Public/Utilities/DebugHelper.h"
 #include "Outbreak/UI/InGameHUD.h"
+#include "Outbreak/Util/DataTableHelper.h"
 
 ACharacterPlayer::ACharacterPlayer()
 {
@@ -71,7 +72,11 @@ ACharacterPlayer::ACharacterPlayer()
 	UIComponent->SetupAttachment(RootComponent);
 	UIComponent->SetChildActorClass(ACharacterUIComponent::StaticClass());
 	UIComponent->SetRelativeLocation(FVector::ZeroVector);
+
+	
 }
+
+
 
 void ACharacterPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -79,6 +84,16 @@ void ACharacterPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 
 	DOREPLIFETIME(ThisClass, PlayerData);
 	DOREPLIFETIME(ThisClass, PlayerType);
+}
+
+void ACharacterPlayer::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+	
+	if (!CachedController)
+	{
+		CachedController = NewController;
+	}
 }
 
 void ACharacterPlayer::PostInitializeComponents()
@@ -94,23 +109,7 @@ void ACharacterPlayer::InitCharacterData()
 {
 	Super::InitCharacterData();
 	
-	if (HasAuthority())
-	{
-		const AInGameMode* GameMode = Cast<AInGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
-		if (!GameMode)
-		{
-			UE_LOG(LogTemp, Error, TEXT("[%s] GameMode is null!"), CURRENT_CONTEXT);
-			return;
-		}
-		ACharacterSpawnManager* SpawnManager = GameMode->GetSpawnManager();
-		if (!SpawnManager)
-		{
-			UE_LOG(LogTemp, Error, TEXT("[%s] SpawnManager is null!"), CURRENT_CONTEXT);
-			return;
-		}
-
-		PlayerData = *SpawnManager->GetPlayerData(PlayerType);
-	}
+	DataTableHelper::LoadDataTableToMap(PlayerDataTable, PlayerDataMap);
 	
 	CurrentHealth = PlayerData.MaxHealth;
 	CurrentExtraHealth = 0;
@@ -135,8 +134,6 @@ void ACharacterPlayer::BeginPlay()
 	
 	if (IsLocallyControlled())
 	{
-		const FString DebugMsg = FString::Printf(TEXT("Player Name : %s"), *GetName());
-		PRINT_WITH_CURRENT_CONTEXT(DebugMsg);
 
 		if (ACharacterUIComponent* UIRig = Cast<ACharacterUIComponent>(UIComponent->GetChildActor()))
 		{
@@ -144,12 +141,12 @@ void ACharacterPlayer::BeginPlay()
 		}
 		SetPlayerControl(CurrentCharacterControlType);
 		
-		if (const AInGamePlayerController* PC = Cast<AInGamePlayerController>(GetController()))
+		if (AInGamePlayerController* PC = Cast<AInGamePlayerController>(GetController()))
 		{
-			CachedHUD = Cast<AInGameHUD>(PC->GetHUD());
-			if (!CachedHUD)
+			if (PC->PlayerCameraManager)
 			{
-				UE_LOG(LogTemp, Warning, TEXT("[%s] Failed to cast HUD"), CURRENT_CONTEXT);
+				PC->PlayerCameraManager->ViewPitchMin = -15.0f; 
+				PC->PlayerCameraManager->ViewPitchMax = 20.0f; 
 			}
 		}
 	}
@@ -182,16 +179,16 @@ void ACharacterPlayer::BeginPlay()
 
 void ACharacterPlayer::Die()
 {
-	AController* SavedController = GetController();
-	
-	Super::Die();
-	
 	if (!HasAuthority()) return;
+	
+	AController* SavedController = GetController();
 	
 	if (AInGameMode* Gm = Cast<AInGameMode>(GetWorld()->GetAuthGameMode()))
 	{
-		Gm->OnPlayerDie(SavedController);
+		Gm->OnPlayerDie(this, SavedController);
 	}
+	
+	Super::Die();
 }
 
 void ACharacterPlayer::OnRep_Die()
@@ -205,7 +202,29 @@ void ACharacterPlayer::OnRep_Die()
 	}
 	
 	ClearInputMappings();
-	DetachFromControllerPendingDestroy();
+}
+
+void ACharacterPlayer::OnRep_CurrentHealth()
+{
+	Super::OnRep_CurrentHealth();
+	
+	if (const APlayerController* PC = Cast<APlayerController>(CachedController))
+	{
+		if (AInGameHUD* HUD = Cast<AInGameHUD>(PC->GetHUD()))
+		{
+			HUD->DisplayCurrentHealth(CurrentHealth);
+		}
+	}
+}
+
+void ACharacterPlayer::OnRep_Controller()
+{
+	Super::OnRep_Controller();
+	
+	if (!CachedController)
+	{
+		CachedController = GetController();
+	}
 }
 
 void ACharacterPlayer::ChangePlayerControl()
@@ -231,13 +250,11 @@ void ACharacterPlayer::SetPlayerControl(EPlayerControlType InPlayerControlType)
 
 	SetPlayerControlData(NewCharacterControl);
 
-	const APlayerController* PlayerController = CastChecked<APlayerController>(GetController());
-	UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer());
-	if (Subsystem)
+	const APlayerController* PlayerController = CastChecked<APlayerController>(CachedController);
+	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
 	{
 		Subsystem->ClearAllMappings();
-		const UInputMappingContext* NewMappingContext = NewCharacterControl->InputMappingContext;
-		if (NewMappingContext)
+		if (const UInputMappingContext* NewMappingContext = NewCharacterControl->InputMappingContext)
 		{
 			Subsystem->AddMappingContext(NewMappingContext, 0);
 		}
@@ -269,7 +286,7 @@ void ACharacterPlayer::ClearInputMappings() const
 {
 	if (IsLocallyControlled())
 	{
-		if (const APlayerController* PC = Cast<APlayerController>(GetController()))
+		if (const APlayerController* PC = Cast<APlayerController>(CachedController))
 		{
 			if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer()))
 			{
@@ -289,8 +306,6 @@ void ACharacterPlayer::SetupCollision()
 	MeshComp->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	MeshComp->SetCollisionObjectType(ECollisionChannel::ECC_Pawn);
 	MeshComp->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
-	MeshComp->bOwnerNoSee = true;
-	// MeshComp->SetHiddenInGame(true);
 }
 
 void ACharacterPlayer::SetupMovement()
@@ -303,4 +318,34 @@ void ACharacterPlayer::SetupMovement()
 	MovementComp->MaxStepHeight = 50.f;
 	MovementComp->SetWalkableFloorAngle(55.f);
 	MovementComp->bUseControllerDesiredRotation = true;
+}
+
+void ACharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
+	
+#if !UE_BUILD_SHIPPING
+	PlayerInputComponent->BindKey(EKeys::P, IE_Pressed, this, &ThisClass::Server_DebugTakeDamage);
+	// Test : Call GameOver by key input "L"
+	InputComponent->BindKey(EKeys::L, IE_Pressed, this, &ThisClass::Input_RequestGameOver);
+#endif
+}
+
+void ACharacterPlayer::Server_DebugTakeDamage_Implementation()
+{
+	TakeDamage(10.0f, FDamageEvent(), CachedController, this);
+}
+void ACharacterPlayer::Input_RequestGameOver()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Key Pressed: Requesting Game Over..."));
+	Server_RequestGameOver();
+}
+
+void ACharacterPlayer::Server_RequestGameOver_Implementation()
+{
+	if (AInGameMode* GM = Cast<AInGameMode>(GetWorld()->GetAuthGameMode()))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[Server] Admin Command Received: Game Over!"));
+		GM->GameOver(); // 아까 만든 그 함수 실행
+	}
 }

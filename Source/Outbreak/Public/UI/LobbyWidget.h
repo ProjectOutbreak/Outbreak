@@ -6,7 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "LobbyWidget.generated.h"
 
-class USessionSubsystem;
+class UOutbreakSessionSubsystem;
 class UTextBlock;
 class UButton;
 
@@ -44,15 +44,18 @@ private:
 	UFUNCTION()
 	void OnStartSession(bool bWasSuccessful);
 	UFUNCTION()
-	void OnPlayerListUpdate(const TArray<FString>& PlayerNames);
+	void OnPlayerListUpdate();
 	// ~ End Session Subsystem
 	
 	// ~ Begin Button Callbacks
 	UFUNCTION()
 	void OnClickGameStartButton();
 	// ~ End Button Callbacks
-	
+
+	UFUNCTION()
+	void OnLobbyMembersUpdated(const TArray<FString>& Members);
 	
 	UPROPERTY(Transient)
-	TObjectPtr<USessionSubsystem> SessionsSubsystem;
+	TObjectPtr<UOutbreakSessionSubsystem> SessionsSubsystem;
+	FTimerHandle PlayerListTimerHandle;
 };

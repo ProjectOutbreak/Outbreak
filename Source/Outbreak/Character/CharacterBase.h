@@ -6,7 +6,8 @@
 #include "Outbreak/Util/Define.h"
 #include "CharacterBase.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnAttackHitSignature, AActor*, HitActor, const FHitResult&, HitResult);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAttackOtherCharacterSignature, AActor*, HitActor);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnCharacterDeathSignature, AActor*, DeadActor);
 
 UCLASS(Abstract)
 class OUTBREAK_API ACharacterBase : public ACharacter
@@ -49,7 +50,8 @@ private:
 // Variables
 // --------------------
 public:
-	FOnAttackHitSignature OnAttackHit;
+	FOnAttackOtherCharacterSignature OnAttackOtherCharacter;
+	FOnCharacterDeathSignature OnCharacterDeathDelegate;
 	
 protected:
 	ECharacterType CharacterType = ECharacterType::None;

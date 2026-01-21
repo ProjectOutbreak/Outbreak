@@ -63,6 +63,12 @@ protected:
 	
 	UPROPERTY(BlueprintReadOnly, Category = "Equipment")
 	EEquipmentType CurrentEquipmentType;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Animation|AimOffset")
+	float AimPitch;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Animation|AimOffset")
+	bool bIsFirstPerson;
 	
 	UPROPERTY(Transient)
 	TObjectPtr<ACharacterPlayer> OwnerCharacter;
