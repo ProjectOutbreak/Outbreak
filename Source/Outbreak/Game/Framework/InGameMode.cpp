@@ -195,7 +195,8 @@ bool AInGameMode::IsGameOver() const
 void AInGameMode::GameOver()
 {
 	PRINT_WITH_CURRENT_CONTEXT(TEXT("Game Over!"));
-	
+	if (bHasGameOverTriggered) return;
+	bHasGameOverTriggered = true;
 	if (SpawnManagerInstance)
 	{
 		SpawnManagerInstance->Deactivate();
@@ -207,5 +208,7 @@ void AInGameMode::GameOver()
 	GetWorld()->GetTimerManager().SetTimer(RestartTimerHandle, [this]()
 	{
 		// TODO : Travel To Lobby with clients
+		FString LobbyMap = "/Game/Maps/L_Lobby?listen";
+		GetWorld()->ServerTravel(LobbyMap);
 	}, 5.0f, false);
 }
