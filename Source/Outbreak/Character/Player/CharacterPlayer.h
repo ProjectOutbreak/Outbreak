@@ -50,6 +50,7 @@ public:
 	
 protected:
 	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaTime) override;
 	virtual void InitCharacterData() override;
 	virtual void SetupCollision() override;
 	virtual void SetupMovement() override;
@@ -143,4 +144,9 @@ private:
 	EPlayerControlType CurrentCharacterControlType = EPlayerControlType::FirstPersonView;
 	FGenericTeamId TeamId = 0;
 	bool bIsCutscenePlaying = false;
+	
+	UPROPERTY()
+	float DefaultCameraX = -15.0f;
+	UPROPERTY()
+	float AimDownCameraX = 30.0f;
 };

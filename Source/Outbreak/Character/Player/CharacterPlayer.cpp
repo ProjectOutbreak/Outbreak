@@ -21,6 +21,7 @@
 
 ACharacterPlayer::ACharacterPlayer()
 {
+	PrimaryActorTick.bCanEverTick = true;
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = true;
 	bUseControllerRotationRoll = false;
@@ -44,6 +45,31 @@ ACharacterPlayer::ACharacterPlayer()
 	UIComponent->SetupAttachment(RootComponent);
 	UIComponent->SetChildActorClass(ACharacterUIComponent::StaticClass());
 	UIComponent->SetRelativeLocation(FVector::ZeroVector);
+}
+
+void ACharacterPlayer::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	if (IsLocallyControlled() && CurrentCharacterControlType == EPlayerControlType::FirstPersonView)
+	{
+		FRotator ControlRot = GetControlRotation();
+		float Pitch = ControlRot.Pitch;
+		
+		if (Pitch > 180.0f) Pitch -= 360.0f;
+
+		float TargetX = DefaultCameraX;
+		if (Pitch < 0.0f) 
+		{
+			float Alpha = FMath::Clamp(FMath::Abs(Pitch) / 45.0f, 0.0f, 1.0f);
+    
+			TargetX = FMath::Lerp(DefaultCameraX, AimDownCameraX, Alpha);
+		}
+		FVector CurrentLoc = FollowCamera->GetRelativeLocation();
+		float NewX = FMath::FInterpTo(CurrentLoc.X, TargetX, DeltaTime, 10.0f);
+
+		FollowCamera->SetRelativeLocation(FVector(NewX, CurrentLoc.Y, CurrentLoc.Z));
+	}
 }
 
 void ACharacterPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -113,7 +139,7 @@ void ACharacterPlayer::BeginPlay()
 		{
 			if (PC->PlayerCameraManager)
 			{
-				PC->PlayerCameraManager->ViewPitchMin = -15.0f; 
+				PC->PlayerCameraManager->ViewPitchMin = -45.0f; 
 				PC->PlayerCameraManager->ViewPitchMax = 20.0f; 
 			}
 		}
