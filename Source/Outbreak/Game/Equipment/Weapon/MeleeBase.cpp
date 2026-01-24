@@ -28,7 +28,7 @@ void AMeleeBase::Tick(float DeltaTime)
 
 void AMeleeBase::OnEquip()
 {
-	
+	CachedOwnerCharacter = Cast<ACharacter>(GetOwner());
 }
 
 void AMeleeBase::OnEndUse()
