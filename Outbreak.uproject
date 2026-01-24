@@ -40,6 +40,10 @@
 		{
 			"Name": "CascadeToNiagaraConverter",
 			"Enabled": true
+		},
+		{
+			"Name": "OnlineSubsystemSteam",
+			"Enabled": true
 		}
 	]
 }

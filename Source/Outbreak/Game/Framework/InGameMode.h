@@ -23,12 +23,12 @@ public:
 	
 	void OnPlayerDie(ACharacter* DeadCharacter, AController* Controller);
 	void ProceedToNextLevel() const;
+	void GameOver();
 
 private:
 	void DelayedRefreshSpawnManagerTargets();
 	void RefreshSpawnManagerTargets() const;
 	bool IsGameOver() const;
-	void GameOver();
 
 	UPROPERTY(EditDefaultsOnly, Category = "Config")
 	TSubclassOf<AOutbreakSpectatorPawn> OutbreakSpectatorClass;
@@ -36,7 +36,8 @@ private:
 	TSubclassOf<ACharacterSpawnManager> SpawnManagerClass;
 	UPROPERTY()
 	TObjectPtr<ACharacterSpawnManager> SpawnManagerInstance;
-	
+
+	bool bHasGameOverTriggered = false;
 public:
 	// ~ Begin Getter & Setter
 	FORCEINLINE TObjectPtr<ACharacterSpawnManager> GetSpawnManager() const { return SpawnManagerInstance; }

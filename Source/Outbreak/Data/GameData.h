@@ -3,6 +3,7 @@
 #include "NiagaraSystem.h"
 #include "Outbreak/Util/Define.h"
 #include "StructUtils/InstancedStruct.h"
+#include "Sound/SoundCue.h"
 #include "GameData.generated.h"
 
 USTRUCT()

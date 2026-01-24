@@ -182,6 +182,21 @@ bool ADefaultPlayerState::ConsumeMedicine(EMedicineType Type, int32 Amount)
 
 
 
+void ADefaultPlayerState::SetIsDead(bool bDead)
+{
+	if (HasAuthority())
+	{
+		bIsDead = bDead;
+		ForceNetUpdate();
+		OnRep_IsDead();
+	}
+}
+
+void ADefaultPlayerState::OnRep_IsDead()
+{
+	// TODO : Show Dead Icons on HUD 
+}
+
 void ADefaultPlayerState::BeginPlay()
 {
 	Super::BeginPlay();
@@ -198,6 +213,7 @@ void ADefaultPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 	
 	DOREPLIFETIME(ThisClass, ZombieKills);
 	DOREPLIFETIME_CONDITION(ThisClass, ReserveAmmoArray, COND_OwnerOnly);
+	DOREPLIFETIME(ThisClass, bIsDead);
 	DOREPLIFETIME_CONDITION(ThisClass, ThrowableInventory, COND_OwnerOnly);
 	DOREPLIFETIME_CONDITION(ThisClass, MedicineInventory, COND_OwnerOnly);
 }

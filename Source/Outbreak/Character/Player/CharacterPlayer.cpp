@@ -295,6 +295,8 @@ void ACharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	
 #if !UE_BUILD_SHIPPING
 	PlayerInputComponent->BindKey(EKeys::P, IE_Pressed, this, &ThisClass::Server_DebugTakeDamage);
+	// Test : Call GameOver by key input "L"
+	InputComponent->BindKey(EKeys::L, IE_Pressed, this, &ThisClass::Input_RequestGameOver);
 #endif
 }
 
@@ -308,5 +310,20 @@ void ACharacterPlayer::Server_PickupEquipment_Implementation(class AEquipmentBas
 	if (EquipmentController && IsValid(NewEquipment))
 	{
 		EquipmentController->PickupEquipment(NewEquipment);
+	}
+}
+
+void ACharacterPlayer::Input_RequestGameOver()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Key Pressed: Requesting Game Over..."));
+	Server_RequestGameOver();
+}
+
+void ACharacterPlayer::Server_RequestGameOver_Implementation()
+{
+	if (AInGameMode* GM = Cast<AInGameMode>(GetWorld()->GetAuthGameMode()))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[Server] Admin Command Received: Game Over!"));
+		GM->GameOver(); // 아까 만든 그 함수 실행
 	}
 }

@@ -71,6 +71,9 @@ private:
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 	UFUNCTION(Server, Reliable)
 	void Server_DebugTakeDamage();
+	void Input_RequestGameOver();
+	UFUNCTION(Client,Reliable)
+	void Server_RequestGameOver();
 
 public:
 	bool GetIsCutscenePlaying() const { return bIsCutscenePlaying; }

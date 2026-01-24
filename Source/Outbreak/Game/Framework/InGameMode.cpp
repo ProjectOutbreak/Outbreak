@@ -8,6 +8,7 @@
 #include "Outbreak/Manager/CharacterSpawnManager.h"
 #include "Outbreak/Manager/SoundManager.h"
 #include "Pawn/OutbreakSpectatorPawn.h"
+#include "OutbreakGameLiftSubsystem.h"
 #include "Utilities/DebugHelper.h"
 
 AInGameMode::AInGameMode()
@@ -41,14 +42,6 @@ void AInGameMode::PostLogin(APlayerController* NewPlayer)
 	DelayedRefreshSpawnManagerTargets();
 }
 
-void AInGameMode::Logout(AController* Exiting)
-{
-	Super::Logout(Exiting);
-	
-	PRINT_WITH_CURRENT_CONTEXT(FString::Printf(TEXT("Player Left: %s"), *Exiting->GetName()));
-	
-	DelayedRefreshSpawnManagerTargets();
-}
 
 void AInGameMode::OnPlayerDie(ACharacter* DeadCharacter, AController* Controller)
 {
@@ -106,6 +99,39 @@ void AInGameMode::ProceedToNextLevel() const
 		// 단, 마지막 페이즈는 보스 처치시 게임이 완료 됨(SafeZoneCollision이 없음)
 	}
 	GetWorld()->ServerTravel(NextLevelName, true);
+}
+
+void AInGameMode::Logout(AController* Exiting)
+{
+	Super::Logout(Exiting);
+
+	PRINT_WITH_CURRENT_CONTEXT(FString::Printf(TEXT("Player Left: %s"), *Exiting->GetName()));
+	DelayedRefreshSpawnManagerTargets();
+	
+	if (!IsRunningDedicatedServer()) return;
+
+	int32 RemainingPlayers = 0;
+	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
+	{
+		APlayerController* PC = Iterator->Get();
+		if (PC && PC != Exiting)
+		{
+			RemainingPlayers++;
+		}
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("[InGameMode] Player Logout. Remaining: %d"), RemainingPlayers);
+	if (RemainingPlayers <= 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[InGameMode] All players left. Server Shutting Down..."));
+		if (UGameInstance* GI = GetGameInstance())
+		{
+			if (UOutbreakGameLiftSubsystem* GameLiftSys = GI->GetSubsystem<UOutbreakGameLiftSubsystem>())
+			{
+				GameLiftSys->EndGameServer();
+			}
+		}
+	}
 }
 
 void AInGameMode::DelayedRefreshSpawnManagerTargets()
@@ -169,7 +195,8 @@ bool AInGameMode::IsGameOver() const
 void AInGameMode::GameOver()
 {
 	PRINT_WITH_CURRENT_CONTEXT(TEXT("Game Over!"));
-	
+	if (bHasGameOverTriggered) return;
+	bHasGameOverTriggered = true;
 	if (SpawnManagerInstance)
 	{
 		SpawnManagerInstance->Deactivate();
@@ -181,5 +208,7 @@ void AInGameMode::GameOver()
 	GetWorld()->GetTimerManager().SetTimer(RestartTimerHandle, [this]()
 	{
 		// TODO : Travel To Lobby with clients
+		FString LobbyMap = "/Game/Maps/L_Lobby?listen";
+		GetWorld()->ServerTravel(LobbyMap);
 	}, 5.0f, false);
 }

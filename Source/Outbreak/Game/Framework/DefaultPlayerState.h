@@ -25,6 +25,7 @@ public:
 	int32 GetReserveAmmo(EFirableType Type) const;
 	void ConsumeAmmo(EFirableType Type, int32 AmountToConsume);
 	void AddAmmo(EFirableType Type, int32 InInAmountToAdd = 0);
+	void SetIsDead(bool bDead);
 
 	int32 GetThrowableCount(EThrowableType Type) const;
 	void AddThrowable(EThrowableType Type, int32 Amount);
@@ -34,7 +35,11 @@ public:
 	void AddMedicine(EMedicineType Type, int32 Amount);
 	bool ConsumeMedicine(EMedicineType Type, int32 Amount = 1);
 
+	UFUNCTION(BlueprintCallable)
+	bool IsDead() const {return bIsDead;}
+	
 	FOnPlayerAmmoChangedSignature OnPlayerAmmoChangedDelegate;
+	
 	FOnPlayerInventoryChanged OnInventoryChangedDelegate;
 
 protected:
@@ -68,6 +73,11 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UDataTable> AmmoDataTable;
 
+	UPROPERTY(ReplicatedUsing=OnRep_IsDead, BlueprintReadOnly)
+	bool bIsDead;
+
+	UFUNCTION()
+	void OnRep_IsDead();
 private:
 	void InitializeAmmo();
 };
