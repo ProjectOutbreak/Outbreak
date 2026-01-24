@@ -107,27 +107,6 @@ protected:
 	TObjectPtr<UDataTable> PlayerDataTable;
 	
 	TMap<FString, FPlayerData*> PlayerDataMap;
-	
-	// TODO : for test. delete later
-	UPROPERTY()
-	TObjectPtr<AWeaponBase> SpawnedWeapon;
-	UPROPERTY()
-	TSubclassOf<AM4> WeaponToSpawn;
-	
-	UPROPERTY()
-    TObjectPtr<AWeaponBase> KnifeWeapon;
-    UPROPERTY()
-    TSubclassOf<AKnife> KnifeToSpawn;
-	
-	UPROPERTY()
-	TObjectPtr<AWeaponBase> GrenadeWeapon;
-	UPROPERTY()
-	TSubclassOf<AGranade> GrenadeToSpawn;
-	
-	UPROPERTY()
-	TObjectPtr<AEquipmentBase> HealWeapon;
-	UPROPERTY()
-	TSubclassOf<AFirstAidKit> HealToSpawn;
 
 private:
 	UPROPERTY()
