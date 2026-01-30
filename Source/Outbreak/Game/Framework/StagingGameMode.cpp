@@ -131,22 +131,19 @@ void AStagingGameMode::ImmediateTravelToGame()
 }
 void AStagingGameMode::RequestStartGame()
 {
-	// Get Client's Request of StartGame
-	if (bIsTravelling) return; 
-
-	if (!HasAuthority()) return;
-
-	
-	UE_LOG(LogTemp, Warning, TEXT("[StagingGameMode] Host Player request to start Game... Travelling to InGame Map.."));
-    
-	FString TargetMapPath = TEXT("/Game/Maps/L_TestBed_Play"); 
-	FString Options = TEXT("?listen"); 
+	if (bIsTravelling || !HasAuthority()) return; 
 
 	bIsTravelling = true;
-    
+	
+	FString TargetMapPath = TEXT("/Game/Maps/L_TestBed_Play"); 
+	FString Options = TEXT("?listen"); 
+	
 	UWorld* World = GetWorld();
-	if (World)
+	if (!World) return;
+	
+	if (!World->ServerTravel(TargetMapPath + Options))
 	{
-		World->ServerTravel(TargetMapPath + Options);
+		PRINT_WITH_CURRENT_CONTEXT(FString::Printf(TEXT("ServerTravel to %s failed"), *TargetMapPath));
+		bIsTravelling = false;
 	}
 }

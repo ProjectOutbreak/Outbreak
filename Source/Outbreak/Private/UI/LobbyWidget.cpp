@@ -4,11 +4,9 @@
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
 #include "Framework/GameState/LobbyGameState.h"
-#include "Outbreak/Game/Framework/LobbyGameMode.h"
 #include "Game/Framework/OutbreakSessionSubsystem.h"
 #include "Utilities/DebugHelper.h"
 #include "Game/Controller/LobbyPlayerController.h"
-#include "Framework/GameState/LobbyGameState.h"
 bool ULobbyWidget::Initialize()
 {
 	if (!Super::Initialize()) return false;
@@ -130,10 +128,7 @@ void ULobbyWidget::OnClickGameStartButton()
         
 		Button_GameStart->SetIsEnabled(false); 
 	}
-	else
-	{
-		PRINT_WITH_CURRENT_CONTEXT("Error: Owning Player is not ALobbyPlayerController!");
-	}}
+}
 
 void ULobbyWidget::OnPlayerListUpdate()
 {
@@ -145,13 +140,10 @@ void ULobbyWidget::OnPlayerListUpdate()
 	{
 		PlayerNames = GS->GetPlayerNames();
 		TArray<FString> Names = GS->GetPlayerNames();
-    
-		//UE_LOG(LogTemp, Warning, TEXT(">> Widget Update! Count: %d <<"), Names.Num());
 	}
 	else
 	{
 		PRINT_WITH_CURRENT_CONTEXT("Error: Owning Player is not ALobbyGameState!");
-		UE_LOG(LogTemp, Error, TEXT(">> GameState is NULL or NOT LobbyGameState! <<"));
 		return;
 	}
 	FString FormattedPlayerList = TEXT("Players:\n");
@@ -160,7 +152,10 @@ void ULobbyWidget::OnPlayerListUpdate()
 		FormattedPlayerList.Append(FString::Printf(TEXT("%d. %s\n"), i + 1, *PlayerNames[i]));
 	}
     
-	Text_PlayerList->SetText(FText::FromString(FormattedPlayerList));}
+	Text_PlayerList->SetText(FText::FromString(FormattedPlayerList));
+}
+
 void ULobbyWidget::OnLobbyMembersUpdated(const TArray<FString>& Members)
 {
-}	// OnPlayerListUpdate(Members); 
+	// OnPlayerListUpdate(Members); 
+}
