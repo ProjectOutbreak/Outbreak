@@ -7,11 +7,8 @@
 #include "Components/Button.h"
 #include "Components/CheckBox.h"
 #include "Components/EditableTextBox.h"
-#include "Components/TextBlock.h"
 #include "Components/WidgetSwitcher.h"
 #include "HAL/PlatformApplicationMisc.h"
-#include "Kismet/GameplayStatics.h"
-#include "Outbreak/Game/Framework/LobbyGameMode.h"
 #include "Game/Framework/OutbreakSessionSubsystem.h"
 #include "Utilities/DebugHelper.h"
 
