@@ -24,22 +24,15 @@ class OUTBREAK_API UOutbreakSessionSubsystem : public UGameInstanceSubsystem
 // Functions
 // --------------------
 public:
-	// ---------- Methods ---------- //
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	virtual void Deinitialize() override;
 
-	UFUNCTION(BlueprintCallable, Category = "Session")
 	void HostGame(FString RoomCode, int32 MaxPlayers, bool bUseDedicatedServer);
-	
-	UFUNCTION(BlueprintCallable)
 	void CreateSession(int32 NumPublicConnections, bool IsLAN);
-	UFUNCTION(BlueprintCallable)
     void FindSessions(int32 MaxResults, FString RoomCode);
-	UFUNCTION(BlueprintCallable)
 	void JoinSession(const FBlueprintSessionResult& SessionResult);
 	
 	// Request via AWS Lambda 
-	UFUNCTION(BlueprintCallable)
 	void RequestGameSession();
 	void RequestJoinTicket(FString SessionId, FString IP, int32 Port);
 	TArray<FString> GetSteamLobbyMembers();
@@ -48,6 +41,7 @@ public:
 	void OnSessionParticipantJoined(FName SessionName, const FUniqueNetId& UniqueId);
 
 	FString GetAwsLambdaUrl() const;
+	
 private:
 	// Callback Events
 	void OnCreateSessionCompleted(FName SessionName, bool bWasSuccessful);
@@ -70,23 +64,11 @@ private:
 // Variables
 // --------------------
 public:
-	// ---------- Delegates ---------- //
-	UPROPERTY(BlueprintAssignable)
 	FOnOutbreakFindSessionsComplete OnFindSessionsComplete;
-	
-	UPROPERTY(BlueprintAssignable)
 	FOnOutbreakCreateSessionComplete OnCreateSessionComplete;
-	
-	UPROPERTY(BlueprintAssignable)
 	FOnOutbreakJoinSessionComplete OnJoinSessionComplete;
-	
-	UPROPERTY(BlueprintAssignable)
 	FOnOutbreakDestroySessionComplete OnDestroySessionComplete;
-
-	UPROPERTY(BlueprintAssignable)
 	FOnOutbreakSessionError OnSessionError;
-	
-	UPROPERTY(BlueprintAssignable)
 	FOnLobbyMembersUpdated OnLobbyMembersUpdated;
 	
 private:

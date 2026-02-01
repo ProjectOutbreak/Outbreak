@@ -7,11 +7,7 @@
 #include "Sound/SoundCue.h"
 #include "Outbreak/Util/AsynchronousLoadingHelper.h"
 #include "Utilities/DebugHelper.h"
-#include "OutbreakAuthSubsystem.h"
-#include "OutbreakSessionSubsystem.h"
 #include "Engine/World.h"
-
-
 
 void UOutbreakGameInstance::Init()
 {
@@ -142,21 +138,3 @@ void UOutbreakGameInstance::ApplySelectedTimePreset()
 	ATimeManager* TM = Cast<ATimeManager>(FoundManagers[0]);
 	TM->ApplyPresetFromGameInstance();
 }
-
-void UOutbreakGameInstance::StartIntegrationTest()
-{
-	auto* AuthSys = GetSubsystem<UOutbreakAuthSubsystem>();
-	FString myID = AuthSys ? AuthSys -> GetSteamId() : TEXT("");
-
-	if (myID.IsEmpty())
-	{
-		UE_LOG(LogTemp,Error,TEXT("[TEST] Failed to find Steam ID"));
-		//return;
-	}
-}
-
-void UOutbreakGameInstance::Shutdown()
-{
-	Super::Shutdown();
-}
-

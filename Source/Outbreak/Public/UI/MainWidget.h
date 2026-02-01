@@ -4,12 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "Interfaces/OnlineSessionInterface.h"
 #include "MainWidget.generated.h"
 
+class UEasySessionSubsystem;
 class UWidgetSwitcher;
 class UTextBlock;
-class UOutbreakSessionSubsystem;
 class UEditableTextBox;
 class UButton;
 
@@ -44,25 +43,21 @@ protected:
 	
 private:
 	void SetButtonsEnabled(bool BNewIsEnabled);
-	const TCHAR* JoinSessionResultToText(EOnJoinSessionCompleteResult::Type InResult) const;
 	FString GenerateRandomLobbyCode(int32 Length);
 
 	// ~ Begin Session Subsystem
 	void BindSessionSubsystemCallbacks();
 	void RemoveSessionSubsystemCallbacks();
 	
-	UFUNCTION()
-	void OnCreateSession(bool bWasSuccessful);
-	UFUNCTION()
-	void OnFindSession(const TArray<FBlueprintSessionResult>& SessionResults, bool bWasSuccessful);
-	UFUNCTION()
-	void OnJoinSession(int32 Result);	UFUNCTION()
-	void OnDestroySession(bool bWasSuccessful);
-	UFUNCTION()
-	void OnSessionError(const FString& Reason);
-	UFUNCTION()
-	void OnStartSession(bool bWasSuccessful);
+	void OnStartSessionFailure();
+	void OnFindSessionSuccess(const TArray<FOnlineSessionSearchResult>& SessionResults);
+	void OnFindSessionFailure(const TArray<FOnlineSessionSearchResult>& SessionResults);
+	void OnJoinSessionSuccess();
+	void OnJoinSessionFailure();
+	void OnDestroySessionSuccess();
+	void OnDestroySessionFailure();
 	// ~ End Session Subsystem
+	
 	
 	// ~ Begin Button Callbacks
 	UFUNCTION()
@@ -74,7 +69,7 @@ private:
 	// ~ End Button Callbacks
 	
 	UPROPERTY(Transient)
-	TObjectPtr<UOutbreakSessionSubsystem> SessionsSubsystem;
+	TObjectPtr<UEasySessionSubsystem> SessionsSubsystem;
 	
 	FString CachedCreatedLobbyCode;
 };

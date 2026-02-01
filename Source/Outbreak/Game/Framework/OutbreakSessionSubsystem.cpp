@@ -4,9 +4,9 @@
 #include "OnlineSessionSettings.h"
 #include "Kismet/GameplayStatics.h"
 #include "Online/OnlineSessionNames.h"
-#include "OutbreakAuthSubsystem.h"
 #include "Interfaces/IHttpResponse.h"
 #include "Misc/ConfigCacheIni.h"
+#include "Subsystems/AwsSubsystem.h"
 
 const FName KEY_ROOM_CODE(TEXT("ROOM_CODE"));
 const FName KEY_GAME_ID(TEXT("GAME_ID"));
@@ -313,7 +313,8 @@ void UOutbreakSessionSubsystem::OnJoinSessionCompleted(FName SessionName, EOnJoi
                 PC->ClientTravel(ConnectInfo, TRAVEL_Absolute);
             }
         }
-    }}
+    }
+}
 
 void UOutbreakSessionSubsystem::RequestGameSession()
 {
@@ -331,7 +332,7 @@ void UOutbreakSessionSubsystem::RequestGameSession()
         OnSessionError.Broadcast(TEXT("Steam Error: Lobby Members Not Found"));
         return;
     }
-    UOutbreakAuthSubsystem* AuthSys = GetGameInstance()->GetSubsystem<UOutbreakAuthSubsystem>();
+    UAwsSubsystem* AuthSys = GetGameInstance()->GetSubsystem<UAwsSubsystem>();
     if (!AuthSys)
     {
         UE_LOG(LogTemp, Error, TEXT("[RequestGameSession] AuthSystem Error"));
@@ -390,7 +391,7 @@ void UOutbreakSessionSubsystem::RequestJoinTicket(FString SessionId, FString IP,
 {
     SavedJoinIP = IP;
     SavedJoinPort = Port;
-    UOutbreakAuthSubsystem* AuthSys = GetGameInstance()->GetSubsystem<UOutbreakAuthSubsystem>();
+    UAwsSubsystem* AuthSys = GetGameInstance()->GetSubsystem<UAwsSubsystem>();
     FString MySteamId = AuthSys->GetSteamId();
 
     // Get URL from GConfig
