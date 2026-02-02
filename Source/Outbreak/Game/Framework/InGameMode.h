@@ -18,7 +18,7 @@ class OUTBREAK_API AInGameMode : public AGameModeBase
 public:
 	AInGameMode();
 	virtual void BeginPlay() override;
-	virtual void PostLogin(APlayerController* NewPlayer) override;
+	virtual void HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer) override;
 	virtual void Logout(AController* Exiting) override;
 	
 	void OnPlayerDie(ACharacter* DeadCharacter, AController* Controller);
@@ -26,8 +26,9 @@ public:
 	void GameOver();
 
 private:
+	void InstantiateSpawnManager();
 	void DelayedRefreshSpawnManagerTargets();
-	void RefreshSpawnManagerTargets() const;
+	void RefreshSpawnManagerTargets();
 	bool IsGameOver() const;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Config")

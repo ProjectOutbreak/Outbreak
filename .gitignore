@@ -90,4 +90,5 @@ Content/MuzzleFlash/*
 Content/Vefects/*
 Content/Devs/*
 .svn/*
-Plugins/*
+Plugins/Developer/*
+Plugins/Plugins_GameLiftServerSDK/*

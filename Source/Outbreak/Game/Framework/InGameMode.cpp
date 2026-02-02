@@ -26,22 +26,46 @@ void AInGameMode::BeginPlay()
 	}
 }
 
-void AInGameMode::PostLogin(APlayerController* NewPlayer)
+void AInGameMode::HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer)
 {
-	Super::PostLogin(NewPlayer);
-	
-	PRINT_WITH_CURRENT_CONTEXT(FString::Printf(TEXT("Player Joined: %s"), *NewPlayer->GetName()));
-	
-	if (!SpawnManagerInstance)
-	{
-		FActorSpawnParameters SpawnParams;
-		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		SpawnManagerInstance = GetWorld()->SpawnActor<ACharacterSpawnManager>(SpawnManagerClass, SpawnParams);
-	}
+	Super::HandleStartingNewPlayer_Implementation(NewPlayer);
 	
 	DelayedRefreshSpawnManagerTargets();
+	
+	PRINT_WITH_CURRENT_CONTEXT(FString::Printf(TEXT("Handling Starting New Player: %s"), *NewPlayer->GetName()));
 }
 
+void AInGameMode::Logout(AController* Exiting)
+{
+	Super::Logout(Exiting);
+
+	PRINT_WITH_CURRENT_CONTEXT(FString::Printf(TEXT("Player Left: %s"), *Exiting->GetName()));
+	DelayedRefreshSpawnManagerTargets();
+	
+	if (!IsRunningDedicatedServer()) return;
+
+	int32 RemainingPlayers = 0;
+	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
+	{
+		const APlayerController* PC = Iterator->Get();
+		if (PC && PC != Exiting)
+		{
+			RemainingPlayers++;
+		}
+	}
+
+	if (RemainingPlayers <= 0)
+	{
+		if (const UGameInstance* GI = GetGameInstance())
+		{
+			if (UOutbreakGameLiftSubsystem* GameLiftSys = GI->GetSubsystem<UOutbreakGameLiftSubsystem>())
+			{
+				PRINT_WITH_CURRENT_CONTEXT(TEXT("Ending Game Session with GameLift..."));
+				GameLiftSys->EndGameServer();
+			}
+		}
+	}
+}
 
 void AInGameMode::OnPlayerDie(ACharacter* DeadCharacter, AController* Controller)
 {
@@ -101,39 +125,6 @@ void AInGameMode::ProceedToNextLevel() const
 	GetWorld()->ServerTravel(NextLevelName, true);
 }
 
-void AInGameMode::Logout(AController* Exiting)
-{
-	Super::Logout(Exiting);
-
-	PRINT_WITH_CURRENT_CONTEXT(FString::Printf(TEXT("Player Left: %s"), *Exiting->GetName()));
-	DelayedRefreshSpawnManagerTargets();
-	
-	if (!IsRunningDedicatedServer()) return;
-
-	int32 RemainingPlayers = 0;
-	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
-	{
-		APlayerController* PC = Iterator->Get();
-		if (PC && PC != Exiting)
-		{
-			RemainingPlayers++;
-		}
-	}
-
-	UE_LOG(LogTemp, Warning, TEXT("[InGameMode] Player Logout. Remaining: %d"), RemainingPlayers);
-	if (RemainingPlayers <= 0)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[InGameMode] All players left. Server Shutting Down..."));
-		if (UGameInstance* GI = GetGameInstance())
-		{
-			if (UOutbreakGameLiftSubsystem* GameLiftSys = GI->GetSubsystem<UOutbreakGameLiftSubsystem>())
-			{
-				GameLiftSys->EndGameServer();
-			}
-		}
-	}
-}
-
 void AInGameMode::DelayedRefreshSpawnManagerTargets()
 {
 	FTimerHandle TimerHandle;
@@ -143,9 +134,13 @@ void AInGameMode::DelayedRefreshSpawnManagerTargets()
 	GetWorld()->GetTimerManager().SetTimer(TimerHandle, TimerDelegate, 1.0f, false);
 }
 
-void AInGameMode::RefreshSpawnManagerTargets() const
+void AInGameMode::RefreshSpawnManagerTargets()
 {
-	if (!SpawnManagerInstance) return;
+	PRINT_WITH_CURRENT_CONTEXT(TEXT("Refreshing Spawn Manager Targets..."));
+	if (!SpawnManagerInstance)
+	{
+		InstantiateSpawnManager();
+	}
 
 	TArray<AActor*> PlayerPawns;
 	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
@@ -161,6 +156,7 @@ void AInGameMode::RefreshSpawnManagerTargets() const
 
 	if (PlayerPawns.Num() > 0)
 	{
+		PRINT_WITH_CURRENT_CONTEXT(FString::Printf(TEXT("Refreshing Spawn Manager Targets. Active Players: %d"), PlayerPawns.Num()));
 		SpawnManagerInstance->UpdateActivePlayers(PlayerPawns);
         
 		if (!SpawnManagerInstance->IsActivated())
@@ -211,4 +207,14 @@ void AInGameMode::GameOver()
 		FString LobbyMap = "/Game/Maps/L_Lobby?listen";
 		GetWorld()->ServerTravel(LobbyMap);
 	}, 5.0f, false);
+}
+
+void AInGameMode::InstantiateSpawnManager()
+{
+	if (!SpawnManagerInstance && SpawnManagerClass)
+	{
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		SpawnManagerInstance = GetWorld()->SpawnActor<ACharacterSpawnManager>(SpawnManagerClass, SpawnParams);
+	}
 }
