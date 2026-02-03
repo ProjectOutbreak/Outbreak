@@ -2,6 +2,7 @@
 
 #include "UI/MainWidget.h"
 #include "EasySessionSubsystem.h"
+#include "Subsystems/AwsSubsystem.h"
 #include "OnlineSessionSettings.h"
 #include "OnlineSubsystemUtils.h"
 #include "Components/Button.h"
@@ -9,6 +10,7 @@
 #include "Components/EditableTextBox.h"
 #include "Components/WidgetSwitcher.h"
 #include "HAL/PlatformApplicationMisc.h"
+#include "Kismet/GameplayStatics.h"
 #include "Utilities/DebugHelper.h"
 
 const FName KEY_ROOM_CODE(TEXT("ROOM_CODE"));
@@ -66,6 +68,7 @@ void UMainWidget::BindSessionSubsystemCallbacks()
 	SessionsSubsystem = GameInstance->GetSubsystem<UEasySessionSubsystem>();
 	if (SessionsSubsystem)
 	{
+		SessionsSubsystem->OnStartSessionSuccess.AddUObject(this, &UMainWidget::OnStartSessionSuccess);
 		SessionsSubsystem->OnStartSessionFailure.AddUObject(this, &ThisClass::OnStartSessionFailure);
 		SessionsSubsystem->OnFindSessionsSuccess.AddUObject(this, &ThisClass::OnFindSessionSuccess);
 		SessionsSubsystem->OnFindSessionsFailure.AddUObject(this, &ThisClass::OnFindSessionFailure);
@@ -74,12 +77,14 @@ void UMainWidget::BindSessionSubsystemCallbacks()
 		SessionsSubsystem->OnDestroySessionSuccess.AddUObject(this, &ThisClass::OnDestroySessionSuccess);
 		SessionsSubsystem->OnDestroySessionFailure.AddUObject(this, &ThisClass::OnDestroySessionFailure);
 	}
+	AwsSubsystem = GameInstance->GetSubsystem<UAwsSubsystem>();
 }
 
 void UMainWidget::RemoveSessionSubsystemCallbacks()
 {
 	if (SessionsSubsystem)
 	{
+		SessionsSubsystem->OnStartSessionSuccess.RemoveAll(this);
 		SessionsSubsystem->OnStartSessionFailure.RemoveAll(this);
 		SessionsSubsystem->OnFindSessionsSuccess.RemoveAll(this);
 		SessionsSubsystem->OnFindSessionsFailure.RemoveAll(this);
@@ -87,6 +92,30 @@ void UMainWidget::RemoveSessionSubsystemCallbacks()
 		SessionsSubsystem->OnJoinSessionFailure.RemoveAll(this);
 		SessionsSubsystem->OnDestroySessionSuccess.RemoveAll(this);
 		SessionsSubsystem->OnDestroySessionFailure.RemoveAll(this);
+	}
+}
+
+void UMainWidget::OnStartSessionSuccess()
+{
+	if (!SessionsSubsystem->IsServer()) return;
+
+	bool bUseDedicated = false;
+	if (CheckBox_UseDedicated)
+	{
+		bUseDedicated = CheckBox_UseDedicated->IsChecked();
+	}
+	if (bUseDedicated)
+	{
+		if (AwsSubsystem)
+		{
+			PRINT_WITH_CURRENT_CONTEXT("Requesting AWS GameLift Session");
+			AwsSubsystem->RequestGameSession();
+		}
+	}
+	else
+	{
+		PRINT_WITH_CURRENT_CONTEXT("Opening Listen Server Lobby");
+		UGameplayStatics::OpenLevel(GetWorld(), "L_Lobby", true, "listen");
 	}
 }
 
@@ -98,7 +127,7 @@ void UMainWidget::OnStartSessionFailure()
 void UMainWidget::OnFindSessionSuccess(const TArray<FOnlineSessionSearchResult>& SessionResults)
 {
 	const FString LobbyCode = ETB_LobbyCode->GetText().ToString().ToUpper();
-
+	
 	if (SessionResults.Num() == 0)
 	{
 		SetButtonsEnabled(true);
@@ -132,24 +161,20 @@ void UMainWidget::OnFindSessionFailure(const TArray<FOnlineSessionSearchResult>&
 
 void UMainWidget::OnJoinSessionSuccess()
 {
-	const IOnlineSubsystem* Subsystem = Online::GetSubsystem(GetWorld());
-	if (!Subsystem) return;
-	
-	const IOnlineSessionPtr SessionInterface = Subsystem->GetSessionInterface();
-	if (!SessionInterface.IsValid()) return;
+	FString ServerIP = SessionsSubsystem->GetCurrentSessionProperty("SERVER_IP");
+	FString GameSessionId = SessionsSubsystem->GetCurrentSessionProperty("GameSessionId");
+	FString ServerPortStr = SessionsSubsystem->GetCurrentSessionProperty("SERVER_PORT");
 
-	FString Address;
-	SessionInterface->GetResolvedConnectString(NAME_GameSession, Address);
-	if (Address.Contains(TEXT(":0")))
+	if (!ServerIP.IsEmpty() && !ServerPortStr.IsEmpty() && AwsSubsystem)
 	{
-		Address.ReplaceInline(TEXT(":0"), TEXT(":7777"));
+		PRINT_WITH_CURRENT_CONTEXT("AWS Dedicated Server Found. Requesting Ticket...");
+		int32 Port = FCString::Atoi(*ServerPortStr); 
+		AwsSubsystem->RequestJoinTicket(GameSessionId, ServerIP, Port);
 	}
-	else if (!Address.Contains(TEXT(":")))
+	else
 	{
-		Address += TEXT(":7777");
+		PRINT_WITH_CURRENT_CONTEXT("Connected via Listen Server... Traveling...");
 	}
-	
-	PRINT_WITH_CURRENT_CONTEXT(FString::Printf(TEXT("Joining session at address: %s"), *Address));
 }
 
 void UMainWidget::OnJoinSessionFailure()
@@ -199,6 +224,8 @@ void UMainWidget::OnClickCreateGameButton()
 		FEasySessionSettings Settings;
 		Settings.NumPublicConnections = NumPublicConnections;
 		Settings.bIsDedicated = bUseDedicated;
+		Settings.bStartAfterCreate = false;
+		Settings.CustomProperties.Add("ROOM_CODE",CachedCreatedLobbyCode);
 		Settings.CustomProperties.Add(GKey_Lobby_Code.ToString(), CachedCreatedLobbyCode);
 
 		SessionsSubsystem->CreateSession(Settings);

@@ -4,9 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Subsystems/AwsSubsystem.h"
 #include "MainWidget.generated.h"
 
 class UEasySessionSubsystem;
+class UAwsSubsystem;
 class UWidgetSwitcher;
 class UTextBlock;
 class UEditableTextBox;
@@ -48,7 +50,8 @@ private:
 	// ~ Begin Session Subsystem
 	void BindSessionSubsystemCallbacks();
 	void RemoveSessionSubsystemCallbacks();
-	
+
+	void OnStartSessionSuccess();
 	void OnStartSessionFailure();
 	void OnFindSessionSuccess(const TArray<FOnlineSessionSearchResult>& SessionResults);
 	void OnFindSessionFailure(const TArray<FOnlineSessionSearchResult>& SessionResults);
@@ -70,6 +73,6 @@ private:
 	
 	UPROPERTY(Transient)
 	TObjectPtr<UEasySessionSubsystem> SessionsSubsystem;
-	
+	TObjectPtr<UAwsSubsystem> AwsSubsystem;
 	FString CachedCreatedLobbyCode;
 };
