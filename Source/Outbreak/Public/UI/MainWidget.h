@@ -59,6 +59,7 @@ private:
 	void OnJoinSessionFailure();
 	void OnDestroySessionSuccess();
 	void OnDestroySessionFailure();
+	void OnAwsRequestError(const FString& ErrorMsg);
 	// ~ End Session Subsystem
 	
 	

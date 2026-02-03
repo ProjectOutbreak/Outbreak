@@ -8,6 +8,7 @@
 #include "HttpModule.h"
 #include "AwsSubsystem.generated.h"
 
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnAwsRequestFailure,const FString&);
 UCLASS()
 class OUTBREAK_API UAwsSubsystem : public UGameInstanceSubsystem
 {
@@ -22,8 +23,10 @@ public:
 	void RequestGameSession();
 	void RequestJoinTicket(FString SessionId, FString IP, int32 Port);
 	TArray<FString> GetSteamLobbyMembers();
-
 	FString GetAwsLambdaUrl() const;
+
+	// Delegates
+	FOnAwsRequestFailure OnAwsRequestFailure;
 	
 private:
 	void OnJoinTicketReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);

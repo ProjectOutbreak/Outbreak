@@ -78,6 +78,10 @@ void UMainWidget::BindSessionSubsystemCallbacks()
 		SessionsSubsystem->OnDestroySessionFailure.AddUObject(this, &ThisClass::OnDestroySessionFailure);
 	}
 	AwsSubsystem = GameInstance->GetSubsystem<UAwsSubsystem>();
+	if (AwsSubsystem)
+	{
+		AwsSubsystem->OnAwsRequestFailure.AddUObject(this,&ThisClass::OnAwsRequestError);
+	}
 }
 
 void UMainWidget::RemoveSessionSubsystemCallbacks()
@@ -121,7 +125,7 @@ void UMainWidget::OnStartSessionSuccess()
 
 void UMainWidget::OnStartSessionFailure()
 {
-	SetButtonsEnabled(false);
+	SetButtonsEnabled(true);
 }
 
 void UMainWidget::OnFindSessionSuccess(const TArray<FOnlineSessionSearchResult>& SessionResults)
@@ -190,6 +194,19 @@ void UMainWidget::OnDestroySessionSuccess()
 void UMainWidget::OnDestroySessionFailure()
 {
 	PRINT_WITH_CURRENT_CONTEXT("Failed to Destroy Session");
+}
+
+void UMainWidget::OnAwsRequestError(const FString& ErrorMsg)
+{
+	PRINT_WITH_CURRENT_CONTEXT(FString::Printf(TEXT("AWS Error: %s"),*ErrorMsg));
+	if (SessionsSubsystem)
+	{
+		SessionsSubsystem->DestroySession();
+	}
+	if (Button_CreateLobby)
+	{
+		Button_CreateLobby->SetIsEnabled(true);
+	}
 }
 
 void UMainWidget::OnClickCreateGameButton()
