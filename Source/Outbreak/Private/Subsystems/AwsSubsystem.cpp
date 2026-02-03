@@ -61,14 +61,8 @@ void UAwsSubsystem::RequestGameSession()
         UE_LOG(LogTemp, Error, TEXT("[RequestGameSession] No Lobby Members Found (Steam Error?)"));
         return;
     }
-    UAwsSubsystem* AuthSys = GetGameInstance()->GetSubsystem<UAwsSubsystem>();
-    if (!AuthSys)
-    {
-        UE_LOG(LogTemp, Error, TEXT("[RequestGameSession] AuthSystem Error"));
-        return;
-    }
     // Get Steam Ticket from SteamAuth
-    FString ticket = AuthSys->GetSteamAuthTicket();
+    FString ticket = GetSteamAuthTicket();
     if (ticket.IsEmpty())
     {
         UE_LOG(LogTemp, Error, TEXT("[RequestGameSession] Steam Ticket is not found. Check Out Steam Client! "));
@@ -85,7 +79,7 @@ void UAwsSubsystem::RequestGameSession()
     // Create Json Body
     TSharedPtr<FJsonObject> RequestObj = MakeShareable(new FJsonObject);
     RequestObj->SetStringField("ticket", ticket);
-    RequestObj->SetStringField("SteamId", AuthSys->GetSteamId());
+    RequestObj->SetStringField("SteamId", GetSteamId());
     TArray<TSharedPtr<FJsonValue>> JsonMembers;
     for (const FString& MemberID : LobbyMembers)
     {
