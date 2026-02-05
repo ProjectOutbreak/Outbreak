@@ -52,6 +52,16 @@ protected:
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<USkeletalMeshComponent> EquipmentMesh;
 
-	UPROPERTY()
+	UPROPERTY(EditAnywhere)
 	class UBoxComponent* InteractionBox;
+
+public:
+	UPROPERTY(EditAnywhere)
+	bool bIsAmmoPack = false;
+
+	UPROPERTY(EditAnywhere)
+	EFirableType SupplyAmmoType = EFirableType::AssaultRifle;
+
+	UPROPERTY(EditAnywhere)
+	int32 SupplyAmount = 50;
 };
