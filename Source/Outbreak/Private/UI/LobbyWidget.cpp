@@ -13,7 +13,6 @@ bool ULobbyWidget::Initialize()
 {
 	if (!Super::Initialize()) return false;
 	
-	OnPlayerListUpdate();	
 	return true;
 }
 
