@@ -9,6 +9,7 @@
 #include "Interfaces/IHttpResponse.h"
 #include "Interfaces/OnlineIdentityInterface.h"
 #include "Interfaces/OnlineSessionInterface.h"
+#include "Utilities/DebugHelper.h"
 
 void UAwsSubsystem::Deinitialize()
 {
@@ -21,7 +22,7 @@ FString UAwsSubsystem::GetSteamId() const
 {
 	if (IsRunningDedicatedServer())
 	{
-		UE_LOG(LogTemp, Error, TEXT("Dedicated Server Skipping SteamAuth"))
+		PRINT_WITH_CURRENT_CONTEXT(TEXT("Dedicated Server Skipping SteamAuth"));
 		return TEXT("Server_No_SteamID");
 	}
 	if (IOnlineSubsystem* Subsystem = Online::GetSubsystem(GetWorld(), SteamName))
@@ -51,28 +52,31 @@ void UAwsSubsystem::RequestGameSession()
 	UEasySessionSubsystem* SessionSub = GetGameInstance()->GetSubsystem<UEasySessionSubsystem>();
     if (!SessionSub->IsAdmin()) 
     {
-       UE_LOG(LogTemp, Warning, TEXT("[RequestGameSession] Only Host can request GameSession."));
+       PRINT_WITH_CURRENT_CONTEXT(TEXT("Only Host can request GameSession."));
        return;
     }
     
     TArray<FString> LobbyMembers = GetSteamLobbyMembers();
     if (LobbyMembers.Num() == 0)
     {
-        UE_LOG(LogTemp, Error, TEXT("[RequestGameSession] No Lobby Members Found (Steam Error?)"));
+        FString ErrorMsg = TEXT(" No Lobby Members Found (Steam Error)");
+    	OnAwsRequestFailure.Broadcast(ErrorMsg);
         return;
     }
     // Get Steam Ticket from SteamAuth
     FString ticket = GetSteamAuthTicket();
     if (ticket.IsEmpty())
     {
-        UE_LOG(LogTemp, Error, TEXT("[RequestGameSession] Steam Ticket is not found. Check Out Steam Client! "));
+    	FString ErrorMsg = TEXT(" No Ticket Found (Steam Error)");
+    	OnAwsRequestFailure.Broadcast(ErrorMsg);
         return;
     }
     // Get URL from GConfig
     FString RequestURL = GetAwsLambdaUrl();
     if (RequestURL.IsEmpty())
     {
-        UE_LOG(LogTemp, Error, TEXT("[RequestGameSession] Lambda URL is missing in Game.ini"));
+    	FString ErrorMsg = TEXT(" No Lambda URL Found (Steam Error)");
+    	OnAwsRequestFailure.Broadcast(ErrorMsg);
         return;
     }
     
@@ -103,7 +107,7 @@ void UAwsSubsystem::RequestGameSession()
     HttpRequest->SetTimeout(15.0f);
 
     HttpRequest->OnProcessRequestComplete().BindUObject(this, &UAwsSubsystem::OnGameSessionResponseReceived);
-    UE_LOG(LogTemp, Log, TEXT("[RequestGameSession] Requesting GameSession..."));
+    PRINT_WITH_CURRENT_CONTEXT(TEXT("[RequestGameSession] Requesting GameSession..."));
     HttpRequest->ProcessRequest();
 }
 
@@ -118,7 +122,8 @@ void UAwsSubsystem::RequestJoinTicket(FString SessionId, FString IP, int32 Port)
     FString RequestURL = GetAwsLambdaUrl();
     if (RequestURL.IsEmpty())
     {
-        UE_LOG(LogTemp, Error, TEXT("[RequestGameSession] Lambda URL is missing in Game.ini"));
+    	FString ErrorMsg = TEXT("No Lambda URL Found (Steam Error)");
+    	OnAwsRequestFailure.Broadcast(ErrorMsg);
         return;
     }
 
@@ -146,7 +151,7 @@ void UAwsSubsystem::RequestJoinTicket(FString SessionId, FString IP, int32 Port)
     // bind callback 
     HttpRequest->OnProcessRequestComplete().BindUObject(this, &UAwsSubsystem::OnJoinTicketReceived);
     
-    UE_LOG(LogTemp, Log, TEXT("[Join] Sending Ticket Request to AWS..."));
+    PRINT_WITH_CURRENT_CONTEXT(TEXT("Sending Ticket Request to AWS..."));
     HttpRequest->ProcessRequest();
 }
 
@@ -195,7 +200,7 @@ FString UAwsSubsystem::GetAwsLambdaUrl() const
 	{
 		LambdaURL = TEXT("https://") + LambdaURL;
 	}
-	UE_LOG(LogTemp, Warning, TEXT(" [Config Check] Loaded URL: [%s]"), *LambdaURL);
+	PRINT_WITH_CURRENT_CONTEXT(FString::Printf(TEXT("Loaded URL: [%s]"), *LambdaURL));
 	return LambdaURL;
 }
 
@@ -204,44 +209,48 @@ void UAwsSubsystem::OnJoinTicketReceived(FHttpRequestPtr Request, FHttpResponseP
 	if (!bWasSuccessful || !Response.IsValid() || Response->GetResponseCode() != 200)
 	{
 		FString ErrorMsg = Response.IsValid() ? FString::Printf(TEXT("HTTP Error: %d"), Response->GetResponseCode()) : TEXT("Connection Timeout");
-		UE_LOG(LogTemp, Error, TEXT("[Join] Ticket Request Failed: %s"), *ErrorMsg);
+		OnAwsRequestFailure.Broadcast(ErrorMsg);
 		return;
 	}
+	const int32 ResponseCode = Response->GetResponseCode();
+	if (ResponseCode != 200)
+	{
+		OnAwsRequestFailure.Broadcast(FString::Printf(TEXT("Ticket Server Error: %d"), ResponseCode));
+		return;
+	}
+	
 	FString ResponseBody = Response->GetContentAsString();
 	TSharedPtr<FJsonObject> JsonObject;
 	TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(ResponseBody);
 
-	if (FJsonSerializer::Deserialize(Reader, JsonObject) && JsonObject.IsValid())
+	if (!FJsonSerializer::Deserialize(Reader, JsonObject) && JsonObject.IsValid())
 	{
-		if (JsonObject->HasField("errorMessage"))
-		{
-			FString ServerError = JsonObject->GetStringField("errorMessage");
-			UE_LOG(LogTemp, Error, TEXT("[Join] Lambda Error: %s"), *ServerError);
-			return;
-		}
-
-		if (JsonObject->HasField("ticket"))
-		{
-			FString Ticket = JsonObject->GetStringField("ticket");
-			UE_LOG(LogTemp, Log, TEXT("[Join] Ticket Received! : %s"), *Ticket);
-
-			FString ConnectURL = FString::Printf(TEXT("%s:%d?PlayerSessionId=%s"), *SavedJoinIP, SavedJoinPort, *Ticket);
-            
-			APlayerController* PC = GetGameInstance()->GetFirstLocalPlayerController();
-			if (PC)
-			{
-				UE_LOG(LogTemp, Warning, TEXT("[Join] Traveling to Dedicated Server..."));
-				PC->ClientTravel(ConnectURL, TRAVEL_Absolute);
-			}
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("[Join] JSON Response has no 'ticket' field"));
-		}
+		OnAwsRequestFailure.Broadcast(TEXT("Invalid Ticket Data Format"));
+		return;
 	}
-	else
+	if (JsonObject->HasField("errorMessage"))
 	{
-		UE_LOG(LogTemp, Error, TEXT("[Join] JSON Parsing Failed"));
+		FString ServerError = JsonObject->GetStringField("errorMessage");
+		OnAwsRequestFailure.Broadcast(TEXT("Invalid Ticket Data Format"));
+		return;
+	}
+	if (!JsonObject->HasField("ticket"))
+	{
+		OnAwsRequestFailure.Broadcast(TEXT("Ticket Not Found"));
+	}
+	FString Ticket = JsonObject->GetStringField("ticket");
+	if (Ticket.IsEmpty())
+	{
+		OnAwsRequestFailure.Broadcast(TEXT("Ticket Not Found in Response"));
+		return;
+	}
+	FString ConnectURL = FString::Printf(TEXT("%s:%d?PlayerSessionId=%s"), *SavedJoinIP, SavedJoinPort, *Ticket);
+            
+	APlayerController* PC = GetGameInstance()->GetFirstLocalPlayerController();
+	if (PC)
+	{
+		PRINT_WITH_CURRENT_CONTEXT(TEXT("Traveling to Dedicated Server"));
+		PC->ClientTravel(ConnectURL, TRAVEL_Absolute);
 	}
 }
 
@@ -251,105 +260,88 @@ void UAwsSubsystem::OnGameSessionResponseReceived(FHttpRequestPtr Request, FHttp
 	
     if (!bWasSuccessful || !Response.IsValid())
     {
-        UE_LOG(LogTemp, Error, TEXT("[AWS] Request Failed or No Response"));
-        return;
+    	OnAwsRequestFailure.Broadcast(TEXT("Connection Failed")); 
+    	return;        
     }
+	
     const int32 ResponseCode = Response->GetResponseCode();
-    switch (ResponseCode)
-    {
-    case 200:
-        {
-            UE_LOG(LogTemp,Warning,TEXT("[AWS] Request Successfully Sent"));
-        }
-        break;
-    case 400:
-    case 403:
-        {
-            UE_LOG(LogTemp, Warning, TEXT("[AWS] Client Error: %d"), ResponseCode);
-        }
-        break;
-    case 500:
-    case 502:
-    case 503:
-        {
-            UE_LOG(LogTemp, Error, TEXT("[AWS] Server Error: %d"), ResponseCode);
-        }
-        break;
-    default:
-        {
-            UE_LOG(LogTemp, Error, TEXT("[AWS] Unknown Code: %d"), ResponseCode);
-        }
-        break;
-    }
-    
+	if (ResponseCode != 200)
+	{
+		OnAwsRequestFailure.Broadcast(FString::Printf(TEXT("Server Error: %d"), ResponseCode));
+		return;
+	}
+	
     FString ResponseStr = Response->GetContentAsString();
     
     TSharedPtr<FJsonObject> RootObject;
     TSharedRef<TJsonReader<TCHAR>> Reader = TJsonReaderFactory<TCHAR>::Create(ResponseStr);
-    
-    if (FJsonSerializer::Deserialize(Reader, RootObject) && RootObject.IsValid())
+	
+	if (!FJsonSerializer::Deserialize(Reader, RootObject))
+	{
+		OnAwsRequestFailure.Broadcast(TEXT("Invalid Data Format"));
+		return;
+	}
+	
+    TSharedPtr<FJsonObject> DataObject = RootObject;
+
+    if (RootObject->HasField("body") && RootObject->HasTypedField<EJson::String>("body"))
     {
-       TSharedPtr<FJsonObject> DataObject = RootObject;
-
-       if (RootObject->HasField("body") && RootObject->HasTypedField<EJson::String>("body"))
+       FString BodyString = RootObject->GetStringField("body");
+       TSharedRef<TJsonReader<TCHAR>> BodyReader = TJsonReaderFactory<TCHAR>::Create(BodyString);
+       TSharedPtr<FJsonObject> BodyObject;
+       if (FJsonSerializer::Deserialize(BodyReader, BodyObject) && BodyObject.IsValid())
        {
-           FString BodyString = RootObject->GetStringField("body");
-           TSharedRef<TJsonReader<TCHAR>> BodyReader = TJsonReaderFactory<TCHAR>::Create(BodyString);
-           TSharedPtr<FJsonObject> BodyObject;
-           
-           if (FJsonSerializer::Deserialize(BodyReader, BodyObject) && BodyObject.IsValid())
-           {
-               DataObject = BodyObject;
-           }
-       }
-        
-       if (DataObject->HasField("errorMessage")) 
-       {
-           UE_LOG(LogTemp, Error, TEXT("[AWS] Lambda Error: %s"), *DataObject->GetStringField("errorMessage"));
-           return;
-       }
-       
-        FString ServerIP = DataObject->GetStringField(TEXT("ip"));
-        int32 ServerPort = DataObject->GetNumberField(TEXT("port"));
-        FString MyTicket = "";
-        FString SessionId = DataObject->GetStringField(TEXT("gamesessionId"));
-        
-        const TSharedPtr<FJsonObject>* TicketsJson;
-        UE_LOG(LogTemp, Log, TEXT("[AWS] Parsed Info - IP: %s, Port: %d"), *ServerIP, ServerPort);
-
-        if (DataObject->TryGetObjectField(TEXT("tickets"), TicketsJson))
-        {
-            for (auto CurrJsonValue = (*TicketsJson)->Values.CreateConstIterator(); CurrJsonValue; ++CurrJsonValue)
-            {
-                MyTicket = CurrJsonValue->Value->AsString();
-                break; 
-            }
-        }
-        // Travel to Server URL
-       if (!ServerIP.IsEmpty() && ServerPort > 0)
-       {
-          UpdateSteamLobby(ServerIP, ServerPort, MyTicket,SessionId);
-           FString ConnectURL;
-           if (!MyTicket.IsEmpty())
-           {
-               ConnectURL = FString::Printf(TEXT("%s:%d?PlayerSessionId=%s"), *ServerIP, ServerPort, *MyTicket);
-           }
-           else
-           {
-               ConnectURL = FString::Printf(TEXT("%s:%d"), *ServerIP, ServerPort);
-           }
-           UE_LOG(LogTemp, Warning, TEXT("[AWS] Travelling to Dedicated Server: %s"), *ConnectURL);
-           if (APlayerController* PC = GetGameInstance()->GetFirstLocalPlayerController())
-           {
-               PC->ClientTravel(ConnectURL, TRAVEL_Absolute);
-           }
-       }
-       else
-       {
-           UE_LOG(LogTemp, Error, TEXT("[AWS] Invalid IP or Port received!"));
+           DataObject = BodyObject;
        }
     }
+	
+    if (DataObject->HasField("errorMessage")) 
+    {
+		FString ErrorMsg = RootObject->GetStringField("errorMessage");
+       	OnAwsRequestFailure.Broadcast(ErrorMsg);
+        return;
+    }
+	
+    FString ServerIP = DataObject->GetStringField(TEXT("ip"));
+    int32 ServerPort = DataObject->GetNumberField(TEXT("port"));
+    FString MyTicket = "";
+    FString SessionId = DataObject->GetStringField(TEXT("gamesessionId"));
+    
+    const TSharedPtr<FJsonObject>* TicketsJson;
+    PRINT_WITH_CURRENT_CONTEXT(FString::Printf(TEXT("[AWS] Parsed Info - IP: %s, Port: %d"), *ServerIP, ServerPort));
+    if (DataObject->TryGetObjectField(TEXT("tickets"), TicketsJson))
+    {
+        for (auto CurrJsonValue = (*TicketsJson)->Values.CreateConstIterator(); CurrJsonValue; ++CurrJsonValue)
+        {
+            MyTicket = CurrJsonValue->Value->AsString();
+            break; 
+        }
+    }
+    // Travel to Server URL
+    if (!ServerIP.IsEmpty() && ServerPort > 0)
+	{
+    	UpdateSteamLobby(ServerIP, ServerPort, MyTicket,SessionId);
+    	FString ConnectURL;
+		if (!MyTicket.IsEmpty())
+		{
+           ConnectURL = FString::Printf(TEXT("%s:%d?PlayerSessionId=%s"), *ServerIP, ServerPort, *MyTicket);
+		}
+		else
+		{
+           ConnectURL = FString::Printf(TEXT("%s:%d"), *ServerIP, ServerPort);
+		}
+		PRINT_WITH_CURRENT_CONTEXT(FString::Printf(TEXT("[AWS] Travelling to Dedicated Server: %s"), *ConnectURL));
+		if (APlayerController* PC = GetGameInstance()->GetFirstLocalPlayerController())
+		{
+		    PC->ClientTravel(ConnectURL, TRAVEL_Absolute);
+		}
+	}
+	else
+	{
+		PRINT_WITH_CURRENT_CONTEXT(TEXT("[AWS] Invalid IP or Port received!"));
+	}	
 }
+
 
 void UAwsSubsystem::UpdateSteamLobby(FString IP, int32 Port, const FString& HostTicket, const FString& SessionId)
 {
@@ -359,9 +351,9 @@ void UAwsSubsystem::UpdateSteamLobby(FString IP, int32 Port, const FString& Host
 	
 	if (Sessions.IsValid())
 	{
-		if (Sessions->GetNamedSession(NAME_GameSession)) 
+		if (!Sessions->GetNamedSession(NAME_GameSession)) 
 		{
-			UE_LOG(LogTemp, Warning, TEXT("[UpdateSteamLobby]: ExistingSession Not Found!"));
+			PRINT_WITH_CURRENT_CONTEXT(TEXT("ExistingSession Not Found!"));
 			return;
 		}
 
@@ -375,7 +367,7 @@ void UAwsSubsystem::UpdateSteamLobby(FString IP, int32 Port, const FString& Host
 			SessionSettings->Set(FName("SERVER_PORT"), Port, EOnlineDataAdvertisementType::ViaOnlineService);
 			SessionSettings->Set(FName("GameSessionId"), SessionId, EOnlineDataAdvertisementType::ViaOnlineService);
 			SessionSettings->Set(FName("IsDedicated"), true, EOnlineDataAdvertisementType::ViaOnlineService);
-			UE_LOG(LogTemp, Log, TEXT("[Steam] Lobby Updated with AWS IP: %s:%d"), *IP, Port);
+			PRINT_WITH_CURRENT_CONTEXT(FString::Printf(TEXT("Lobby Updated with AWS IP: %s:%d"), *IP, Port));
 		}
 		else
 		{
