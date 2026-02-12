@@ -134,13 +134,16 @@ void UEquipmentController::AddEquipment(const TObjectPtr<AEquipmentBase>& Equipm
 			UTexture2D* Icon = Equipment->GetEquipmentIcon();
 			if (Icon)
 			{
-				// Hud->SetWeaponContainer(Icon);
-				UE_LOG(LogTemp, Log, TEXT("Icon Load Success"));
-			}
-				else
+				if (Hud) 
 				{
-					UE_LOG(LogTemp, Log, TEXT("Icon Load Fail"));
+					Hud -> SetWeaponContainer(Icon);
+					UE_LOG(LogTemp, Log, TEXT("Icon Load Success"));
 				}
+			}
+			else
+			{
+				UE_LOG(LogTemp, Log, TEXT("Icon Load Fail"));
+			}
 			break;
 		}
 		
@@ -160,12 +163,15 @@ void UEquipmentController::AddEquipment(const TObjectPtr<AEquipmentBase>& Equipm
 			UTexture2D* Icon = Equipment->GetEquipmentIcon();
 			if (Icon)
 			{
-				// Hud->SetSubWeaponContainer(Icon,2 );
-				UE_LOG(LogTemp, Log, TEXT("Sub/Icon Load Success"));
+				if (Hud) 
+				{
+					Hud -> SetSubWeaponContainer(Icon,2);
+					UE_LOG(LogTemp, Log, TEXT("Icon Load Success"));
+				}
 			}
 			else
 			{
-				UE_LOG(LogTemp, Log, TEXT("Sub/Icon Load Fail"));
+				UE_LOG(LogTemp, Log, TEXT("Icon Load Fail"));
 			}
 			break;
 		}
@@ -184,7 +190,7 @@ void UEquipmentController::AddEquipment(const TObjectPtr<AEquipmentBase>& Equipm
 				UTexture2D* Icon = Equipment->GetEquipmentIcon();
 				if (Icon)
 				{
-					// Hud->SetBottomInv(Icon,1);
+					//Hud -> SetBottomInv(Icon,1);
 					UE_LOG(LogTemp, Log, TEXT("Throw/Icon Load Success"));
 				}
 				else
@@ -206,8 +212,12 @@ void UEquipmentController::AddEquipment(const TObjectPtr<AEquipmentBase>& Equipm
 				UTexture2D* Icon = Equipment->GetEquipmentIcon();
 				if (Icon)
 				{
-					// Hud->SetBottomInv(Icon,2);
-					UE_LOG(LogTemp, Log, TEXT("Med1/Icon Load Success"));
+					if (Hud)
+					{
+						//Hud -> SetBottomInv(Icon,2);
+						UE_LOG(LogTemp, Log, TEXT("Med1/Icon Load Success"));
+					}
+
 				}
 				else
 				{
@@ -221,8 +231,12 @@ void UEquipmentController::AddEquipment(const TObjectPtr<AEquipmentBase>& Equipm
 				UTexture2D* Icon = Equipment->GetEquipmentIcon();
 				if (Icon)
 				{
-					// Hud->SetBottomInv(Icon,3);
-					UE_LOG(LogTemp, Log, TEXT("Med2/Icon Load Success"));
+					if (Hud)
+					{
+						//Hud -> SetBottomInv(Icon,3);
+						UE_LOG(LogTemp, Log, TEXT("Med1/Icon Load Success"));
+					}
+
 				}
 				else
 				{
@@ -237,8 +251,12 @@ void UEquipmentController::AddEquipment(const TObjectPtr<AEquipmentBase>& Equipm
 				UTexture2D* Icon = Equipment->GetEquipmentIcon();
 				if (Icon)
 				{
-					// Hud->SetBottomInv(Icon,2);
-					UE_LOG(LogTemp, Log, TEXT("Med1/Icon Load Success"));
+					if (Hud)
+					{
+						//Hud -> SetBottomInv(Icon,2);
+						UE_LOG(LogTemp, Log, TEXT("Med1/Icon Load Success"));
+					}
+
 				}
 				else
 				{
@@ -472,7 +490,7 @@ void UEquipmentController::HandleAmmoChanged()
 
 	if (AInGameHUD* Hud = GetInGameHUD())
 	{
-		Hud->DisplayAmmo(CurrentMag, ReserveAmmo);
+		Hud -> DisplayAmmo(CurrentMag, ReserveAmmo);
 	}
 }
 

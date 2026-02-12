@@ -118,7 +118,12 @@ void AInGameHUD::SetWeaponContainer(UTexture2D* Icon)
 {
 	if (InGameWidgetInstance)
 	{
+		UE_LOG(LogTemp, Log, TEXT("위젯 인스턴스는 확인됨. 함수 진입 시도."));
 		InGameWidgetInstance->SetWeaponContainer(Icon);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("InGameWidgetInstance가 NULL입니다!"));
 	}
 }
 
@@ -126,7 +131,12 @@ void AInGameHUD::SetSubWeaponContainer(UTexture2D* Icon, int32 SlotNum)
 {
 	if (InGameWidgetInstance)
 	{
-		InGameWidgetInstance->SetSubWeaponContainer(Icon, SlotNum);
+		UE_LOG(LogTemp, Log, TEXT("위젯 인스턴스는 확인됨. 함수 진입 시도."));
+		InGameWidgetInstance->SetSubWeaponContainer(Icon,SlotNum);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("InGameWidgetInstance가 NULL입니다!"));
 	}
 }
 
@@ -134,7 +144,12 @@ void AInGameHUD::SetBottomInv(UTexture2D* Icon, int32 SlotNum)
 {
 	if (InGameWidgetInstance)
 	{
-		InGameWidgetInstance -> SetBottomInvSlot(Icon, SlotNum);
+		UE_LOG(LogTemp, Log, TEXT("위젯 인스턴스는 확인됨. 함수 진입 시도."));
+		InGameWidgetInstance->SetBottomInvSlot(Icon,SlotNum);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("InGameWidgetInstance가 NULL입니다!"));
 	}
 }
 
