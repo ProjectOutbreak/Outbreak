@@ -6,9 +6,6 @@
 #include "NormalZombie.h"
 #include "BloaterZombie.generated.h"
 
-/**
- * 
- */
 UCLASS()
 class OUTBREAK_API ABloaterZombie : public ANormalZombie
 {

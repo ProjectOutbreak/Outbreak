@@ -6,9 +6,6 @@
 #include "Outbreak/Character/Zombie/CharacterZombie.h"
 #include "NormalZombie.generated.h"
 
-/**
- * 
- */
 UCLASS()
 class OUTBREAK_API ANormalZombie : public ACharacterZombie
 {

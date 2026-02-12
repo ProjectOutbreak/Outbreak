@@ -9,12 +9,7 @@ ARunnerZombie::ARunnerZombie()
 
 void ARunnerZombie::BeginPlay()
 {
-	SetMesh();
+	SetMesh(ECharacterBodyType::Normal);
 	
 	Super::BeginPlay();
-}
-
-void ARunnerZombie::SetMesh(ECharacterBodyType MeshType)
-{
-	Super::SetMesh(MeshType);
 }

@@ -16,5 +16,4 @@ public:
 	
 protected:
 	virtual void BeginPlay() override;
-	virtual void SetMesh(ECharacterBodyType MeshType = ECharacterBodyType::Normal) override;
 };
