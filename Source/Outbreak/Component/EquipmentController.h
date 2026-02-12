@@ -29,6 +29,7 @@ public:
 	void HandleEndUse();
 	void HandleReload();
 	void HandleToggleFireMode();
+	void PickupEquipment(class AEquipmentBase* NewItem);
 
 	// Getters
 	UFUNCTION(BlueprintCallable)
@@ -62,7 +63,9 @@ protected:
 	
 private:
 	void Equip(const TObjectPtr<class AEquipmentBase>& Equipment);
-
+	void DropEquipment(class AEquipmentBase* ItemToDrop);
+	void EquipInternal(AEquipmentBase* Equipment);
+	
 	UFUNCTION()
 	void OnReloadFinished() { bIsReload = false; }
 	

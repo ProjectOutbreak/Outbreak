@@ -187,10 +187,24 @@ struct FZombieData : public FCharacterBaseData
 };
 
 USTRUCT()
+struct FMedicineCount
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	EMedicineType Type = EMedicineType::None;
+	UPROPERTY()
+	int32 Count = 0;
+};
+
+USTRUCT()
 struct FMedicineData : public FTableRowBase
 {
 	GENERATED_BODY()
 
+	UPROPERTY(EditAnywhere)
+	EMedicineType MedicineType = EMedicineType::None;
+	
 	UPROPERTY(EditAnywhere)
 	int32 MaxCount = 3;
 
@@ -265,9 +279,23 @@ struct FFirableData : public FWeaponData
 };
 
 USTRUCT()
+struct FThrowableCount
+{
+	GENERATED_BODY()
+    
+	UPROPERTY()
+	EThrowableType Type = EThrowableType::None;
+	UPROPERTY()
+	int32 Count = 0;
+};
+
+USTRUCT()
 struct FThrowableData : public FWeaponData
 {
 	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere)
+	EThrowableType ThrowableType = EThrowableType::None;
 	
 	UPROPERTY(EditAnywhere)
 	int32 MaxCount = 3;

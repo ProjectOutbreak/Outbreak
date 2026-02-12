@@ -5,6 +5,7 @@
 
 #include "Components/AudioComponent.h"
 #include "Outbreak/Character/Player/CharacterPlayer.h"
+#include "Outbreak/Game/Framework/DefaultPlayerState.h"
 
 AMedicineBase::AMedicineBase()
 {
@@ -16,21 +17,21 @@ AMedicineBase::AMedicineBase()
 void AMedicineBase::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	if (MedicineData.MaxCount > 0)
-	{
-		CurrentCount = MedicineData.MaxCount;
-	}
-	else
-	{
-		CurrentCount = 1;
-	}
 }
 
 
 bool AMedicineBase::CanUse() const
 {
-	return !bIsUsing && (CurrentCount > 0);
+	if (bIsUsing) return false;
+
+	if (const ACharacterPlayer* OwnerCharacter = Cast<ACharacterPlayer>(GetOwner()))
+	{
+		if (const ADefaultPlayerState* PS = OwnerCharacter->GetPlayerState<ADefaultPlayerState>())
+		{
+			return PS->GetMedicineCount(MedicineData.MedicineType) > 0;
+		}
+	}
+	return false;
 }
 
 void AMedicineBase::OnUse()
@@ -91,13 +92,17 @@ void AMedicineBase::OnUseComplete()
 	if (ACharacterPlayer* Player = Cast<ACharacterPlayer>(GetOwner()))
 	{
 		ApplyHealEffect(Player);
-		CurrentCount--;
 		
-		if (CurrentCount <= 0)
+		if (ADefaultPlayerState* PS = Player->GetPlayerState<ADefaultPlayerState>())
 		{
-			if (UEquipmentController* EqController = Player->FindComponentByClass<UEquipmentController>())
+			PS->ConsumeMedicine(MedicineData.MedicineType, 1);
+            
+			if (PS->GetMedicineCount(MedicineData.MedicineType) <= 0)
 			{
-				EqController->RemoveEquipment(this);
+				if (UEquipmentController* EqController = Player->FindComponentByClass<UEquipmentController>())
+				{
+					EqController->RemoveEquipment(this);
+				}
 			}
 		}
 	}

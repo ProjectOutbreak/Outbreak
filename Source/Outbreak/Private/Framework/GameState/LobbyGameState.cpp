@@ -3,7 +3,6 @@
 #include "Framework/GameState/LobbyGameState.h"
 #include "GameFramework/PlayerState.h"
 #include "Net/UnrealNetwork.h"
-#include "Subsystems/SessionSubsystem.h"
 
 void ALobbyGameState::AddPlayerState(APlayerState* PlayerState)
 {

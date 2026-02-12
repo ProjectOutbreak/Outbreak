@@ -98,49 +98,18 @@ void AStagingGameMode::PreLogin(const FString& Options, const FString& Address, 
 	Super::PreLogin(Options, Address, UniqueId, ErrorMessage);
 }
 
-void AStagingGameMode::StartMatchIfReady()
-{
-	if (bIsTravelling) return;
-
-	if (ConnectedPlayers == 4)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[StagingGameMode] 4 players in the server... Traveling to FirstPhase."));
-		if (HasAuthority())
-		{
-			FString TargetMapPath = TEXT("/Game/Maps/L_TestBed_Play");
-			bIsTravelling = true; 
-			FString TravelURL = FString::Printf(TEXT("%s?listen"), *TargetMapPath);
-			UE_LOG(LogTemp, Warning, TEXT("ServerTravel 시도: %s"), *TargetMapPath);
-			GetWorld()->ServerTravel(TravelURL, true);
-		}
-	}
-}
-
-void AStagingGameMode::ImmediateTravelToGame()
-{
-	if (bIsTravelling) return;
-	FString MapPath = TEXT("/Game/Maps/L_TestBed_Play?listen"); 
-	bIsTravelling = true; 
-	UWorld* World = GetWorld();
-	if (World)
-	{
-		UE_LOG(LogTemp, Warning, TEXT(">>> ServerTravel 시작!"));
-		// 현재 접속한 모두를 데리고 이동
-		World->ServerTravel(MapPath);
-	}
-}
 void AStagingGameMode::RequestStartGame()
 {
 	if (bIsTravelling || !HasAuthority()) return; 
-
-	bIsTravelling = true;
 	
-	FString TargetMapPath = TEXT("/Game/Maps/L_TestBed_Play"); 
-	FString Options = TEXT("?listen"); 
-	
+	FString TargetMapPath = TargetInGameLevel.GetLongPackageName();
+	FString Options = TEXT("?listen");
+			
 	UWorld* World = GetWorld();
 	if (!World) return;
-	
+			
+	bIsTravelling = true; 
+			
 	if (!World->ServerTravel(TargetMapPath + Options))
 	{
 		PRINT_WITH_CURRENT_CONTEXT(FString::Printf(TEXT("ServerTravel to %s failed"), *TargetMapPath));

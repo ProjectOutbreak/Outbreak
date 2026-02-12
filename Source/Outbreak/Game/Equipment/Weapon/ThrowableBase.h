@@ -24,6 +24,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void Throw();
+	const FThrowableData& GetThrowableData() const { return ThrowableData; }
 
 protected:
 	UFUNCTION(NetMulticast, Unreliable)
@@ -34,9 +35,6 @@ protected:
 // --------------------
 protected:
 	FThrowableData ThrowableData;
-
-	UPROPERTY()
-	int32 CurrentAmmo = 3;
 
 	bool bIsThrowing = false;
 	float LastThrowTime = 0.0f;

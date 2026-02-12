@@ -17,10 +17,7 @@ AFirstAidKit::AFirstAidKit()
 		if (Data)
 		{
 			MedicineData = *Data;
-			CurrentCount = MedicineData.MaxCount;
 		}
 	}
-	if (CurrentCount <= 0) CurrentCount = 1;
-
 	EquipmentType = EEquipmentType::Medicine;
 }

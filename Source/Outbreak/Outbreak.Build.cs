@@ -40,7 +40,8 @@ public class Outbreak : ModuleRules
 			"GameplayCameras",
 			"GameLiftServerSDK",
 			"ApplicationCore",
-			"OnlineSubsystemUtils"
+			"OnlineSubsystemUtils",
+			"EasySessions"
 		});
 		
 		PrivateDependencyModuleNames.AddRange(new string[] { "Paper2D", "AnimGraphRuntime" });
@@ -54,8 +55,8 @@ public class Outbreak : ModuleRules
 		// To include OnlineSubsystemSteam, add it to the plugins section in your uproject file with the Enabled attribute set to true
 
 		//Load AWS SDK 
-		bUseRTTI = true;
-		bEnableExceptions = true;
+		// bUseRTTI = true;
+		// bEnableExceptions = true;
 		if (Target.Type == TargetType.Server)
 		{
 			PublicAdditionalLibraries.Add("/FORCE:MULTIPLE");

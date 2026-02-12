@@ -9,6 +9,7 @@
 #include "DefaultPlayerState.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPlayerAmmoChangedSignature);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPlayerInventoryChanged);
 
 UCLASS()
 class OUTBREAK_API ADefaultPlayerState : public APlayerState
@@ -26,14 +27,27 @@ public:
 	void AddAmmo(EFirableType Type, int32 InInAmountToAdd = 0);
 	void SetIsDead(bool bDead);
 
+	int32 GetThrowableCount(EThrowableType Type) const;
+	void AddThrowable(EThrowableType Type, int32 Amount);
+	bool ConsumeThrowable(EThrowableType Type, int32 Amount = 1);
+
+	int32 GetMedicineCount(EMedicineType Type) const;
+	void AddMedicine(EMedicineType Type, int32 Amount);
+	bool ConsumeMedicine(EMedicineType Type, int32 Amount = 1);
+
 	UFUNCTION(BlueprintCallable)
 	bool IsDead() const {return bIsDead;}
 	
 	FOnPlayerAmmoChangedSignature OnPlayerAmmoChangedDelegate;
 	
+	FOnPlayerInventoryChanged OnInventoryChangedDelegate;
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	UFUNCTION()
+	void OnRep_Inventory();
 	
 	UFUNCTION()
 	void OnRep_ZombieKills();
@@ -46,6 +60,12 @@ protected:
 	
 	UPROPERTY(ReplicatedUsing = OnRep_ReserveAmmoArray)
 	TArray<FAmmoCount> ReserveAmmoArray;
+
+	UPROPERTY(ReplicatedUsing = OnRep_Inventory)
+	TArray<FThrowableCount> ThrowableInventory;
+
+	UPROPERTY(ReplicatedUsing = OnRep_Inventory)
+	TArray<FMedicineCount> MedicineInventory;
 
 	UPROPERTY()
 	TMap<EFirableType, FAmmoData> AmmoDataMap;

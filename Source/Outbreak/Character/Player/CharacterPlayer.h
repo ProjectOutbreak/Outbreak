@@ -42,11 +42,15 @@ public:
 	void HandleReload() const { EquipmentController->HandleReload(); }
 	void HandleEquipBySlot(const int32 SlotNumber) const { EquipmentController->EquipBySlot(SlotNumber); }
 	void HandleToggleFireMode() const { EquipmentController->HandleToggleFireMode(); }
-
+	
 	void UpdateToxicAuraEffect(float Intensity);
+
+	UFUNCTION(Server, Reliable)
+	void Server_PickupEquipment(class AEquipmentBase* NewEquipment);
 	
 protected:
 	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaTime) override;
 	virtual void InitCharacterData() override;
 	virtual void SetupCollision() override;
 	virtual void SetupMovement() override;
@@ -106,27 +110,6 @@ protected:
 	TObjectPtr<UDataTable> PlayerDataTable;
 	
 	TMap<FString, FPlayerData*> PlayerDataMap;
-	
-	// TODO : for test. delete later
-	UPROPERTY()
-	TObjectPtr<AWeaponBase> SpawnedWeapon;
-	UPROPERTY()
-	TSubclassOf<AM4> WeaponToSpawn;
-	
-	UPROPERTY()
-    TObjectPtr<AWeaponBase> KnifeWeapon;
-    UPROPERTY()
-    TSubclassOf<AKnife> KnifeToSpawn;
-	
-	UPROPERTY()
-	TObjectPtr<AWeaponBase> GrenadeWeapon;
-	UPROPERTY()
-	TSubclassOf<AGranade> GrenadeToSpawn;
-	
-	UPROPERTY()
-	TObjectPtr<AEquipmentBase> HealWeapon;
-	UPROPERTY()
-	TSubclassOf<AFirstAidKit> HealToSpawn;
 
 private:
 	UPROPERTY()
@@ -143,5 +126,9 @@ private:
 	EPlayerControlType CurrentCharacterControlType = EPlayerControlType::FirstPersonView;
 	FGenericTeamId TeamId = 0;
 	bool bIsCutscenePlaying = false;
+	
+	UPROPERTY()
+	float DefaultCameraX = -15.0f;
+	UPROPERTY()
+	float AimDownCameraX = 30.0f;
 };
-

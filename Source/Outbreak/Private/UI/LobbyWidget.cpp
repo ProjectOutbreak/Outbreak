@@ -1,17 +1,18 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "UI/LobbyWidget.h"
+#include "EasySessionSubsystem.h"
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
+#include "OnlineSubsystemUtils.h"
 #include "Framework/GameState/LobbyGameState.h"
-#include "Game/Framework/OutbreakSessionSubsystem.h"
 #include "Utilities/DebugHelper.h"
 #include "Game/Controller/LobbyPlayerController.h"
+
 bool ULobbyWidget::Initialize()
 {
 	if (!Super::Initialize()) return false;
 	
-	OnPlayerListUpdate();	
 	return true;
 }
 
@@ -19,29 +20,47 @@ void ULobbyWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 	
-	BindSessionSubsystemCallbacks();
-	
 	if (Button_GameStart)
 	{
 		Button_GameStart->OnClicked.AddDynamic(this, &ULobbyWidget::OnClickGameStartButton);
 	}
-	if (SessionsSubsystem)
+	
+	if (!SessionsSubsystem)
 	{
-		if (SessionsSubsystem->IsSessionOwner())
-		{
-			Button_GameStart->SetVisibility(ESlateVisibility::Visible);
-			Button_GameStart->SetIsEnabled(true); 
-		}
-		else
-		{
-			Button_GameStart->SetVisibility(ESlateVisibility::Collapsed);
-		}
+		SessionsSubsystem = GetGameInstance()->GetSubsystem<UEasySessionSubsystem>();
+	}
+	
+	if (SessionsSubsystem->IsAdmin())
+	{
+		Button_GameStart->SetVisibility(ESlateVisibility::Visible);
+		Button_GameStart->SetIsEnabled(true); 
+	}
+	else
+	{
+		Button_GameStart->SetVisibility(ESlateVisibility::Collapsed);
+	}
 
-		if (Text_LobbyCode)
+	const IOnlineSubsystem* Subsystem = Online::GetSubsystem(GetWorld());
+	if (!Subsystem) return;
+
+	const IOnlineSessionPtr SessionInterface = Subsystem->GetSessionInterface();
+	if (!SessionInterface.IsValid()) return;
+
+	FNamedOnlineSession* CurrentSession = SessionInterface->GetNamedSession(NAME_GameSession);
+
+	if (CurrentSession && CurrentSession->SessionSettings.Settings.Num() > 0)
+	{
+		if (const FOnlineSessionSetting* Setting = CurrentSession->SessionSettings.Settings.Find(FName("ROOM_CODE")))
 		{
-			Text_LobbyCode->SetText(FText::FromString(SessionsSubsystem->GetCurrentRoomCode()));
+			if (Text_LobbyCode)
+			{
+				const FString Prefix = TEXT("입장 코드 : ");
+				FString OutCode;
+				Setting->Data.GetValue(OutCode);
+				Text_LobbyCode->SetText(FText::FromString(Prefix + OutCode));
+			}
 		}
-	}	
+	}
 	
 	if (APlayerController* PC = GetOwningPlayer())
 	{
@@ -50,16 +69,17 @@ void ULobbyWidget::NativeConstruct()
 		PC->SetInputMode(InputMode);
 		PC->bShowMouseCursor = true;
 	}
+	
 	if (ALobbyGameState* GS = GetWorld()->GetGameState<ALobbyGameState>())
 	{
 		GS->OnPlayerListChanged.AddDynamic(this, &ThisClass::OnPlayerListUpdate);
         
 		OnPlayerListUpdate();
 	}
+	
 	GetWorld()->GetTimerManager().SetTimer(PlayerListTimerHandle, this, &ThisClass::OnPlayerListUpdate, 1.0f, true);
     
 	OnPlayerListUpdate(); 
-	
 }
 
 void ULobbyWidget::NativeDestruct()
@@ -74,49 +94,7 @@ void ULobbyWidget::NativeDestruct()
 			PlayerController->SetShowMouseCursor(false);
 		}
 	}
-	RemoveSessionSubsystemCallbacks();
 	Super::NativeDestruct();
-}
-
-void ULobbyWidget::BindSessionSubsystemCallbacks()
-{
-	const UGameInstance* GI = GetGameInstance();
-	SessionsSubsystem = GI->GetSubsystem<UOutbreakSessionSubsystem>();
-	if (SessionsSubsystem)
-	{
-		SessionsSubsystem->OnDestroySessionComplete.AddDynamic(this, &ThisClass::OnDestroySession);
-		SessionsSubsystem->OnSessionError.AddDynamic(this, &ThisClass::OnSessionError);
-		//SessionsSubsystem->OnSessionStart.AddDynamic(this, &ThisClass::OnStartSession);
-		SessionsSubsystem->OnLobbyMembersUpdated.AddDynamic(this, &ThisClass::OnLobbyMembersUpdated);
-	}
-}
-
-void ULobbyWidget::RemoveSessionSubsystemCallbacks()
-{
-	if (SessionsSubsystem)
-	{
-		SessionsSubsystem->OnDestroySessionComplete.RemoveDynamic(this, &ThisClass::OnDestroySession);
-		SessionsSubsystem->OnSessionError.RemoveDynamic(this, &ThisClass::OnSessionError);
-		//SessionsSubsystem->OnSessionStart.RemoveDynamic(this, &ThisClass::OnStartSession);
-		SessionsSubsystem->OnLobbyMembersUpdated.RemoveDynamic(this, &ThisClass::OnLobbyMembersUpdated);
-	}
-}
-
-void ULobbyWidget::OnDestroySession(bool bWasSuccessful)
-{
-	const FString DebugMsg = FString::Printf(TEXT("Session Destroyed: %s"), bWasSuccessful ? TEXT("Success") : TEXT("Failure"));
-	PRINT_WITH_CURRENT_CONTEXT(DebugMsg);
-}
-
-void ULobbyWidget::OnSessionError(const FString& Reason)
-{
-	PRINT_WITH_CURRENT_CONTEXT(Reason);
-}
-
-void ULobbyWidget::OnStartSession(bool bWasSuccessful)
-{
-	const FString DebugMsg = FString::Printf(TEXT("Session Started: %s"), bWasSuccessful ? TEXT("Success") : TEXT("Failure"));
-	PRINT_WITH_CURRENT_CONTEXT(DebugMsg);
 }
 
 void ULobbyWidget::OnClickGameStartButton()
@@ -153,9 +131,4 @@ void ULobbyWidget::OnPlayerListUpdate()
 	}
     
 	Text_PlayerList->SetText(FText::FromString(FormattedPlayerList));
-}
-
-void ULobbyWidget::OnLobbyMembersUpdated(const TArray<FString>& Members)
-{
-	// OnPlayerListUpdate(Members); 
 }
