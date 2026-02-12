@@ -128,13 +128,25 @@ void ACharacterZombie::DisableAttackCollision()
 void ACharacterZombie::SetupCollision()
 {
 	Super::SetupCollision();
+	
+	if (USkeletalMeshComponent* MeshComp = GetMesh())
+	{
+		MeshComp->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+		MeshComp->SetCollisionObjectType(ECollisionChannel::ECC_Pawn);
+		MeshComp->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
+		
+		if (IsRunningDedicatedServer())
+		{
+			MeshComp->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
+		}
+		else
+		{
+			MeshComp->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::OnlyTickMontagesWhenNotRendered;
+			MeshComp->bEnableUpdateRateOptimizations = true;
+		}
+	}
 
 	GetCapsuleComponent()->InitCapsuleSize(DefaultCapsuleRadius, DefaultCapsuleHalfHeight);
-	
-	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	GetMesh()->SetCollisionObjectType(ECollisionChannel::ECC_Pawn);
-	GetMesh()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
-
 	GetCapsuleComponent()->SetNotifyRigidBodyCollision(false);
 	GetCapsuleComponent()->BodyInstance.bLockXRotation = true;
 	GetCapsuleComponent()->BodyInstance.bLockYRotation = true;
