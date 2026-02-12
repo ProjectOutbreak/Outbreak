@@ -23,8 +23,7 @@ ACharacterZombie::ACharacterZombie()
 	
 	RightHandCollision = CreateDefaultSubobject<USphereComponent>(TEXT("RightHandCollision"));
 	RightHandCollision->SetupAttachment(GetMesh(), TEXT("hand_r_socket"));
-    
-	RightHandCollision->SetHiddenInGame(false);
+	RightHandCollision->SetHiddenInGame(true);
 	RightHandCollision->SetSphereRadius(40.0f);
 	RightHandCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	RightHandCollision->SetCollisionObjectType(ECC_WorldDynamic);
