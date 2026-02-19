@@ -11,9 +11,6 @@ class OUTBREAK_API AWalkerZombie : public ANormalZombie
 {
 	GENERATED_BODY()
 
-public:
-	AWalkerZombie();
-	
 protected:
-	virtual void BeginPlay() override;
+	virtual void InitCharacterData() override;
 };

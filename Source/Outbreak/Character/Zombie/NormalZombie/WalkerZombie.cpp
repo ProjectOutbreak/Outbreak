@@ -2,14 +2,10 @@
 
 #include "WalkerZombie.h"
 
-AWalkerZombie::AWalkerZombie()
+void AWalkerZombie::InitCharacterData()
 {
 	ZombieSubType = EZombieSubType::Walker;
-}
-
-void AWalkerZombie::BeginPlay()
-{
-	SetMesh(ECharacterBodyType::Normal);
+	CharacterBodyType = ECharacterBodyType::Normal;
 	
-	Super::BeginPlay();
+	Super::InitCharacterData();
 }

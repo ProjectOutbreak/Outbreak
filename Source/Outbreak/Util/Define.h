@@ -95,6 +95,7 @@ enum class EAvoidanceGroupType : uint8
 UENUM()
 enum class ECharacterBodyType : uint8
 {
+	None,
 	Normal,
 	Muscle,
 	Fat,

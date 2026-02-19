@@ -25,4 +25,6 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<class ACharacterBase> OwningCharacter;
+	
+	EPhysicalSurface DefaultSurfaceType = EPhysicalSurface::SurfaceType7;
 };

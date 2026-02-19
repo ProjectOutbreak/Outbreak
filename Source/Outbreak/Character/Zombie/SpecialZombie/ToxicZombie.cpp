@@ -7,24 +7,15 @@
 #include "Outbreak/Game/Ability/ToxicAttackAbility.h"
 #include "Outbreak/Game/Ability/ToxicAuraAbility.h"
 
-AToxicZombie::AToxicZombie()
+void AToxicZombie::InitCharacterData()
 {
 	ZombieSubType = EZombieSubType::Toxic;
-	
-	static ConstructorHelpers::FObjectFinder<USkeletalMesh> ToxicMesh(TEXT("/Game/Art/Characters/Zombies/Meshes/SKM_Zombie_Toxic.SKM_Zombie_Toxic"));
-	if (ToxicMesh.Succeeded())
-	{
-		GetMesh()->SetSkeletalMesh(ToxicMesh.Object);
-	}
-}
-
-void AToxicZombie::BeginPlay()
-{
-	Super::BeginPlay();
-
+	CharacterBodyType = ECharacterBodyType::None;
 	AbilityComponent->AddAbility(NewObject<UToxicAuraAbility>(AbilityComponent));
 	AbilityComponent->AddAbility(NewObject<UToxicAttackAbility>(AbilityComponent));
 	AttachToxicEffect();
+	
+	Super::InitCharacterData();
 }
 
 void AToxicZombie::OnRep_Die()

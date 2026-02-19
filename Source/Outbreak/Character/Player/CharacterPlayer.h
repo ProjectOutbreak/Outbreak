@@ -54,7 +54,6 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 	virtual void InitCharacterData() override;
-	virtual void SetupCollision() override;
 	virtual void SetupMovement() override;
 
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;

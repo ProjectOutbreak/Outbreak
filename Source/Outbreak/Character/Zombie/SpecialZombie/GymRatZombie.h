@@ -11,10 +11,7 @@ class OUTBREAK_API AGymRatZombie : public ASpecialZombie
 {
 	GENERATED_BODY()
 
-public:
-	AGymRatZombie();
-
 protected:
-	virtual void BeginPlay() override;
+	virtual void InitCharacterData() override;
 	virtual void OnRep_Die() override;
 };

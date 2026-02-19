@@ -32,11 +32,11 @@ protected:
 	void OnAttackOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	
 	virtual void InitCharacterData() override;
-	virtual void SetupCollision() override;
+	virtual void SetupCollisionAndMesh() override;
 	virtual void SetupMovement() override;
 	virtual void OnRep_Die() override;
 	
-	virtual void SetMesh(ECharacterBodyType MeshType);
+	virtual void SetMesh();
 
 	void ApplyZombieData();
 	

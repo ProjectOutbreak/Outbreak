@@ -2,7 +2,9 @@
 
 #include "NormalZombie.h"
 
-ANormalZombie::ANormalZombie()
+void ANormalZombie::InitCharacterData()
 {
 	ZombieType = EZombieType::Normal;
+	
+	Super::InitCharacterData();
 }

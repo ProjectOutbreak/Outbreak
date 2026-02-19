@@ -102,7 +102,7 @@ void AFirableBase::ProcessFire()
 	QueryParams.AddIgnoredActor(GetOwner());
 	QueryParams.bReturnPhysicalMaterial = true;
 
-	const bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility, QueryParams);
+	const bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Pawn, QueryParams);
 	if (HasAuthority() || OwnerController->IsLocalPlayerController())
 	{
 		Multicast_PlayFireEffects(GetActorLocation(), HitResult);

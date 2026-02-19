@@ -35,6 +35,7 @@ private:
 public:
 	//-----Function-----//
 	virtual void Init() override;
+	virtual void OnStart() override;
 	
 	UFUNCTION()	void AddAssetsPath();
 	UFUNCTION()	void BeginLoading();

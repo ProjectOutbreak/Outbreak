@@ -4,22 +4,13 @@
 #include "Outbreak/Component/AbilityComponent.h"
 #include "Outbreak/Game/Ability/VibrationAbility.h"
 
-AGymRatZombie::AGymRatZombie()
+void AGymRatZombie::InitCharacterData()
 {
 	ZombieSubType = EZombieSubType::GymRat;
-	
-	static ConstructorHelpers::FObjectFinder<USkeletalMesh> ZombieMesh(TEXT("/Game/Art/Characters/Zombies/Meshes/SKM_Zombie_Muscle_003.SKM_Zombie_Muscle_003"));
-	if (ZombieMesh.Succeeded())
-	{
-		GetMesh()->SetSkeletalMesh(ZombieMesh.Object);
-	}
-}
-
-void AGymRatZombie::BeginPlay()
-{
-	Super::BeginPlay();
-	
+	CharacterBodyType = ECharacterBodyType::Muscle;
 	AbilityComponent->AddAbility(NewObject<UVibrationAbility>(AbilityComponent));
+	
+	Super::InitCharacterData();
 }
 
 void AGymRatZombie::OnRep_Die()

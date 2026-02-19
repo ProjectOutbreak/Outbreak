@@ -2,14 +2,10 @@
 
 #include "RunnerZombie.h"
 
-ARunnerZombie::ARunnerZombie()
+void ARunnerZombie::InitCharacterData()
 {
 	ZombieSubType = EZombieSubType::Runner;
-}
-
-void ARunnerZombie::BeginPlay()
-{
-	SetMesh(ECharacterBodyType::Normal);
+	CharacterBodyType = ECharacterBodyType::Normal;
 	
-	Super::BeginPlay();
+	Super::InitCharacterData();
 }

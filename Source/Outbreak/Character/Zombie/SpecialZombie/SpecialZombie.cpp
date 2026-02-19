@@ -5,8 +5,14 @@
 
 ASpecialZombie::ASpecialZombie()
 {
-	ZombieType = EZombieType::Special;
 	AbilityComponent = CreateDefaultSubobject<UAbilityComponent>(TEXT("AbilityComponent"));
+}
+
+void ASpecialZombie::InitCharacterData()
+{
+	ZombieType = EZombieType::Special;
+	
+	Super::InitCharacterData();
 }
 
 void ASpecialZombie::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -14,9 +20,4 @@ void ASpecialZombie::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	Super::EndPlay(EndPlayReason);
 	
 	AbilityComponent->Release();
-}
-
-void ASpecialZombie::OnRep_Die()
-{
-	Super::OnRep_Die();
 }

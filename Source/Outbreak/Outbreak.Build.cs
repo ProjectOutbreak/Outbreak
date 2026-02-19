@@ -44,7 +44,7 @@ public class Outbreak : ModuleRules
 			"EasySessions"
 		});
 		
-		PrivateDependencyModuleNames.AddRange(new string[] { "Paper2D", "AnimGraphRuntime" });
+		PrivateDependencyModuleNames.AddRange(new string[] { "Paper2D", "AnimGraphRuntime", "AnimationBudgetAllocator" });
 		PrivateIncludePaths.Add("Outbreak");
 		// Uncomment if you are using Slate UI
 		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });

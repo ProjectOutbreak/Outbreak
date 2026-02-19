@@ -10,10 +10,7 @@ UCLASS()
 class OUTBREAK_API ABloaterZombie : public ANormalZombie
 {
 	GENERATED_BODY()
-
-public:
-	ABloaterZombie();
 	
 protected:
-	virtual void BeginPlay() override;
+	virtual void InitCharacterData() override;
 };
