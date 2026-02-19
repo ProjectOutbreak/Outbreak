@@ -189,7 +189,7 @@ void UOBWidget::SetSubWeaponContainer(UTexture2D* Icon, int32 SlotNum)
 
 void UOBWidget::SetBottomInvSlot(UTexture2D* Icon, int32 SlotNum)
 {
-	if (BottomInv)
+	if (IsValid(BottomInv))
 	{
 		BottomInv->SetInvIcon(Icon,SlotNum);
 	}

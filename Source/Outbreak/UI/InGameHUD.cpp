@@ -142,6 +142,9 @@ void AInGameHUD::SetSubWeaponContainer(UTexture2D* Icon, int32 SlotNum)
 
 void AInGameHUD::SetBottomInv(UTexture2D* Icon, int32 SlotNum)
 {
+	APlayerController* PC = GetOwningPlayerController();
+	if (!PC || !PC->IsLocalController()) return;
+	
 	if (InGameWidgetInstance)
 	{
 		UE_LOG(LogTemp, Log, TEXT("위젯 인스턴스는 확인됨. 함수 진입 시도."));

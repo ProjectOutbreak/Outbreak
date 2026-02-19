@@ -19,13 +19,11 @@ class OUTBREAK_API USubweaponContainer : public UUserWidget
 	void SetAmmoText(int32 CurrentAmmo, int32 TotalAmmo);
 	void SetWeaponIcon(UTexture2D* Icon);
 protected:
-	UPROPERTY(meta = (BindWidget))
-	class UTextBlock* SubWeaponNumber;
 
 	UPROPERTY(meta = (BindWidget))
 	UImage* WeaponIcon;
 
-	UPROPERTY(meta = (BindWidget))
-	UTextBlock* AmmoText;
+	//UPROPERTY(meta = (BindWidget))
+	//UTextBlock* AmmoText;
 
 };
