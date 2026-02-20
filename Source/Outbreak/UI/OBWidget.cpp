@@ -9,7 +9,11 @@
 #include "Outbreak/Util/GraphicOptionHelper.h"
 #include "Outbreak/Game/Controller/InGamePlayerController.h"
 #include "Outbreak/Game/Framework/InGameState.h"
+#include "GameFramework/PlayerState.h"
 #include "Outbreak/Game/Graphics/GraphicsSettingsLibrary.h"
+#include "CoPlayerStatusContainer.h"
+#include "Character/Player/CharacterPlayer.h"
+#include "Kismet/GameplayStatics.h"
 
 void UOBWidget::NativeConstruct()
 {
@@ -68,6 +72,17 @@ void UOBWidget::NativeConstruct()
 		UMaterialInstanceDynamic* DynMat = UMaterialInstanceDynamic::Create(MiniMapMaterial, this);
 		DynMat->SetTextureParameterValue("MinimapTexture", RenderTarget);
 		MiniMapImage->SetBrushFromMaterial(DynMat);
+	}
+	AInGameState* GameState = Cast<AInGameState>(UGameplayStatics::GetGameState(GetWorld()));
+    
+	if (GameState)
+	{
+		GameState->OnPlayerListChanged.RemoveDynamic(this, &UOBWidget::RefreshPlayerList);
+		GameState->OnPlayerListChanged.AddDynamic(this, &UOBWidget::RefreshPlayerList);
+	}
+	if (GetOwningPlayerState()) 
+	{
+		RefreshPlayerList();
 	}
 }
 
@@ -186,6 +201,65 @@ void UOBWidget::SetBottomInvSlot(UTexture2D* Icon, int32 SlotNum)
 		BottomInv -> SetInvIcon(Icon,SlotNum);
 	}
 }
+
+
+// Container Widget Function
+void UOBWidget::RefreshPlayerList()
+{
+	UWorld* World = GetWorld();
+	if (!World) return;
+	
+	AInGameState* GameState = Cast<AInGameState>(UGameplayStatics::GetGameState(GetWorld()));
+	if (!GameState)
+	{
+		if (!World->GetTimerManager().IsTimerActive(InitRetryTimer))
+		{
+			World->GetTimerManager().SetTimer(InitRetryTimer, this, &UOBWidget::RefreshPlayerList, 0.5f, true);
+		}
+		return; 
+	}
+	
+	APlayerState* myPs = GetOwningPlayerState();
+	if (!myPs)
+	{
+		if (!GetWorld()->GetTimerManager().IsTimerActive(InitRetryTimer))
+		{
+			GetWorld()->GetTimerManager().SetTimer(InitRetryTimer, this, &UOBWidget::RefreshPlayerList, 0.5f, true);
+		}
+		return;
+	}
+	if (!PlayerStatusContainer)
+	{
+		return;
+	}
+	
+	GetWorld()->GetTimerManager().ClearTimer(InitRetryTimer);	PlayerStatusContainer->ClearList();
+	
+	for (APlayerState* PS : GameState->PlayerArray)
+	{
+		if (PS && PS != myPs)
+		{
+			PlayerStatusContainer->AddPlayer(PS);
+			ACharacterPlayer* Char = Cast<ACharacterPlayer>(PS->GetPawn());
+			if (Char)
+			{
+				float Ratio = Char->GetHealthRatio();
+				PlayerStatusContainer->UpdateChildHealth(PS, Ratio);
+			}
+			else
+			{
+				PlayerStatusContainer->UpdateChildHealth(PS, 0.0f);
+			}
+		}
+	}
+}
+
+void UOBWidget::UpdateMemberHealth(APlayerState* TargetPS, float NewHealthRatio)
+{
+	if (!PlayerStatusContainer) return;
+	PlayerStatusContainer->UpdateChildHealth(TargetPS, NewHealthRatio);
+}
+
 
 //------Menu UI------//
 void UOBWidget::ShowPauseMenu(bool bShow)

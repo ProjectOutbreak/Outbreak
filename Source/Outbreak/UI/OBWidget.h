@@ -16,6 +16,7 @@ class UComboBoxString;
 class UTextBlock;
 class UImage;
 class UButton;
+class UCoPlayerStatusContainer;
 
 UCLASS()
 class OUTBREAK_API UOBWidget : public UUserWidget
@@ -35,7 +36,11 @@ public:
 	void SetWeaponContainer(UTexture2D* Icon);
 	void SetSubWeaponContainer(UTexture2D* Icon, int32 SlotNum);
 	void SetBottomInvSlot(UTexture2D* Icon, int32 SlotNum);
-	
+
+	// Container Widget Function
+	UFUNCTION()
+	void RefreshPlayerList();
+	void UpdateMemberHealth(APlayerState* TargetPS, float NewHealthRatio);
 protected:
 	UPROPERTY(meta = (BindWidget))
 	UImage* MiniMapImage;
@@ -100,8 +105,11 @@ protected:
 	UPROPERTY(Transient) int32 PendingEffects = 1;
 	UPROPERTY(Transient) int32 PendingFoliage = 1;
 	UPROPERTY(Transient) int32 PendingShading = 1;
-
 	
+	// Status Container
+	UPROPERTY(meta = (BindWidget)) 
+	UCoPlayerStatusContainer* PlayerStatusContainer;
+	FTimerHandle InitRetryTimer;
 public:	
 	UFUNCTION() void ShowPauseMenu(bool bShow);
 	UFUNCTION() void ShowGraphics(bool bShow);

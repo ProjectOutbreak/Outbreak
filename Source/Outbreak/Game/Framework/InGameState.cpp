@@ -3,8 +3,10 @@
 
 #include "InGameState.h"
 #include "Kismet/GameplayStatics.h"
+#include "Materials/MaterialIRDebug.h"
 #include "Net/UnrealNetwork.h"
 #include "Outbreak/UI/InGameHUD.h"
+#include "Outbreak/UI/OBWidget.h"
 
 AInGameState::AInGameState()
 {
@@ -78,16 +80,11 @@ void AInGameState::AddTotalZombieKill()
 
 void AInGameState::OnRep_AlivePlayerCount()
 {
-	UE_LOG(LogTemp, Log, TEXT("생존 플레이어 수 변경: %d"), AlivePlayerCount);
-	if (APlayerController* PC = GetWorld()->GetFirstPlayerController())
+	UE_LOG(LogTemp, Warning, TEXT("[InGameState] 생존자 수 변경: %d명 -> UI Broadcast"), AlivePlayerCount);
+
+	if (OnPlayerListChanged.IsBound())
 	{
-		if (PC->IsLocalController())
-		{
-			if (AInGameHUD* HUD = Cast<AInGameHUD>(PC->GetHUD()))
-			{
-				HUD->DisplayAlivePlayerCount(AlivePlayerCount);
-			}	
-		}
+		OnPlayerListChanged.Broadcast();
 	}
 }
 

@@ -24,12 +24,12 @@ public:
 	void OnPlayerDie(ACharacter* DeadCharacter, AController* Controller);
 	void ProceedToNextLevel() const;
 	void GameOver();
+	bool IsGameOver() const;
 
 private:
 	void InstantiateSpawnManager();
 	void DelayedRefreshSpawnManagerTargets();
 	void RefreshSpawnManagerTargets();
-	bool IsGameOver() const;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Config")
 	TSubclassOf<AOutbreakSpectatorPawn> OutbreakSpectatorClass;

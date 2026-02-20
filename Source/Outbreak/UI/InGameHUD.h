@@ -23,6 +23,7 @@ public:
 	void DisplayZombieKills(int32 ZombieKills);
 	void DisplayAmmo(int32 CurrentAmmo, int32 TotalAmmo);
 	void DisplayCurrentHealth(int32 CurrentHealth);
+	void DisplayMembers();
 	void SetCutsceneMode(bool bEnable);
 	void SetCrouchIcon(bool IsCrouch);
 	void SetWeaponContainer(UTexture2D* Icon);

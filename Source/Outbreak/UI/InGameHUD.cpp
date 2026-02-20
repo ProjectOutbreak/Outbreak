@@ -71,6 +71,15 @@ void AInGameHUD::DisplayCurrentHealth(int32 CurrentHealth)
 		InGameWidgetInstance->SetCurrentHealth(CurrentHealth, Percent);
 	}
 }
+
+void AInGameHUD::DisplayMembers()
+{
+	if (InGameWidgetInstance)
+	{
+		InGameWidgetInstance->RefreshPlayerList();
+	}
+}
+
 void AInGameHUD::SetCrouchIcon(bool IsCrouch)
 {
 	if (InGameWidgetInstance)

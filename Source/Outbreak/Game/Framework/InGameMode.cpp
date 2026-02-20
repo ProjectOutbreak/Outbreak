@@ -178,7 +178,7 @@ bool AInGameMode::IsGameOver() const
 		{
 			const ACharacterPlayer* PlayerCharacter = Cast<ACharacterPlayer>(PC->GetPawn());
             
-			if (PlayerCharacter && !PlayerCharacter->IsDead())
+			if (IsValid(PlayerCharacter) && !PlayerCharacter->IsActorBeingDestroyed() && !PlayerCharacter->IsDead())
 			{
 				return false;
 			}
