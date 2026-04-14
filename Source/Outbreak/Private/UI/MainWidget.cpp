@@ -101,8 +101,6 @@ void UMainWidget::RemoveSessionSubsystemCallbacks()
 
 void UMainWidget::OnStartSessionSuccess()
 {
-	if (!SessionsSubsystem->IsServer()) return;
-
 	bool bUseDedicated = false;
 	if (CheckBox_UseDedicated)
 	{
