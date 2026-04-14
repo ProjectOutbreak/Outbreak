@@ -24,13 +24,14 @@ public:
 	void AddEquipment(const TObjectPtr<class AEquipmentBase>& Equipment);
 	void UnEquipCurrentEquipment();
 	void RemoveEquipment(class AEquipmentBase* ItemToRemove);
+	void DestroyAllEquipment();
 	
 	void HandleUse();
 	void HandleEndUse();
 	void HandleReload();
 	void HandleToggleFireMode();
 	void PickupEquipment(class AEquipmentBase* NewItem);
-
+	
 	// Getters
 	UFUNCTION(BlueprintCallable)
 	bool GetIsOnUse() const { return bIsOnUse; }

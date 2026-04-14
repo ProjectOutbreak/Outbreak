@@ -8,6 +8,7 @@
 #include "Engine/DamageEvents.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 #include "Outbreak/Component/CharacterUIComponent.h"
 #include "Outbreak/Component/EquipmentController.h"
@@ -18,7 +19,7 @@
 #include "Outbreak/Game/Framework/InGameState.h"
 #include "Outbreak/UI/InGameHUD.h"
 #include "Outbreak/Util/DataTableHelper.h"
-
+#include "Outbreak/UI/OBWidget.h"
 ACharacterPlayer::ACharacterPlayer()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -122,6 +123,11 @@ void ACharacterPlayer::UpdateToxicAuraEffect(float Intensity)
 	PostProcessComponent->Settings.AddBlendable(ToxicAuraMID, FMath::Clamp(Intensity, 0.0f, 1.0f));
 }
 
+float ACharacterPlayer::GetHealthRatio() const
+{
+	return (float)CurrentHealth / PlayerData.MaxHealth;
+}
+
 void ACharacterPlayer::BeginPlay()
 {
 	Super::BeginPlay();
@@ -134,7 +140,7 @@ void ACharacterPlayer::BeginPlay()
 			UIRig->SetPlayerName(GetName());
 		}
 		SetPlayerControl(CurrentCharacterControlType);
-		
+		SetInitialStateUI();
 		if (AInGamePlayerController* PC = Cast<AInGamePlayerController>(GetController()))
 		{
 			if (PC->PlayerCameraManager)
@@ -184,6 +190,18 @@ void ACharacterPlayer::OnRep_CurrentHealth()
 			HUD->DisplayCurrentHealth(CurrentHealth);
 		}
 	}
+	if (APlayerController* LocalPC = UGameplayStatics::GetPlayerController(GetWorld(), 0))
+	{
+		if (AInGameHUD* LocalHUD = Cast<AInGameHUD>(LocalPC->GetHUD()))
+		{
+			if (UOBWidget* Widget = LocalHUD->GetInGameWidget())
+			{
+				float Ratio = (float)CurrentHealth / 100.0f;
+				Widget->UpdateMemberHealth(GetPlayerState(), Ratio);
+			}
+		}
+	}
+	
 }
 
 void ACharacterPlayer::OnRep_Controller()
@@ -193,6 +211,22 @@ void ACharacterPlayer::OnRep_Controller()
 	if (!CachedController)
 	{
 		CachedController = GetController();
+	}
+	if (IsLocallyControlled())
+	{
+		SetInitialStateUI();
+	}
+}
+
+void ACharacterPlayer::OnRep_PlayerState()
+{
+	Super::OnRep_PlayerState();
+	if (const APlayerController* PC = Cast<APlayerController>(CachedController))
+	{
+		if (AInGameHUD* HUD = Cast<AInGameHUD>(PC->GetHUD()))
+		{
+			HUD->DisplayMembers();
+		}
 	}
 }
 
@@ -265,6 +299,11 @@ void ACharacterPlayer::ClearInputMappings() const
 	}
 }
 
+void ACharacterPlayer::SetInitialStateUI()
+{
+	OnRep_CurrentHealth();
+}
+
 void ACharacterPlayer::SetupCollision()
 {
 	Super::SetupCollision();
@@ -287,6 +326,29 @@ void ACharacterPlayer::SetupMovement()
 	MovementComp->MaxStepHeight = 50.f;
 	MovementComp->SetWalkableFloorAngle(55.f);
 	MovementComp->bUseControllerDesiredRotation = true;
+}
+
+void ACharacterPlayer::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	if (HasAuthority())
+	{
+		if (EndPlayReason == EEndPlayReason::Destroyed || EndPlayReason == EEndPlayReason::RemovedFromWorld)
+		{
+			if (EquipmentController)
+			{
+				EquipmentController->DestroyAllEquipment();
+			}
+			OnCharacterDeathDelegate.Broadcast(this);
+			if (AInGameMode* Gm = Cast<AInGameMode>(GetWorld()->GetAuthGameMode()))
+			{
+				if (Gm->IsGameOver())
+				{
+					Gm->GameOver();
+				}
+			}
+		}
+	}
+	Super::EndPlay(EndPlayReason);
 }
 
 void ACharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -324,6 +386,6 @@ void ACharacterPlayer::Server_RequestGameOver_Implementation()
 	if (AInGameMode* GM = Cast<AInGameMode>(GetWorld()->GetAuthGameMode()))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[Server] Admin Command Received: Game Over!"));
-		GM->GameOver(); // 아까 만든 그 함수 실행
+		GM->GameOver(); 
 	}
 }

@@ -151,9 +151,13 @@ void AZombieAIComponent::HandleTargetDeath(AActor* DeadActor)
 	{
 		CurrentTargetPlayer->OnCharacterDeathDelegate.RemoveDynamic(this, &AZombieAIComponent::HandleTargetDeath);
 		CurrentTargetPlayer = nullptr;
-
-		FindNewTarget();
-	} 
+		ACharacterPlayer* DeadPlayer = Cast<ACharacterPlayer>(DeadActor);
+		if (IsValid(DeadPlayer))
+		{
+			DeadPlayer->OnCharacterDeathDelegate.RemoveDynamic(this, &AZombieAIComponent::HandleTargetDeath);
+		}
+		FTimerHandle TempHandle;
+		GetWorld()->GetTimerManager().SetTimer(TempHandle, this, &AZombieAIComponent::FindNewTarget, 0.1f, false);	} 
 }
 
 void AZombieAIComponent::FindNewTarget()

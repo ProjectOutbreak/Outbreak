@@ -602,6 +602,18 @@ void UEquipmentController::RemoveEquipment(AEquipmentBase* ItemToRemove)
 	ItemToRemove->Destroy();
 }
 
+void UEquipmentController::DestroyAllEquipment()
+{
+	if (GetOwner() && !GetOwner()->HasAuthority()) return;
+
+	if (FirstPrimaryWeapon) RemoveEquipment(FirstPrimaryWeapon);
+    if (SecondPrimaryWeapon) RemoveEquipment(SecondPrimaryWeapon);
+    if (SecondaryWeapon)    RemoveEquipment(SecondaryWeapon);
+    if (ThrowableWeapon)    RemoveEquipment(ThrowableWeapon);
+    if (FirstMedicine)      RemoveEquipment(FirstMedicine);
+    if (SecondMedicine)     RemoveEquipment(SecondMedicine);	
+}
+
 
 void UEquipmentController::HandleAmmoChanged()
 {
