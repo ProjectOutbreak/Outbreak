@@ -32,7 +32,28 @@ void UEquipmentController::BeginPlay()
 		PRINT_WITH_CURRENT_CONTEXT("Failed to cast ACharacterPlayer");
 	}
 }
+void UEquipmentController::Client_UpdateEquipmentUI_Implementation(EEquipmentType Type, UTexture2D* Icon, int32 SlotNum)
+{
+	// 이 함수는 '소유한 클라이언트'에서만 실행됩니다.
+	AInGameHUD* Hud = GetInGameHUD();
+	if (!Hud || !Icon) return;
 
+	switch (Type)
+	{
+	case EEquipmentType::PrimaryWeapon:
+		Hud->SetWeaponContainer(Icon);
+		break;
+	case EEquipmentType::SecondaryWeapon:
+		Hud->SetSubWeaponContainer(Icon, SlotNum);
+		break;
+	case EEquipmentType::ThrowableWeapon:
+	case EEquipmentType::Medicine:
+		Hud->SetBottomInv(Icon, SlotNum);
+		break;
+	default:
+		break;
+	}
+}
 void UEquipmentController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -94,164 +115,115 @@ void UEquipmentController::EquipBySlot(const int32 SlotNumber)
 
 void UEquipmentController::AddEquipment(const TObjectPtr<AEquipmentBase>& Equipment)
 {
-	AInGameHUD* Hud = GetInGameHUD();
+    if (!IsValid(Equipment)) return;
+    
+    // 서버에서 실행 중인지 확인 (네트워크 권한 체크)
+	if (GetOwner() && !GetOwner()->HasAuthority()) return;
 
-	if (!IsValid(Equipment)) return;
-	
-	EEquipmentType EquipmentType = Equipment->GetEquipmentType();
-	switch (EquipmentType)
-	{
-		case EEquipmentType::PrimaryWeapon:
-		{
-			AFirableBase* NewPrimaryWeapon = Cast<AFirableBase>(Equipment);
-			if (!NewPrimaryWeapon) return;
-		
-			if (!IsValid(FirstPrimaryWeapon))
-			{
-				FirstPrimaryWeapon = NewPrimaryWeapon;
-				Equip(FirstPrimaryWeapon);
-			}
-			else if (!IsValid(SecondPrimaryWeapon))
-			{
-				SecondPrimaryWeapon = NewPrimaryWeapon;
-				Equip(SecondPrimaryWeapon);
-			}
-			else
-			{
-				if (CurrentEquippedItem == FirstPrimaryWeapon)
-				{
-					FirstPrimaryWeapon->Destroy();
-					FirstPrimaryWeapon = NewPrimaryWeapon;
-					Equip(FirstPrimaryWeapon);
-				}
-				else
-				{
-					SecondPrimaryWeapon->Destroy();
-					SecondPrimaryWeapon = NewPrimaryWeapon;
-					Equip(SecondPrimaryWeapon);
-				}
-			}
-			UTexture2D* Icon = Equipment->GetEquipmentIcon();
-			if (Icon)
-			{
-				// Hud->SetWeaponContainer(Icon);
-				UE_LOG(LogTemp, Log, TEXT("Icon Load Success"));
-			}
-				else
-				{
-					UE_LOG(LogTemp, Log, TEXT("Icon Load Fail"));
-				}
-			break;
-		}
-		
-		case EEquipmentType::SecondaryWeapon:
-		{
-			AWeaponBase* NewSecondaryWeapon = Cast<AWeaponBase>(Equipment);
-			if (!NewSecondaryWeapon) return;
-				
+    EEquipmentType EquipmentType = Equipment->GetEquipmentType();
+    UTexture2D* Icon = Equipment->GetEquipmentIcon();
 
-				
-			if (IsValid(SecondaryWeapon))
-			{
-				SecondaryWeapon->Destroy();
-			}
-			SecondaryWeapon = NewSecondaryWeapon;
-			Equip(SecondaryWeapon);
-			UTexture2D* Icon = Equipment->GetEquipmentIcon();
-			if (Icon)
-			{
-				// Hud->SetSubWeaponContainer(Icon,2 );
-				UE_LOG(LogTemp, Log, TEXT("Sub/Icon Load Success"));
-			}
-			else
-			{
-				UE_LOG(LogTemp, Log, TEXT("Sub/Icon Load Fail"));
-			}
-			break;
-		}
-		
-		case EEquipmentType::ThrowableWeapon:
-		{
-			AThrowableBase* NewThrowableWeapon = Cast<AThrowableBase>(Equipment);
-			if (!NewThrowableWeapon) return;
-		
-			if (IsValid(ThrowableWeapon))
-			{
-				ThrowableWeapon->Destroy();
-			}
-			ThrowableWeapon = NewThrowableWeapon;
-			Equip(ThrowableWeapon);
-				UTexture2D* Icon = Equipment->GetEquipmentIcon();
-				if (Icon)
-				{
-					// Hud->SetBottomInv(Icon,1);
-					UE_LOG(LogTemp, Log, TEXT("Throw/Icon Load Success"));
-				}
-				else
-				{
-					UE_LOG(LogTemp, Log, TEXT("Throw/Icon Load Fail"));
-				}
-			break;
-		}
-		
-		case EEquipmentType::Medicine:
-		{
-			AMedicineBase* NewMedicine = Cast<AMedicineBase>(Equipment);
-			if (!NewMedicine) return;
+    switch (EquipmentType)
+    {
+    case EEquipmentType::PrimaryWeapon:
+    {
+        AFirableBase* NewPrimaryWeapon = Cast<AFirableBase>(Equipment);
+        if (!NewPrimaryWeapon) return;
 
-			if (!IsValid(FirstMedicine))
-			{
-				FirstMedicine = NewMedicine;
-				Equip(FirstMedicine);
-				UTexture2D* Icon = Equipment->GetEquipmentIcon();
-				if (Icon)
-				{
-					// Hud->SetBottomInv(Icon,2);
-					UE_LOG(LogTemp, Log, TEXT("Med1/Icon Load Success"));
-				}
-				else
-				{
-					UE_LOG(LogTemp, Log, TEXT("Med1/Icon Load Fail"));
-				}
-			}
-			else if (!IsValid(SecondMedicine))
-			{
-				SecondMedicine = NewMedicine;
-				Equip(SecondMedicine);
-				UTexture2D* Icon = Equipment->GetEquipmentIcon();
-				if (Icon)
-				{
-					// Hud->SetBottomInv(Icon,3);
-					UE_LOG(LogTemp, Log, TEXT("Med2/Icon Load Success"));
-				}
-				else
-				{
-					UE_LOG(LogTemp, Log, TEXT("Med2/Icon Load Fail"));
-				}
-			}
-			else
-			{
-				FirstMedicine->Destroy();
-				FirstMedicine = NewMedicine;
-				Equip(FirstMedicine);
-				UTexture2D* Icon = Equipment->GetEquipmentIcon();
-				if (Icon)
-				{
-					// Hud->SetBottomInv(Icon,2);
-					UE_LOG(LogTemp, Log, TEXT("Med1/Icon Load Success"));
-				}
-				else
-				{
-					UE_LOG(LogTemp, Log, TEXT("Med1/Icon Load Fail"));
-				}
-			}
-			break;
-		}
-		default:
-			UE_LOG(LogTemp, Warning, TEXT("[%s] Invalid Equipment Type: %s"), CURRENT_CONTEXT, *EnumHelper::EnumToString(EquipmentType));
-			return;
-	}
+        if (!IsValid(FirstPrimaryWeapon))
+        {
+            FirstPrimaryWeapon = NewPrimaryWeapon;
+            Equip(FirstPrimaryWeapon);
+        }
+        else if (!IsValid(SecondPrimaryWeapon))
+        {
+            SecondPrimaryWeapon = NewPrimaryWeapon;
+            Equip(SecondPrimaryWeapon);
+        }
+        else
+        {
+            if (CurrentEquippedItem == FirstPrimaryWeapon)
+            {
+                if(FirstPrimaryWeapon) FirstPrimaryWeapon->Destroy();
+                FirstPrimaryWeapon = NewPrimaryWeapon;
+                Equip(FirstPrimaryWeapon);
+            }
+            else
+            {
+                if(SecondPrimaryWeapon) SecondPrimaryWeapon->Destroy();
+                SecondPrimaryWeapon = NewPrimaryWeapon;
+                Equip(SecondPrimaryWeapon);
+            }
+        }
+        // HUD 대신 RPC 호출
+        Client_UpdateEquipmentUI(EEquipmentType::PrimaryWeapon, Icon,0);
+        break;
+    }
 
+    case EEquipmentType::SecondaryWeapon:
+    {
+        AWeaponBase* NewSecondaryWeapon = Cast<AWeaponBase>(Equipment);
+        if (!NewSecondaryWeapon) return;
+
+        if (IsValid(SecondaryWeapon))
+        {
+            SecondaryWeapon->Destroy();
+        }
+        SecondaryWeapon = NewSecondaryWeapon;
+        Equip(SecondaryWeapon);
+
+        // HUD 대신 RPC 호출 (슬롯 번호 2 전달)
+        Client_UpdateEquipmentUI(EEquipmentType::SecondaryWeapon, Icon, 2);
+        break;
+    }
+
+    case EEquipmentType::ThrowableWeapon:
+    {
+        AThrowableBase* NewThrowableWeapon = Cast<AThrowableBase>(Equipment);
+        if (!NewThrowableWeapon) return;
+
+        if (IsValid(ThrowableWeapon))
+        {
+            ThrowableWeapon->Destroy();
+        }
+        ThrowableWeapon = NewThrowableWeapon;
+        Equip(ThrowableWeapon);
+
+        // HUD 대신 RPC 호출 (슬롯 번호 1 전달)
+        Client_UpdateEquipmentUI(EEquipmentType::ThrowableWeapon, Icon, 1);
+        break;
+    }
+
+    case EEquipmentType::Medicine:
+    {
+        AMedicineBase* NewMedicine = Cast<AMedicineBase>(Equipment);
+        if (!NewMedicine) return;
+
+        if (!IsValid(FirstMedicine))
+        {
+            FirstMedicine = NewMedicine;
+            Equip(FirstMedicine);
+            Client_UpdateEquipmentUI(EEquipmentType::Medicine, Icon, 2);
+        }
+        else if (!IsValid(SecondMedicine))
+        {
+            SecondMedicine = NewMedicine;
+            Equip(SecondMedicine);
+            Client_UpdateEquipmentUI(EEquipmentType::Medicine, Icon, 3);
+        }
+        else
+        {
+            if (IsValid(FirstMedicine)) FirstMedicine->Destroy();
+            FirstMedicine = NewMedicine;
+            Equip(FirstMedicine);
+            Client_UpdateEquipmentUI(EEquipmentType::Medicine, Icon, 2);
+        }
+        break;
+    }
+
+    default:
+        break;
+    }
 }
 
 void UEquipmentController::PickupEquipment(class AEquipmentBase* NewItem)
@@ -628,7 +600,7 @@ void UEquipmentController::HandleAmmoChanged()
 
 	if (AInGameHUD* Hud = GetInGameHUD())
 	{
-		Hud->DisplayAmmo(CurrentMag, ReserveAmmo);
+		Hud -> DisplayAmmo(CurrentMag, ReserveAmmo);
 	}
 }
 
@@ -742,3 +714,4 @@ AInGameHUD* UEquipmentController::GetInGameHUD()
 
 	return nullptr;
 }
+

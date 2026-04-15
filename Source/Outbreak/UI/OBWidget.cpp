@@ -183,7 +183,11 @@ void UOBWidget::SetWeaponContainer(UTexture2D* Icon)
 {
 	if (WeaponHUD)
 	{
-		WeaponHUD -> SetWeaponIcon(Icon);
+		WeaponHUD->SetWeaponIcon(Icon);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("UOBWidget: WeaponHUD pointer is null!"));
 	}
 }
 
@@ -191,15 +195,23 @@ void UOBWidget::SetSubWeaponContainer(UTexture2D* Icon, int32 SlotNum)
 {
 	if (WeaponHUD)
 	{
-		WeaponHUD -> SetSubslotIcon(Icon, SlotNum);
+		WeaponHUD->SetSubslotIcon(Icon,SlotNum);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("UOBWidget: WeaponHUD pointer is null!"));
 	}
 }
 
 void UOBWidget::SetBottomInvSlot(UTexture2D* Icon, int32 SlotNum)
 {
-	if (BottomInv)
+	if (IsValid(BottomInv))
 	{
-		BottomInv -> SetInvIcon(Icon,SlotNum);
+		BottomInv->SetInvIcon(Icon,SlotNum);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("UOBWidget: WeaponHUD pointer is null!"));
 	}
 }
 

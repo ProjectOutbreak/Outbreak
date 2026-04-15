@@ -6,56 +6,30 @@
 
 void UBottomInv::SetInvIcon(UTexture2D* Icon, int32 SlotNum)
 {
+	UImage* TargetSlot = nullptr;
+
 	switch (SlotNum)
 	{
-		case 1:
-			{
-				if (IsValid(BottomInvSlot1))
-				{
-					if (Icon)
-					{
-						BottomInvSlot1->SetBrushFromTexture(Icon);
-						BottomInvSlot1->SetVisibility(ESlateVisibility::Visible);
-					}
-					else
-					{
-						BottomInvSlot1->SetVisibility(ESlateVisibility::Hidden);
-					}
-				}
-			}
-		case 2:
-			{
-				if (IsValid(BottomInvSlot2))
-				{
-					if (Icon)
-					{
-						BottomInvSlot2->SetBrushFromTexture(Icon);
-						BottomInvSlot2->SetVisibility(ESlateVisibility::Visible);
-					}
-					else
-					{
-						BottomInvSlot2->SetVisibility(ESlateVisibility::Hidden);
-					}
-				}
-			}
-		case 3:
+	case 1: TargetSlot = BottomInvSlot1; break;
+	case 2: TargetSlot = BottomInvSlot2; break;
+	case 3: TargetSlot = BottomInvSlot3; break;
+	default: return;
+	}
+	
+	if (IsValid(TargetSlot))
+	{
+		if (Icon)
 		{
-				if (IsValid(BottomInvSlot3))
-				{
-					if (Icon)
-					{
-						BottomInvSlot3->SetBrushFromTexture(Icon);
-						BottomInvSlot3->SetVisibility(ESlateVisibility::Visible);
-					}
-					else
-					{
-						BottomInvSlot3->SetVisibility(ESlateVisibility::Hidden);
-					}
-				}
+			TargetSlot->SetBrushFromTexture(Icon);
+			TargetSlot->SetVisibility(ESlateVisibility::Visible);
 		}
-		default:
+		else
 		{
-			
+			TargetSlot->SetVisibility(ESlateVisibility::Hidden);
 		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("BottomInvSlot %d 가 유효하지 않습니다!"), SlotNum);
 	}
 }

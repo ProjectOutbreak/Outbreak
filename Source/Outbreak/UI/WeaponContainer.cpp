@@ -8,7 +8,6 @@ void UWeaponContainer::SetAmmoText(int32 CurrentAmmo, int32 TotalAmmo)
 {
 	if (CurrentAmmoText && TotalAmmoText)
 	{
-		// FString::Printf를 이용한 포맷팅 로직
 		FString CurrentAmmoStr = FString::Printf(TEXT("%d"), CurrentAmmo);
 		FString TotalAmmoStr = FString::Printf(TEXT("%d"), TotalAmmo);
 		
@@ -24,6 +23,8 @@ void UWeaponContainer::SetWeaponIcon(UTexture2D* Icon)
 		{
 			MainWeaponIcon->SetBrushFromTexture(Icon);
 			MainWeaponIcon->SetVisibility(ESlateVisibility::Visible);
+			CurrentAmmoText->SetVisibility(ESlateVisibility::Visible);
+			TotalAmmoText->SetVisibility(ESlateVisibility::Visible);
 		}
 		else
 		{
@@ -35,9 +36,9 @@ void UWeaponContainer::SetWeaponIcon(UTexture2D* Icon)
 void UWeaponContainer::SetSubslotIcon(UTexture2D* Icon, int32 SubslotNum)
 {
 	if (SubslotNum == 1)
-	{
-		SubSlot1 -> SetWeaponIcon(Icon);
-	}
+		{
+			//2번무기 없어서 일단 공백처리
+		}
 	else if (SubslotNum == 2)
 	{
 		SubSlot2 ->SetWeaponIcon(Icon);
