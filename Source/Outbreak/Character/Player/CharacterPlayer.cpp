@@ -332,6 +332,12 @@ void ACharacterPlayer::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	if (HasAuthority())
 	{
+		if (EndPlayReason == EEndPlayReason::LevelTransition || EndPlayReason == EEndPlayReason::Quit)
+        {
+            Super::EndPlay(EndPlayReason);
+            return;
+        }
+		
 		if (EndPlayReason == EEndPlayReason::Destroyed || EndPlayReason == EEndPlayReason::RemovedFromWorld)
 		{
 			if (EquipmentController)
@@ -339,13 +345,6 @@ void ACharacterPlayer::EndPlay(const EEndPlayReason::Type EndPlayReason)
 				EquipmentController->DestroyAllEquipment();
 			}
 			OnCharacterDeathDelegate.Broadcast(this);
-			if (AInGameMode* Gm = Cast<AInGameMode>(GetWorld()->GetAuthGameMode()))
-			{
-				if (Gm->IsGameOver())
-				{
-					Gm->GameOver();
-				}
-			}
 		}
 	}
 	Super::EndPlay(EndPlayReason);

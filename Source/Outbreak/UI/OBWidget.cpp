@@ -21,6 +21,7 @@ void UOBWidget::NativeConstruct()
 	
 	if (BtnResume) BtnResume->OnClicked.AddDynamic(this, &UOBWidget::OnResumeClicked);
 	if (BtnGraphics) BtnGraphics->OnClicked.AddDynamic(this, &UOBWidget::OnOpenGraphicsClicked);
+	if (BtnQuit) BtnQuit->OnClicked.AddDynamic(this, &UOBWidget::OnQuitClicked);
 	
 	const FScalabilityPreset Cur = UGraphicsSettingsLibrary::GetCurrent();
 
@@ -288,6 +289,18 @@ void UOBWidget::OnResumeClicked()
 	}
 	ShowPauseMenu(false);
 }
+
+void UOBWidget::OnQuitClicked()
+{
+	if (APlayerController* PC = GetOwningPlayer())
+	{
+		if (AInGamePlayerController* OBPC = Cast<AInGamePlayerController>(PC))
+		{
+			OBPC->QuitGame();
+		}
+	}
+}
+
 
 //------Graphics Setting UI-------//
 void UOBWidget::OnOpenGraphicsClicked()

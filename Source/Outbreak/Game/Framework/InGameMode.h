@@ -26,11 +26,16 @@ public:
 	void GameOver();
 	bool IsGameOver() const;
 
+	void ProcessPlayerQuit(APlayerController* ExitingPlayer);
+	
 private:
 	void InstantiateSpawnManager();
 	void DelayedRefreshSpawnManagerTargets();
 	void RefreshSpawnManagerTargets();
 
+	UFUNCTION()
+	void ProcessGameOverSequence();
+	
 	UPROPERTY(EditDefaultsOnly, Category = "Config")
 	TSubclassOf<AOutbreakSpectatorPawn> OutbreakSpectatorClass;
 	UPROPERTY(EditDefaultsOnly, Category = "Config")
@@ -39,6 +44,9 @@ private:
 	TObjectPtr<ACharacterSpawnManager> SpawnManagerInstance;
 
 	bool bHasGameOverTriggered = false;
+	FTimerHandle GameOverTimerHandle;
+
+	bool bIsServerShuttingDown = false;
 public:
 	// ~ Begin Getter & Setter
 	FORCEINLINE TObjectPtr<ACharacterSpawnManager> GetSpawnManager() const { return SpawnManagerInstance; }

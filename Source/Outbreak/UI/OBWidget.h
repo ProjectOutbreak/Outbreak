@@ -94,6 +94,7 @@ protected:
 	UPROPERTY(meta = (BindWidget)) UButton* BtnGraphics;
 	UPROPERTY(meta = (BindWidget)) UButton* BtnBack;
 	UPROPERTY(meta = (BindWidget)) UButton* BtnApply;
+	UPROPERTY(meta = (BindWidget)) UButton* BtnQuit;
 	
 	UPROPERTY(Transient) int32 PendingViewDistance = 1;
 	UPROPERTY(Transient) int32 PendingAntiAliasing = 1;
@@ -118,6 +119,7 @@ public:
 	UFUNCTION() void OnHighClicked();
 	UFUNCTION() void OnApplyClicked();
 	UFUNCTION() void OnResumeClicked();
+	UFUNCTION() void OnQuitClicked();
 	UFUNCTION() void OnOpenGraphicsClicked();
     UFUNCTION() void OnBackFromGraphics();
 
