@@ -1,10 +1,13 @@
 ﻿#include "StagingGameMode.h"
+
+#include "EasySessionSubsystem.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameLiftServerSDK.h"
 #include "OutbreakGameLiftSubsystem.h"
 #include "Misc/PackageName.h"
 #include "Framework/GameState/LobbyGameState.h"
 #include "Utilities/DebugHelper.h"
+#include "GameFramework/PlayerState.h"
 
 AStagingGameMode::AStagingGameMode()
 {
@@ -34,12 +37,44 @@ void AStagingGameMode::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);
 	ConnectedPlayers++;
-
 	UE_LOG(LogTemp, Warning, TEXT("[StagingGameMode] Connected Players : %d"), ConnectedPlayers);
+	//TODO 
+	if (ALobbyGameState* GS = GetGameState<ALobbyGameState>())
+	{
+		if (GS->LobbyAdmin == nullptr && NewPlayer->PlayerState)
+		{
+			GS->LobbyAdmin = NewPlayer->PlayerState;
+			
+			GS->OnRep_LobbyAdmin(); 
+			
+			UE_LOG(LogTemp, Warning, TEXT("[StagingGameMode] Admin Assigned to: %s"), *NewPlayer->PlayerState->GetPlayerName());
+		}
+	}
+
+	
 }
 
 void AStagingGameMode::Logout(AController* Exiting)
 {
+	if (ALobbyGameState* GS = GetGameState<ALobbyGameState>())
+	{
+		if (Exiting->PlayerState && Exiting->PlayerState == GS->LobbyAdmin)
+		{
+			GS->LobbyAdmin = nullptr; 
+			for (APlayerState* PS : GS->PlayerArray)
+			{
+				if (PS && PS != Exiting->PlayerState)
+				{
+					GS->LobbyAdmin = PS;
+					GS->OnRep_LobbyAdmin(); 
+					
+					UE_LOG(LogTemp, Warning, TEXT("[StagingGameMode] Admin Migrated to: %s"), *PS->GetPlayerName());
+					break; 
+				}
+			}
+		}
+	}
+	
 	Super::Logout(Exiting);
 	
 	if (ConnectedPlayers > 0)
@@ -115,4 +150,30 @@ void AStagingGameMode::RequestStartGame()
 		PRINT_WITH_CURRENT_CONTEXT(FString::Printf(TEXT("ServerTravel to %s failed"), *TargetMapPath));
 		bIsTravelling = false;
 	}
+}
+
+void AStagingGameMode::ProcessPlayerQuit(APlayerController* ExitingPlayer)
+{
+	if (!ExitingPlayer) return;
+	if (GetNetMode() == NM_ListenServer && ExitingPlayer->IsLocalController())
+	{
+		PRINT_WITH_CURRENT_CONTEXT(TEXT("Lobby Host is quitting. Destroying Lobby..."));
+		
+		if (UGameInstance* GI = GetGameInstance())
+		{
+			if (UEasySessionSubsystem* EasySession = GI->GetSubsystem<UEasySessionSubsystem>())
+			{
+				EasySession->DestroySession();
+			}
+		}
+		for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+		{
+			APlayerController* PC = It->Get();
+			if (PC && PC != ExitingPlayer)
+			{
+				PC->ClientReturnToMainMenuWithTextReason(FText::FromString(TEXT("Host has closed the lobby.")));
+			}
+		}
+	}
+	ExitingPlayer->ClientReturnToMainMenuWithTextReason(FText::FromString(TEXT("You left the lobby.")));
 }

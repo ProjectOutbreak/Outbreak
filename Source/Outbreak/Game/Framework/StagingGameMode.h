@@ -20,7 +20,7 @@ public:
 	virtual void PreLogin(const FString& Options, const FString& Address, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage) override;
 
 	void RequestStartGame();
-	
+	void ProcessPlayerQuit(APlayerController* ExitingPlayer);
 protected:
 	UPROPERTY(EditAnywhere, Category = "Config")
 	TSoftObjectPtr<UWorld> TargetInGameLevel;

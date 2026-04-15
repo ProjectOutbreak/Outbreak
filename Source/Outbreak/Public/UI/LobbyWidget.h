@@ -19,7 +19,10 @@ public:
 	virtual bool Initialize() override;
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
-	
+
+	UFUNCTION()
+	void CheckAdminAuthority();
+
 protected:
 	// ~ Begin UMG
 	UPROPERTY(meta = (BindWidgetOptional))
@@ -31,6 +34,9 @@ protected:
 	UPROPERTY(meta = (BindWidgetOptional))
 	TObjectPtr<UTextBlock> Text_PlayerList;
 	// ~ End UMG
+
+	UPROPERTY(meta = (BindWidgetOptional))
+	UButton* Button_LeaveLobby;
 	
 private:
 	UFUNCTION()
@@ -39,6 +45,9 @@ private:
 	// ~ Begin Button Callbacks
 	UFUNCTION()
 	void OnClickGameStartButton();
+
+	UFUNCTION()
+	void OnClickLeaveLobbyButton();
 	// ~ End Button Callbacks
 	
 	UPROPERTY(Transient)

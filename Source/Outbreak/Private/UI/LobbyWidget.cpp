@@ -16,6 +16,23 @@ bool ULobbyWidget::Initialize()
 	return true;
 }
 
+void ULobbyWidget::CheckAdminAuthority()
+{
+	if (ALobbyGameState* GS = GetWorld()->GetGameState<ALobbyGameState>())
+	{
+		APlayerController* PC = GetOwningPlayer();
+		if (PC && PC->PlayerState && PC->PlayerState == GS->LobbyAdmin)
+		{
+			Button_GameStart->SetVisibility(ESlateVisibility::Visible);
+			Button_GameStart->SetIsEnabled(true); 
+		}
+		else
+		{
+			Button_GameStart->SetVisibility(ESlateVisibility::Collapsed);
+		}
+	}
+}
+
 void ULobbyWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
@@ -24,20 +41,24 @@ void ULobbyWidget::NativeConstruct()
 	{
 		Button_GameStart->OnClicked.AddDynamic(this, &ULobbyWidget::OnClickGameStartButton);
 	}
+	if (Button_LeaveLobby)
+	{
+		Button_LeaveLobby->OnClicked.AddDynamic(this, &ULobbyWidget::OnClickLeaveLobbyButton);
+	}
 	
 	if (!SessionsSubsystem)
 	{
 		SessionsSubsystem = GetGameInstance()->GetSubsystem<UEasySessionSubsystem>();
 	}
 	
-	if (SessionsSubsystem->IsAdmin())
+	if (ALobbyGameState* GS = GetWorld()->GetGameState<ALobbyGameState>())
 	{
-		Button_GameStart->SetVisibility(ESlateVisibility::Visible);
-		Button_GameStart->SetIsEnabled(true); 
-	}
-	else
-	{
-		Button_GameStart->SetVisibility(ESlateVisibility::Collapsed);
+		GS->OnPlayerListChanged.AddDynamic(this, &ThisClass::OnPlayerListUpdate);
+		
+		GS->OnLobbyAdminChangedDelegate.AddDynamic(this, &ThisClass::CheckAdminAuthority);
+        
+		OnPlayerListUpdate();
+		CheckAdminAuthority(); 
 	}
 
 	const IOnlineSubsystem* Subsystem = Online::GetSubsystem(GetWorld());
@@ -69,17 +90,7 @@ void ULobbyWidget::NativeConstruct()
 		PC->SetInputMode(InputMode);
 		PC->bShowMouseCursor = true;
 	}
-	
-	if (ALobbyGameState* GS = GetWorld()->GetGameState<ALobbyGameState>())
-	{
-		GS->OnPlayerListChanged.AddDynamic(this, &ThisClass::OnPlayerListUpdate);
-        
-		OnPlayerListUpdate();
-	}
-	
 	GetWorld()->GetTimerManager().SetTimer(PlayerListTimerHandle, this, &ThisClass::OnPlayerListUpdate, 1.0f, true);
-    
-	OnPlayerListUpdate(); 
 }
 
 void ULobbyWidget::NativeDestruct()
@@ -105,6 +116,17 @@ void ULobbyWidget::OnClickGameStartButton()
 		PC->RequestStartGame();
         
 		Button_GameStart->SetIsEnabled(false); 
+	}
+}
+
+void ULobbyWidget::OnClickLeaveLobbyButton()
+{
+	if (ALobbyPlayerController* PC = Cast<ALobbyPlayerController>(GetOwningPlayer()))
+	{
+		if (Button_LeaveLobby) Button_LeaveLobby->SetIsEnabled(false);
+		
+		PRINT_WITH_CURRENT_CONTEXT("Leaving Lobby...");
+		PC->LeaveLobby(); 
 	}
 }
 
