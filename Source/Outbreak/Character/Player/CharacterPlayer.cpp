@@ -304,18 +304,6 @@ void ACharacterPlayer::SetInitialStateUI()
 	OnRep_CurrentHealth();
 }
 
-void ACharacterPlayer::SetupCollision()
-{
-	Super::SetupCollision();
-
-	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
-
-	auto* MeshComp = GetMesh();
-	MeshComp->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	MeshComp->SetCollisionObjectType(ECollisionChannel::ECC_Pawn);
-	MeshComp->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
-}
-
 void ACharacterPlayer::SetupMovement()
 {
 	Super::SetupMovement();
