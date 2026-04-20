@@ -38,6 +38,12 @@ ACharacterZombie::ACharacterZombie()
 	}
 }
 
+void ACharacterZombie::SetEnableAttackCollision(const bool bEnable)
+{
+	AlreadyHitActors.Empty();
+	RightHandCollision->SetCollisionEnabled(bEnable ? ECollisionEnabled::QueryOnly : ECollisionEnabled::NoCollision);
+}
+
 void ACharacterZombie::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -104,16 +110,7 @@ void ACharacterZombie::OnAttackOverlapBegin(UPrimitiveComponent* OverlappedComp,
 	}
 }
 
-void ACharacterZombie::EnableAttackCollision()
-{
-	AlreadyHitActors.Empty();
-	RightHandCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-}
 
-void ACharacterZombie::DisableAttackCollision()
-{
-	RightHandCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-}
 
 void ACharacterZombie::SetupCollisionAndMesh()
 {

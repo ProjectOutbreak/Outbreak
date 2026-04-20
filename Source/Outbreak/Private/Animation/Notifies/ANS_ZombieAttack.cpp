@@ -8,7 +8,7 @@ void UANS_ZombieAttack::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSeque
 	
 	if (ACharacterZombie* Zombie = Cast<ACharacterZombie>(MeshComp->GetOwner()))
 	{
-		Zombie->EnableAttackCollision();
+		Zombie->SetEnableAttackCollision(true);
 	}
 }
 
@@ -19,6 +19,6 @@ void UANS_ZombieAttack::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenc
 	
 	if (ACharacterZombie* Zombie = Cast<ACharacterZombie>(MeshComp->GetOwner()))
 	{
-		Zombie->DisableAttackCollision();
+		Zombie->SetEnableAttackCollision(false);
 	}
 }
