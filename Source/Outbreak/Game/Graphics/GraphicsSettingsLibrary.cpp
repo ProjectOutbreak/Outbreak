@@ -81,7 +81,7 @@ void UGraphicsSettingsLibrary::ApplyDefaultGraphics()
 		{
 			Settings->LoadSettings();
 			
-			Settings->SetOverallScalabilityLevel(0); 
+			Settings->SetOverallScalabilityLevel(1); 
 			Settings->ApplySettings(false);
 			Settings->SaveSettings();
 		}
