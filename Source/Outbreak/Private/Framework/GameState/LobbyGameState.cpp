@@ -1,9 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Framework/GameState/LobbyGameState.h"
+
+#include "AI/NavigationSystemBase.h"
 #include "GameFramework/PlayerState.h"
 #include "Net/UnrealNetwork.h"
-#include "Subsystems/SessionSubsystem.h"
 
 void ALobbyGameState::AddPlayerState(APlayerState* PlayerState)
 {
@@ -30,6 +31,7 @@ void ALobbyGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	
 	DOREPLIFETIME(ThisClass, PlayerList);
+	DOREPLIFETIME(ThisClass, LobbyAdmin);
 }
 
 void ALobbyGameState::UpdatePlayerList()
@@ -61,6 +63,14 @@ void ALobbyGameState::OnRep_PlayerList()
 		{
 			GS->OnPlayerListChanged.Broadcast();
 		}
+	}
+}
+
+void ALobbyGameState::OnRep_LobbyAdmin()
+{
+	if (OnLobbyAdminChangedDelegate.IsBound())
+	{
+		OnLobbyAdminChangedDelegate.Broadcast();
 	}
 }
 

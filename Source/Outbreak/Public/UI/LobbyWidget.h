@@ -6,7 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "LobbyWidget.generated.h"
 
-class UOutbreakSessionSubsystem;
+class UEasySessionSubsystem;
 class UTextBlock;
 class UButton;
 
@@ -19,7 +19,10 @@ public:
 	virtual bool Initialize() override;
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
-	
+
+	UFUNCTION()
+	void CheckAdminAuthority();
+
 protected:
 	// ~ Begin UMG
 	UPROPERTY(meta = (BindWidgetOptional))
@@ -31,31 +34,23 @@ protected:
 	UPROPERTY(meta = (BindWidgetOptional))
 	TObjectPtr<UTextBlock> Text_PlayerList;
 	// ~ End UMG
+
+	UPROPERTY(meta = (BindWidgetOptional))
+	UButton* Button_LeaveLobby;
 	
 private:
-	// ~ Begin Session Subsystem
-	void BindSessionSubsystemCallbacks();
-	void RemoveSessionSubsystemCallbacks();
-	
-	UFUNCTION()
-	void OnDestroySession(bool bWasSuccessful);
-	UFUNCTION()
-	void OnSessionError(const FString& Reason);
-	UFUNCTION()
-	void OnStartSession(bool bWasSuccessful);
 	UFUNCTION()
 	void OnPlayerListUpdate();
-	// ~ End Session Subsystem
 	
 	// ~ Begin Button Callbacks
 	UFUNCTION()
 	void OnClickGameStartButton();
-	// ~ End Button Callbacks
 
 	UFUNCTION()
-	void OnLobbyMembersUpdated(const TArray<FString>& Members);
+	void OnClickLeaveLobbyButton();
+	// ~ End Button Callbacks
 	
 	UPROPERTY(Transient)
-	TObjectPtr<UOutbreakSessionSubsystem> SessionsSubsystem;
+	TObjectPtr<UEasySessionSubsystem> SessionsSubsystem;
 	FTimerHandle PlayerListTimerHandle;
 };

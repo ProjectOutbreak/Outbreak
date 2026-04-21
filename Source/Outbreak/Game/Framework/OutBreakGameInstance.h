@@ -8,9 +8,7 @@
 #include "Blueprint/UserWidget.h"
 #include "Engine/StreamableManager.h"
 #include "Outbreak/Util/Define.h"
-#include "Interfaces/OnlineSessionInterface.h"
 #include "OutbreakGameInstance.generated.h"
-
 
 UCLASS()
 class OUTBREAK_API UOutbreakGameInstance : public UGameInstance
@@ -37,6 +35,7 @@ private:
 public:
 	//-----Function-----//
 	virtual void Init() override;
+	virtual void OnStart() override;
 	
 	UFUNCTION()	void AddAssetsPath();
 	UFUNCTION()	void BeginLoading();
@@ -48,10 +47,4 @@ public:
 	UFUNCTION()	TSubclassOf<UUserWidget> GetCachedWidgetClass() const { return CachedWidgetClass; }
 	const TArray<TObjectPtr<USoundBase>>& GetCachedBgmList() const { return CachedBgmSounds; }
 	const TMap<EPhysicalSurface, TObjectPtr<USoundBase>>& GetCachedFootStepSounds() const { return CachedFootstepSounds; }
-
-	UFUNCTION(BlueprintCallable)
-	void StartIntegrationTest();
-
-	virtual void Shutdown() override;
-	
 };

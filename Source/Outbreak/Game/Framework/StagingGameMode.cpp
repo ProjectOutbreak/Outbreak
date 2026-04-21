@@ -1,10 +1,13 @@
 ﻿#include "StagingGameMode.h"
+
+#include "EasySessionSubsystem.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameLiftServerSDK.h"
 #include "OutbreakGameLiftSubsystem.h"
 #include "Misc/PackageName.h"
 #include "Framework/GameState/LobbyGameState.h"
 #include "Utilities/DebugHelper.h"
+#include "GameFramework/PlayerState.h"
 
 AStagingGameMode::AStagingGameMode()
 {
@@ -34,12 +37,44 @@ void AStagingGameMode::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);
 	ConnectedPlayers++;
-
 	UE_LOG(LogTemp, Warning, TEXT("[StagingGameMode] Connected Players : %d"), ConnectedPlayers);
+	//TODO 
+	if (ALobbyGameState* GS = GetGameState<ALobbyGameState>())
+	{
+		if (GS->LobbyAdmin == nullptr && NewPlayer->PlayerState)
+		{
+			GS->LobbyAdmin = NewPlayer->PlayerState;
+			
+			GS->OnRep_LobbyAdmin(); 
+			
+			UE_LOG(LogTemp, Warning, TEXT("[StagingGameMode] Admin Assigned to: %s"), *NewPlayer->PlayerState->GetPlayerName());
+		}
+	}
+
+	
 }
 
 void AStagingGameMode::Logout(AController* Exiting)
 {
+	if (ALobbyGameState* GS = GetGameState<ALobbyGameState>())
+	{
+		if (Exiting->PlayerState && Exiting->PlayerState == GS->LobbyAdmin)
+		{
+			GS->LobbyAdmin = nullptr; 
+			for (APlayerState* PS : GS->PlayerArray)
+			{
+				if (PS && PS != Exiting->PlayerState)
+				{
+					GS->LobbyAdmin = PS;
+					GS->OnRep_LobbyAdmin(); 
+					
+					UE_LOG(LogTemp, Warning, TEXT("[StagingGameMode] Admin Migrated to: %s"), *PS->GetPlayerName());
+					break; 
+				}
+			}
+		}
+	}
+	
 	Super::Logout(Exiting);
 	
 	if (ConnectedPlayers > 0)
@@ -98,52 +133,47 @@ void AStagingGameMode::PreLogin(const FString& Options, const FString& Address, 
 	Super::PreLogin(Options, Address, UniqueId, ErrorMessage);
 }
 
-void AStagingGameMode::StartMatchIfReady()
-{
-	if (bIsTravelling) return;
-
-	if (ConnectedPlayers == 4)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[StagingGameMode] 4 players in the server... Traveling to FirstPhase."));
-		if (HasAuthority())
-		{
-			FString TargetMapPath = TEXT("/Game/Maps/L_TestBed_Play");
-			bIsTravelling = true; 
-			FString TravelURL = FString::Printf(TEXT("%s?listen"), *TargetMapPath);
-			UE_LOG(LogTemp, Warning, TEXT("ServerTravel 시도: %s"), *TargetMapPath);
-			GetWorld()->ServerTravel(TravelURL, true);
-		}
-	}
-}
-
-void AStagingGameMode::ImmediateTravelToGame()
-{
-	if (bIsTravelling) return;
-	FString MapPath = TEXT("/Game/Maps/L_TestBed_Play?listen"); 
-	bIsTravelling = true; 
-	UWorld* World = GetWorld();
-	if (World)
-	{
-		UE_LOG(LogTemp, Warning, TEXT(">>> ServerTravel 시작!"));
-		// 현재 접속한 모두를 데리고 이동
-		World->ServerTravel(MapPath);
-	}
-}
 void AStagingGameMode::RequestStartGame()
 {
 	if (bIsTravelling || !HasAuthority()) return; 
-
-	bIsTravelling = true;
 	
-	FString TargetMapPath = TEXT("/Game/Maps/L_TestBed_Play"); 
-	FString Options = TEXT("?listen"); 
-	
+	FString TargetMapPath = TargetInGameLevel.GetLongPackageName();
+	FString Options = TEXT("?listen");
+			
 	UWorld* World = GetWorld();
 	if (!World) return;
-	
+			
+	bIsTravelling = true; 
+			
 	if (!World->ServerTravel(TargetMapPath + Options))
 	{
 		PRINT_WITH_CURRENT_CONTEXT(FString::Printf(TEXT("ServerTravel to %s failed"), *TargetMapPath));
 		bIsTravelling = false;
 	}
+}
+
+void AStagingGameMode::ProcessPlayerQuit(APlayerController* ExitingPlayer)
+{
+	if (!ExitingPlayer) return;
+	if (GetNetMode() == NM_ListenServer && ExitingPlayer->IsLocalController())
+	{
+		PRINT_WITH_CURRENT_CONTEXT(TEXT("Lobby Host is quitting. Destroying Lobby..."));
+		
+		if (UGameInstance* GI = GetGameInstance())
+		{
+			if (UEasySessionSubsystem* EasySession = GI->GetSubsystem<UEasySessionSubsystem>())
+			{
+				EasySession->DestroySession();
+			}
+		}
+		for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+		{
+			APlayerController* PC = It->Get();
+			if (PC && PC != ExitingPlayer)
+			{
+				PC->ClientReturnToMainMenuWithTextReason(FText::FromString(TEXT("Host has closed the lobby.")));
+			}
+		}
+	}
+	ExitingPlayer->ClientReturnToMainMenuWithTextReason(FText::FromString(TEXT("You left the lobby.")));
 }

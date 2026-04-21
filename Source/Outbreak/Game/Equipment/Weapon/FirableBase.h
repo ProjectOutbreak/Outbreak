@@ -53,6 +53,8 @@ private:
 	void Multicast_PlayReloadAnim(bool bIsReloadEmpty);
 	UFUNCTION(Server, Reliable)
 	void Server_ToggleFireMode();
+	UFUNCTION()
+	void OnRep_CurrentAmmoInMag();
 
 	void RecoverRecoil(float DeltaTime);
 	void ApplyRecoilLogic();
@@ -78,6 +80,8 @@ protected:
 	TObjectPtr<USoundBase> FireSound;
 	
 	FFirableData FirableData;
+	
+	UPROPERTY(ReplicatedUsing = OnRep_CurrentAmmoInMag, BlueprintReadOnly, Category = "Ammo")
 	int32 CurrentAmmoInMag = 30;
 
 	UPROPERTY(Replicated)

@@ -4,22 +4,13 @@
 #include "Outbreak/Component/AbilityComponent.h"
 #include "Outbreak/Game/Ability/SelfDestructAbility.h"
 
-ABoomerZombie::ABoomerZombie()
+void ABoomerZombie::InitCharacterData()
 {
 	ZombieSubType = EZombieSubType::Boomer;
-	
-	static ConstructorHelpers::FObjectFinder<USkeletalMesh> ZombieMesh(TEXT("/Game/Art/Characters/Zombies/Meshes/SKM_Zombie_Fat_002.SKM_Zombie_Fat_002"));
-	if (ZombieMesh.Succeeded())
-	{
-		GetMesh()->SetSkeletalMesh(ZombieMesh.Object);
-	}
-}
-
-void ABoomerZombie::BeginPlay()
-{
-	Super::BeginPlay();
-	
+	CharacterBodyType = ECharacterBodyType::Fat;
 	AbilityComponent->AddAbility(NewObject<USelfDestructAbility>(AbilityComponent));
+	
+	Super::InitCharacterData();
 }
 
 void ABoomerZombie::OnRep_Die()

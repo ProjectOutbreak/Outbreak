@@ -93,13 +93,11 @@ void USoundManager::PlayBgmInternal(USoundBase* Sound, const float FadeInTime)
 
 void USoundManager::PlayFootStepSound(EPhysicalSurface InSurfaceType, FVector InLocation)
 {
-	UE_LOG(LogTemp, Log, TEXT("PlayFootStepSound called for SurfaceType: %d"), InSurfaceType);
-
 	if (!IsValid(OBGameInstance)) return;
+		
 	const TMap<EPhysicalSurface, TObjectPtr<USoundBase>>& CachedSounds = OBGameInstance->GetCachedFootStepSounds();
-	const TObjectPtr<USoundBase>* FoundSound = CachedSounds.Find(InSurfaceType);
-    
-	if (FoundSound)
+
+	if (const TObjectPtr<USoundBase>* FoundSound = CachedSounds.Find(InSurfaceType))
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, *FoundSound, InLocation, 1.f, 1.f);
 	}

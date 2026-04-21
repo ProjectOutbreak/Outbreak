@@ -10,11 +10,7 @@ UCLASS()
 class OUTBREAK_API ARunnerZombie : public ANormalZombie
 {
 	GENERATED_BODY()
-
-public:
-	ARunnerZombie();
 	
 protected:
-	virtual void BeginPlay() override;
-	virtual void SetMesh(ECharacterBodyType MeshType = ECharacterBodyType::Normal) override;
+	virtual void InitCharacterData() override;
 };

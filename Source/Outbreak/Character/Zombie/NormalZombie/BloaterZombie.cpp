@@ -1,16 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "BloaterZombie.h"
 
-ABloaterZombie::ABloaterZombie()
+void ABloaterZombie::InitCharacterData()
 {
 	ZombieSubType = EZombieSubType::Bloater;
-}
-
-void ABloaterZombie::BeginPlay()
-{
-	SetMesh(ECharacterBodyType::Fat);
+	CharacterBodyType = ECharacterBodyType::Fat;
 	
-	Super::BeginPlay();
+	Super::InitCharacterData();
 }

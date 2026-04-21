@@ -13,8 +13,11 @@ class OUTBREAK_API ALobbyPlayerController : public APlayerController
 public:
 	UFUNCTION(BlueprintCallable, Category = "Lobby")
 	void RequestStartGame();
-
+	void LeaveLobby();
 protected:
 	UFUNCTION(Server, Reliable)
 	void Server_RequestStartGame();
+
+	UFUNCTION(Server, Reliable)
+	void Server_LeaveLobby();
 };

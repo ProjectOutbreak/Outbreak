@@ -19,24 +19,16 @@ class OUTBREAK_API ACharacterZombie : public ACharacterBase
 	GENERATED_BODY()
 
 public:
+	/** Default constructor */
 	ACharacterZombie();
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
-	virtual void PostInitializeComponents() override;
-
-	void EnableAttackCollision();
-	void DisableAttackCollision();
+	
+	void SetEnableAttackCollision(const bool bEnable);
 
 protected:
 	UFUNCTION()
 	void OnAttackOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	
-	virtual void InitCharacterData() override;
-	virtual void SetupCollision() override;
-	virtual void SetupMovement() override;
-	virtual void OnRep_Die() override;
-	
-	virtual void SetMesh(ECharacterBodyType MeshType);
+	virtual void SetMesh();
 
 	void ApplyZombieData();
 	
@@ -68,12 +60,32 @@ protected:
 	EZombieSubType ZombieSubType = EZombieSubType::None;
 	float DefaultCapsuleRadius = 10.0f;
 	float DefaultCapsuleHalfHeight = 96.0f;
+	
+protected:
 
+	// ~ Begin ACharacterBase Interface
+	virtual void InitCharacterData() override;
+	virtual void SetupCollisionAndMesh() override;
+	virtual void SetupMovement() override;
+	virtual void OnRep_Die() override;
+	// ~ End ACharacterBase Interface
+	
 public:
+	
+	/// ~ Begin ACharacter Interface
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual void PostInitializeComponents() override;
+	// ~ End ACharacter Interface
+	
+	// ~ Begin APawn Interface
+	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+	// ~ End APawn Interface
+	
 	// ~ Begin Getter & Setter
 	FORCEINLINE FZombieData* GetZombieData() { return &ZombieData; }
 	FORCEINLINE bool IsAttacking() const { return bIsAttacking; }
 	void SetIsAttacking(const bool bInIsAttacking);
 	void SetIsAlert(const bool bInIsAlert);
 	// ~ End Getter & Setter
+	
 };

@@ -7,6 +7,7 @@
 #include "LobbyGameState.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPlayerListChangedSignature);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnLobbyAdminChanged);
 
 UCLASS()
 class OUTBREAK_API ALobbyGameState : public AGameStateBase
@@ -18,16 +19,26 @@ public:
 	virtual void RemovePlayerState(APlayerState* PlayerState) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	void UpdatePlayerList();
-	FOnPlayerListChangedSignature OnPlayerListChanged;
 	
-	UFUNCTION(BlueprintCallable)
+	FOnPlayerListChangedSignature OnPlayerListChanged;
+	FOnLobbyAdminChanged OnLobbyAdminChangedDelegate;
+
 	TArray<FString> GetPlayerNames();
-protected:
+
 	UPROPERTY(ReplicatedUsing = OnRep_PlayerList)
 	TArray<FString> PlayerList;
+
+	UPROPERTY(ReplicatedUsing = OnRep_LobbyAdmin)
+	TObjectPtr<APlayerState> LobbyAdmin;
 	
 	UFUNCTION()
 	void OnRep_PlayerList();
+	
+	UFUNCTION()
+	void OnRep_LobbyAdmin();
+
+protected:
+
 	
 public:
 	// ~ Begin Getters & Setters

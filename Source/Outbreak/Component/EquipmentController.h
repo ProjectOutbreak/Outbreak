@@ -24,13 +24,14 @@ public:
 	void AddEquipment(const TObjectPtr<class AEquipmentBase>& Equipment);
 	void UnEquipCurrentEquipment();
 	void RemoveEquipment(class AEquipmentBase* ItemToRemove);
+	void DestroyAllEquipment();
 	
 	void HandleUse();
 	void HandleEndUse();
 	void HandleReload();
 	void HandleToggleFireMode();
 	void PickupEquipment(class AEquipmentBase* NewItem);
-
+	
 	// Getters
 	UFUNCTION(BlueprintCallable)
 	bool GetIsOnUse() const { return bIsOnUse; }
@@ -60,6 +61,8 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	UFUNCTION(Client, Reliable)
+	void Client_UpdateEquipmentUI(EEquipmentType Type, UTexture2D* Icon, int32 SlotNum);
 	
 private:
 	void Equip(const TObjectPtr<class AEquipmentBase>& Equipment);
@@ -80,6 +83,7 @@ private:
 	void Server_HandleEndUse();
 	UFUNCTION(Server, Reliable)
 	void Server_HandleReload();
+
 
 	UFUNCTION()
 	void OnRep_CurrentEquippedType();

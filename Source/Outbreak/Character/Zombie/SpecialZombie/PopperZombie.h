@@ -11,10 +11,7 @@ class OUTBREAK_API APopperZombie : public ASpecialZombie
 {
 	GENERATED_BODY()
 
-public:
-	APopperZombie();
-
 protected:
-	virtual void BeginPlay() override;
+	virtual void InitCharacterData() override;
 	virtual void OnRep_Die() override;
 };

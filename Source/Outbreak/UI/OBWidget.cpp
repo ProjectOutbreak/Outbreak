@@ -9,7 +9,11 @@
 #include "Outbreak/Util/GraphicOptionHelper.h"
 #include "Outbreak/Game/Controller/InGamePlayerController.h"
 #include "Outbreak/Game/Framework/InGameState.h"
+#include "GameFramework/PlayerState.h"
 #include "Outbreak/Game/Graphics/GraphicsSettingsLibrary.h"
+#include "CoPlayerStatusContainer.h"
+#include "Character/Player/CharacterPlayer.h"
+#include "Kismet/GameplayStatics.h"
 
 void UOBWidget::NativeConstruct()
 {
@@ -17,6 +21,7 @@ void UOBWidget::NativeConstruct()
 	
 	if (BtnResume) BtnResume->OnClicked.AddDynamic(this, &UOBWidget::OnResumeClicked);
 	if (BtnGraphics) BtnGraphics->OnClicked.AddDynamic(this, &UOBWidget::OnOpenGraphicsClicked);
+	if (BtnQuit) BtnQuit->OnClicked.AddDynamic(this, &UOBWidget::OnQuitClicked);
 	
 	const FScalabilityPreset Cur = UGraphicsSettingsLibrary::GetCurrent();
 
@@ -68,6 +73,17 @@ void UOBWidget::NativeConstruct()
 		UMaterialInstanceDynamic* DynMat = UMaterialInstanceDynamic::Create(MiniMapMaterial, this);
 		DynMat->SetTextureParameterValue("MinimapTexture", RenderTarget);
 		MiniMapImage->SetBrushFromMaterial(DynMat);
+	}
+	AInGameState* GameState = Cast<AInGameState>(UGameplayStatics::GetGameState(GetWorld()));
+    
+	if (GameState)
+	{
+		GameState->OnPlayerListChanged.RemoveDynamic(this, &UOBWidget::RefreshPlayerList);
+		GameState->OnPlayerListChanged.AddDynamic(this, &UOBWidget::RefreshPlayerList);
+	}
+	if (GetOwningPlayerState()) 
+	{
+		RefreshPlayerList();
 	}
 }
 
@@ -167,7 +183,11 @@ void UOBWidget::SetWeaponContainer(UTexture2D* Icon)
 {
 	if (WeaponHUD)
 	{
-		WeaponHUD -> SetWeaponIcon(Icon);
+		WeaponHUD->SetWeaponIcon(Icon);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("UOBWidget: WeaponHUD pointer is null!"));
 	}
 }
 
@@ -175,17 +195,84 @@ void UOBWidget::SetSubWeaponContainer(UTexture2D* Icon, int32 SlotNum)
 {
 	if (WeaponHUD)
 	{
-		WeaponHUD -> SetSubslotIcon(Icon, SlotNum);
+		WeaponHUD->SetSubslotIcon(Icon,SlotNum);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("UOBWidget: WeaponHUD pointer is null!"));
 	}
 }
 
 void UOBWidget::SetBottomInvSlot(UTexture2D* Icon, int32 SlotNum)
 {
-	if (BottomInv)
+	if (IsValid(BottomInv))
 	{
-		BottomInv -> SetInvIcon(Icon,SlotNum);
+		BottomInv->SetInvIcon(Icon,SlotNum);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("UOBWidget: WeaponHUD pointer is null!"));
 	}
 }
+
+
+// Container Widget Function
+void UOBWidget::RefreshPlayerList()
+{
+	UWorld* World = GetWorld();
+	if (!World) return;
+	
+	AInGameState* GameState = Cast<AInGameState>(UGameplayStatics::GetGameState(GetWorld()));
+	if (!GameState)
+	{
+		if (!World->GetTimerManager().IsTimerActive(InitRetryTimer))
+		{
+			World->GetTimerManager().SetTimer(InitRetryTimer, this, &UOBWidget::RefreshPlayerList, 0.5f, true);
+		}
+		return; 
+	}
+	
+	APlayerState* myPs = GetOwningPlayerState();
+	if (!myPs)
+	{
+		if (!GetWorld()->GetTimerManager().IsTimerActive(InitRetryTimer))
+		{
+			GetWorld()->GetTimerManager().SetTimer(InitRetryTimer, this, &UOBWidget::RefreshPlayerList, 0.5f, true);
+		}
+		return;
+	}
+	if (!PlayerStatusContainer)
+	{
+		return;
+	}
+	
+	GetWorld()->GetTimerManager().ClearTimer(InitRetryTimer);	PlayerStatusContainer->ClearList();
+	
+	for (APlayerState* PS : GameState->PlayerArray)
+	{
+		if (PS && PS != myPs)
+		{
+			PlayerStatusContainer->AddPlayer(PS);
+			ACharacterPlayer* Char = Cast<ACharacterPlayer>(PS->GetPawn());
+			if (Char)
+			{
+				float Ratio = Char->GetHealthRatio();
+				PlayerStatusContainer->UpdateChildHealth(PS, Ratio);
+			}
+			else
+			{
+				PlayerStatusContainer->UpdateChildHealth(PS, 0.0f);
+			}
+		}
+	}
+}
+
+void UOBWidget::UpdateMemberHealth(APlayerState* TargetPS, float NewHealthRatio)
+{
+	if (!PlayerStatusContainer) return;
+	PlayerStatusContainer->UpdateChildHealth(TargetPS, NewHealthRatio);
+}
+
 
 //------Menu UI------//
 void UOBWidget::ShowPauseMenu(bool bShow)
@@ -214,6 +301,18 @@ void UOBWidget::OnResumeClicked()
 	}
 	ShowPauseMenu(false);
 }
+
+void UOBWidget::OnQuitClicked()
+{
+	if (APlayerController* PC = GetOwningPlayer())
+	{
+		if (AInGamePlayerController* OBPC = Cast<AInGamePlayerController>(PC))
+		{
+			OBPC->QuitGame();
+		}
+	}
+}
+
 
 //------Graphics Setting UI-------//
 void UOBWidget::OnOpenGraphicsClicked()

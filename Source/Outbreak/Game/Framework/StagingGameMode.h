@@ -19,11 +19,12 @@ public:
 	virtual void Logout(AController* Exiting) override;
 	virtual void PreLogin(const FString& Options, const FString& Address, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage) override;
 
-	UFUNCTION()
 	void RequestStartGame();
+	void ProcessPlayerQuit(APlayerController* ExitingPlayer);
 protected:
-	void StartMatchIfReady();
-	void ImmediateTravelToGame();
+	UPROPERTY(EditAnywhere, Category = "Config")
+	TSoftObjectPtr<UWorld> TargetInGameLevel;
+	
 private:
 	int32 ConnectedPlayers = 0;
 	bool bIsTravelling = false;

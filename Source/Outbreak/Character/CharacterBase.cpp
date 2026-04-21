@@ -12,9 +12,16 @@ ACharacterBase::ACharacterBase()
 {
 	PrimaryActorTick.bCanEverTick = false;
 	bReplicates = true;
+	
+	FootStepComponent = CreateDefaultSubobject<UFootStepComponent>(TEXT("FootStepComponent"));
+}
 
-	const float LocationZ = GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
-	GetMesh()->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, -LocationZ),FRotator(0.0f, -90.0f, 0.0f));
+void ACharacterBase::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+	
+	SetupCollisionAndMesh();
+	SetupMovement();
 }
 
 void ACharacterBase::BeginPlay()
@@ -22,8 +29,6 @@ void ACharacterBase::BeginPlay()
 	Super::BeginPlay();
 	
 	InitCharacterData();
-	SetupCollision();
-	SetupMovement();
 }
 
 void ACharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -134,44 +139,44 @@ void ACharacterBase::ApplyDamage(int32 DamageAmount)
 	}
 }
 
-void ACharacterBase::SetupCollision()
+void ACharacterBase::SetupCollisionAndMesh()
 {
-	UCapsuleComponent* CapsuleComp = GetCapsuleComponent();
-	if (!CapsuleComp) return;
-	
-	CapsuleComp->SetCollisionProfileName(TEXT("Pawn"));
-	CapsuleComp->InitCapsuleSize(42.f, 96.0f);
+	float CapsuleHalfHeight = 0.f;
+	if (UCapsuleComponent* CapsuleComp = GetCapsuleComponent())
+	{
+		CapsuleComp->SetCollisionProfileName(TEXT("Pawn"));
+		CapsuleComp->InitCapsuleSize(42.f, 96.0f);
+		CapsuleHalfHeight = CapsuleComp->GetScaledCapsuleHalfHeight();
+	}
 
-	USkeletalMeshComponent* SkeletalMeshComp = GetMesh();
-	if (!SkeletalMeshComp) return;
-	
-	SkeletalMeshComp->SetAnimationMode(EAnimationMode::AnimationBlueprint);
-	SkeletalMeshComp->SetCollisionProfileName(TEXT("CharacterMesh"));
-	SkeletalMeshComp->SetHiddenInGame(false);
+	if (USkeletalMeshComponent* SkeletalMeshComp = GetMesh())
+	{
+		SkeletalMeshComp->SetAnimationMode(EAnimationMode::AnimationBlueprint);
+		SkeletalMeshComp->SetCollisionProfileName(TEXT("CharacterMesh"));
+		SkeletalMeshComp->SetHiddenInGame(false);
+		SkeletalMeshComp->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, -CapsuleHalfHeight),FRotator(0.0f, -90.0f, 0.0f));
+	}
 }
 
 void ACharacterBase::SetupMovement()
 {
-	UCharacterMovementComponent* MovementComp = GetCharacterMovement();
-	FootStepComponent = NewObject<UFootStepComponent>(this, TEXT("FootStepComponent"));
+	if (UCharacterMovementComponent* MovementComp = GetCharacterMovement())
+	{
+		MovementComp->JumpZVelocity = 500.f;
+		MovementComp->AirControl = 0.35f;
+		MovementComp->MaxWalkSpeed = 500.f;
+		MovementComp->MinAnalogWalkSpeed = 20.f;
+		MovementComp->BrakingDecelerationWalking = 2000.f;
+		MovementComp->GravityScale = 1.5f;
+		MovementComp->GroundFriction = 8.0f;
 
-	if (FootStepComponent)  FootStepComponent->RegisterComponent();
-	if (!MovementComp) return;
-	
-	MovementComp->JumpZVelocity = 500.f;
-	MovementComp->AirControl = 0.35f;
-	MovementComp->MaxWalkSpeed = 500.f;
-	MovementComp->MinAnalogWalkSpeed = 20.f;
-	MovementComp->BrakingDecelerationWalking = 2000.f;
-	MovementComp->GravityScale = 1.5f;
-	MovementComp->GroundFriction = 8.0f;
-
-	MovementComp->bCanWalkOffLedges = true;
-	MovementComp->bUseFlatBaseForFloorChecks = true;
-	MovementComp->bMaintainHorizontalGroundVelocity = true;
-	MovementComp->bImpartBaseVelocityX = false;
-	MovementComp->bImpartBaseVelocityY = false;
-	MovementComp->bImpartBaseVelocityZ = false;
+		MovementComp->bCanWalkOffLedges = true;
+		MovementComp->bUseFlatBaseForFloorChecks = true;
+		MovementComp->bMaintainHorizontalGroundVelocity = true;
+		MovementComp->bImpartBaseVelocityX = false;
+		MovementComp->bImpartBaseVelocityY = false;
+		MovementComp->bImpartBaseVelocityZ = false;
+	}
 }
 
 void ACharacterBase::ApplyToxicDamage(float DamagePerSecond, float Duration)

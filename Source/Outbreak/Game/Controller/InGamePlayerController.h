@@ -19,7 +19,7 @@ public:
 	AInGamePlayerController();
 	
 	void TogglePauseMenu();
-
+	void QuitGame();
 protected:
 	virtual void Tick(float DeltaTime) override;
 	virtual void AcknowledgePossession(class APawn* InPawn) override;
@@ -45,7 +45,9 @@ private:
 	void SelectEquipment(const struct FInputActionValue& Value);
 	void ToggleFireMode();
 
-// --------------------
+	UFUNCTION(Server, Reliable)
+	void Server_QuitGame();
+	// --------------------
 // Variables
 // --------------------
 	UPROPERTY()

@@ -19,6 +19,7 @@ class OUTBREAK_API ACharacterBase : public ACharacter
 // --------------------
 public:
 	ACharacterBase();
+	virtual void PostInitializeComponents() override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual float TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 	virtual void BeginPlay() override;
@@ -33,7 +34,7 @@ public:
 	
 protected:
 	virtual void InitCharacterData();
-	virtual void SetupCollision();
+	virtual void SetupCollisionAndMesh();
 	virtual void SetupMovement();
 	virtual float GetDamageMultiplier(EPhysicalSurface SurfaceType);
 	
@@ -55,6 +56,7 @@ public:
 	
 protected:
 	ECharacterType CharacterType = ECharacterType::None;
+	ECharacterBodyType CharacterBodyType = ECharacterBodyType::None;
 	int32 CurrentExtraHealth = 0;
 
 	// TODO : Hit Damage Multiplier Data Table

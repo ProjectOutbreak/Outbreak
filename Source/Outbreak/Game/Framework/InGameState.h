@@ -4,6 +4,8 @@
 #include "GameFramework/GameState.h"
 #include "InGameState.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPlayerListUpdate);
+
 UCLASS()
 class OUTBREAK_API AInGameState : public AGameStateBase
 {
@@ -44,7 +46,10 @@ public:
 
 	UPROPERTY(ReplicatedUsing = OnRep_AlivePlayerCount)
 	int32 AlivePlayerCount; // 살아있는 플레이어 수
-	
+
+	// Delegates
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnPlayerListUpdate OnPlayerListChanged;
 // --------------------
 // Functions
 // --------------------
@@ -52,7 +57,7 @@ public:
 public:	
 	UFUNCTION()
 	void AddTotalZombieKill();
-
+	
 protected:
 	UFUNCTION()
 	void OnRep_TotalZombieKills();

@@ -9,6 +9,8 @@
 #include "Outbreak/Game/Interface/InteractInterface.h"
 #include "Outbreak/UI/OBWidget.h"
 #include "DrawDebugHelpers.h"
+#include "EasySessionSubsystem.h"
+#include "Game/Framework/InGameMode.h"
 
 AInGamePlayerController::AInGamePlayerController()
 {
@@ -277,6 +279,18 @@ void AInGamePlayerController::TogglePauseMenu()
 	}
 }
 
+void AInGamePlayerController::QuitGame()
+{
+	if (UGameInstance* GI = GetGameInstance())
+	{
+		if (UEasySessionSubsystem* EasySession = GI->GetSubsystem<UEasySessionSubsystem>())
+		{
+			EasySession->DestroySession();
+		}
+	}
+	Server_QuitGame();
+}
+
 void AInGamePlayerController::GetInteractableObject()
 {
 	
@@ -352,9 +366,17 @@ void AInGamePlayerController::ToggleFireMode()
 
 	ControlledCharacter->HandleToggleFireMode();
 }
+
+void AInGamePlayerController::Server_QuitGame_Implementation()
+{
+	if (AInGameMode* GM = Cast<AInGameMode>(GetWorld()->GetAuthGameMode()))
+	{
+		GM->ProcessPlayerQuit(this);
+	}
+}
+
 void AInGamePlayerController::PerformInteract()
 {
-
 	FVector CameraLocation;
 	FRotator CameraRotation;
 	GetPlayerViewPoint(CameraLocation, CameraRotation);

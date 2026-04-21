@@ -48,26 +48,29 @@ public:
 
 	UFUNCTION(Server, Reliable)
 	void Server_PickupEquipment(class AEquipmentBase* NewEquipment);
+	float GetHealthRatio() const;
+	
 	
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 	virtual void InitCharacterData() override;
-	virtual void SetupCollision() override;
 	virtual void SetupMovement() override;
 
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void Die() override;
 	virtual void OnRep_Die() override;
 	virtual void OnRep_CurrentHealth() override;
 	virtual void OnRep_Controller() override;
-	
+	virtual void OnRep_PlayerState() override;
 	virtual FGenericTeamId GetGenericTeamId() const override { return TeamId; }
-
+	
 private:
 	void SetPlayerControl(EPlayerControlType InPlayerControlType);
 	void SetPlayerControlData(const class UPlayerControlData* InPlayerControlData);
 	void ClearInputMappings() const;
-
+	void SetInitialStateUI();
+	
 	// ~ For Debugging
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 	UFUNCTION(Server, Reliable)
@@ -75,6 +78,7 @@ private:
 	void Input_RequestGameOver();
 	UFUNCTION(Client,Reliable)
 	void Server_RequestGameOver();
+	
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_HidePlayerIcon();
 
@@ -135,3 +139,4 @@ private:
 	UPROPERTY()
 	float AimDownCameraX = 30.0f;
 };
+

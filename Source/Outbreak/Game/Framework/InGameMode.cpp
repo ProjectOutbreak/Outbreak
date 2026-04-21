@@ -1,6 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "InGameMode.h"
+
+#include "EasySessionSubsystem.h"
+#include "OnlineSubsystem.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerController.h"
 #include "Containers/Set.h"
@@ -9,6 +12,7 @@
 #include "Outbreak/Manager/SoundManager.h"
 #include "Pawn/OutbreakSpectatorPawn.h"
 #include "OutbreakGameLiftSubsystem.h"
+#include "Interfaces/OnlineSessionInterface.h"
 #include "Utilities/DebugHelper.h"
 
 AInGameMode::AInGameMode()
@@ -41,31 +45,46 @@ void AInGameMode::Logout(AController* Exiting)
 
 	PRINT_WITH_CURRENT_CONTEXT(FString::Printf(TEXT("Player Left: %s"), *Exiting->GetName()));
 	DelayedRefreshSpawnManagerTargets();
-	
-	if (!IsRunningDedicatedServer()) return;
 
-	int32 RemainingPlayers = 0;
-	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
+	if (bIsServerShuttingDown) return;
+
+	if (ACharacterPlayer* ExitingCharacter = Cast<ACharacterPlayer>(Exiting->GetPawn()))
 	{
-		const APlayerController* PC = Iterator->Get();
-		if (PC && PC != Exiting)
+		if (ExitingCharacter->GetEquipmentController())
 		{
-			RemainingPlayers++;
+			ExitingCharacter->GetEquipmentController()->DestroyAllEquipment();
 		}
+		ExitingCharacter->Destroy();
 	}
-
-	if (RemainingPlayers <= 0)
+	if (IsRunningDedicatedServer())
 	{
-		if (const UGameInstance* GI = GetGameInstance())
+		int32 RemainingPlayers = 0;
+		for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
 		{
-			if (UOutbreakGameLiftSubsystem* GameLiftSys = GI->GetSubsystem<UOutbreakGameLiftSubsystem>())
+			if (APlayerController* PC = Iterator->Get())
 			{
-				PRINT_WITH_CURRENT_CONTEXT(TEXT("Ending Game Session with GameLift..."));
-				GameLiftSys->EndGameServer();
+				if (PC != Exiting) RemainingPlayers++; 
 			}
 		}
+		if (RemainingPlayers <= 0)
+		{
+			if (const UGameInstance* GI = GetGameInstance())
+			{
+				if (UOutbreakGameLiftSubsystem* GameLiftSys = GI->GetSubsystem<UOutbreakGameLiftSubsystem>())
+				{
+					PRINT_WITH_CURRENT_CONTEXT(TEXT("[AWS] Empty Server Detected. Shutting down GameLift Instance..."));
+					GameLiftSys->EndGameServer();
+				}
+			}
+			return;
+		}
+	}
+	if (IsGameOver())
+	{
+		GameOver();
 	}
 }
+
 
 void AInGameMode::OnPlayerDie(ACharacter* DeadCharacter, AController* Controller)
 {
@@ -119,8 +138,6 @@ void AInGameMode::ProceedToNextLevel() const
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("게임 종료"));
-		// TODO: 대기방 레벨로 이동 코드 작성
-		// 단, 마지막 페이즈는 보스 처치시 게임이 완료 됨(SafeZoneCollision이 없음)
 	}
 	GetWorld()->ServerTravel(NextLevelName, true);
 }
@@ -170,6 +187,7 @@ void AInGameMode::RefreshSpawnManagerTargets()
 	}
 }
 
+
 bool AInGameMode::IsGameOver() const
 {
 	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
@@ -178,7 +196,7 @@ bool AInGameMode::IsGameOver() const
 		{
 			const ACharacterPlayer* PlayerCharacter = Cast<ACharacterPlayer>(PC->GetPawn());
             
-			if (PlayerCharacter && !PlayerCharacter->IsDead())
+			if (IsValid(PlayerCharacter) && !PlayerCharacter->IsActorBeingDestroyed() && !PlayerCharacter->IsDead())
 			{
 				return false;
 			}
@@ -186,6 +204,62 @@ bool AInGameMode::IsGameOver() const
 	}
 	
 	return true;
+}
+
+void AInGameMode::ProcessPlayerQuit(APlayerController* ExitingPlayer)
+{
+	if (!ExitingPlayer) return;
+	if (GetNetMode() == NM_ListenServer && ExitingPlayer->IsLocalController())
+	{
+		PRINT_WITH_CURRENT_CONTEXT(TEXT("Listen Server Host is quitting. Shutting down server..."));
+		
+		bIsServerShuttingDown = true;
+		if (UGameInstance* GI = GetGameInstance())
+		{
+			if (UEasySessionSubsystem* EasySession = GI->GetSubsystem<UEasySessionSubsystem>())
+			{
+				EasySession->DestroySession();
+			}
+		}
+
+		for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+		{
+			APlayerController* PC = It->Get();
+			if (PC && PC != ExitingPlayer)
+			{
+				PC->ClientReturnToMainMenuWithTextReason(FText::FromString(TEXT("Host has closed the server.")));
+			}
+		}
+	}
+	ExitingPlayer->ClientReturnToMainMenuWithTextReason(FText::FromString(TEXT("You left the match.")));
+}
+
+void AInGameMode::ProcessGameOverSequence()
+{
+	if (IsRunningDedicatedServer())
+	{
+		for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+		{
+			if (APlayerController* PC = It->Get())
+			{
+				PC->ClientReturnToMainMenuWithTextReason(FText::FromString(TEXT("Game Over. Returning to Main Menu.")));
+			}
+		}
+
+		if (const UGameInstance* GI = GetGameInstance())
+		{
+			if (UOutbreakGameLiftSubsystem* GameLiftSys = GI->GetSubsystem<UOutbreakGameLiftSubsystem>())
+			{
+				PRINT_WITH_CURRENT_CONTEXT(TEXT("[AWS] Match Finished. Shutting down GameLift Instance..."));
+				GameLiftSys->EndGameServer();
+			}
+		}
+	}
+	else
+	{
+		FString LobbyMap = "/Game/Maps/L_Lobby?listen";
+		GetWorld()->ServerTravel(LobbyMap);
+	}
 }
 
 void AInGameMode::GameOver()
@@ -199,14 +273,8 @@ void AInGameMode::GameOver()
 	}
 
 	// TODO : GameOver UI RPC
-    
 	FTimerHandle RestartTimerHandle;
-	GetWorld()->GetTimerManager().SetTimer(RestartTimerHandle, [this]()
-	{
-		// TODO : Travel To Lobby with clients
-		FString LobbyMap = "/Game/Maps/L_Lobby?listen";
-		GetWorld()->ServerTravel(LobbyMap);
-	}, 5.0f, false);
+	GetWorld()->GetTimerManager().SetTimer(GameOverTimerHandle, this, &AInGameMode::ProcessGameOverSequence, 5.0f, false);
 }
 
 void AInGameMode::InstantiateSpawnManager()

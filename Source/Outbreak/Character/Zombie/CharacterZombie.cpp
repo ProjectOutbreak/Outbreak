@@ -23,8 +23,7 @@ ACharacterZombie::ACharacterZombie()
 	
 	RightHandCollision = CreateDefaultSubobject<USphereComponent>(TEXT("RightHandCollision"));
 	RightHandCollision->SetupAttachment(GetMesh(), TEXT("hand_r_socket"));
-    
-	RightHandCollision->SetHiddenInGame(false);
+	RightHandCollision->SetHiddenInGame(true);
 	RightHandCollision->SetSphereRadius(40.0f);
 	RightHandCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	RightHandCollision->SetCollisionObjectType(ECC_WorldDynamic);
@@ -32,22 +31,17 @@ ACharacterZombie::ACharacterZombie()
 	RightHandCollision->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 	RightHandCollision->OnComponentBeginOverlap.AddDynamic(this, &ACharacterZombie::OnAttackOverlapBegin);
 	
-	static ConstructorHelpers::FObjectFinder<USkeletalMesh> DefaultMesh(TEXT("/Game/Art/Characters/Zombies/Meshes/SKM_Zombie_Normal_001.SKM_Zombie_Normal_001"));
-	if (DefaultMesh.Succeeded())
-	{
-		GetMesh()->SetSkeletalMesh(DefaultMesh.Object);
-	}
-	
-	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceClassRef(TEXT("/Game/Blueprints/ABP_Zombie.ABP_Zombie_C"));
-	if (AnimInstanceClassRef.Class)
-	{
-		GetMesh()->SetAnimInstanceClass(AnimInstanceClassRef.Class);
-	}
 	static ConstructorHelpers::FObjectFinder<USoundCue> DeadSoundCueFinder(TEXT("/Game/Audio/SFX/Cues/Zombies/SC_ZombieDead.SC_ZombieDead"));
 	if (DeadSoundCueFinder.Succeeded())
 	{
 		DeadSoundCue = DeadSoundCueFinder.Object;
 	}
+}
+
+void ACharacterZombie::SetEnableAttackCollision(const bool bEnable)
+{
+	AlreadyHitActors.Empty();
+	RightHandCollision->SetCollisionEnabled(bEnable ? ECollisionEnabled::QueryOnly : ECollisionEnabled::NoCollision);
 }
 
 void ACharacterZombie::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -78,6 +72,7 @@ void ACharacterZombie::InitCharacterData()
 		ApplyZombieData();
 	}
 	
+	SetMesh();
 	CurrentExtraHealth = 0;
 }
 
@@ -91,7 +86,7 @@ void ACharacterZombie::PostInitializeComponents()
 }
 
 void ACharacterZombie::OnAttackOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+                                            UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (OtherActor && OtherActor != this && !AlreadyHitActors.Contains(OtherActor))
 	{
@@ -115,27 +110,13 @@ void ACharacterZombie::OnAttackOverlapBegin(UPrimitiveComponent* OverlappedComp,
 	}
 }
 
-void ACharacterZombie::EnableAttackCollision()
-{
-	AlreadyHitActors.Empty();
-	RightHandCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-}
 
-void ACharacterZombie::DisableAttackCollision()
-{
-	RightHandCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-}
 
-void ACharacterZombie::SetupCollision()
+void ACharacterZombie::SetupCollisionAndMesh()
 {
-	Super::SetupCollision();
-
-	GetCapsuleComponent()->InitCapsuleSize(DefaultCapsuleRadius, DefaultCapsuleHalfHeight);
+	Super::SetupCollisionAndMesh();
 	
-	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	GetMesh()->SetCollisionObjectType(ECollisionChannel::ECC_Pawn);
-	GetMesh()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
-
+	GetCapsuleComponent()->InitCapsuleSize(DefaultCapsuleRadius, DefaultCapsuleHalfHeight);
 	GetCapsuleComponent()->SetNotifyRigidBodyCollision(false);
 	GetCapsuleComponent()->BodyInstance.bLockXRotation = true;
 	GetCapsuleComponent()->BodyInstance.bLockYRotation = true;
@@ -195,9 +176,11 @@ float ACharacterZombie::TakeDamage(float DamageAmount, FDamageEvent const& Damag
 	return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 }
 
-void ACharacterZombie::SetMesh(const ECharacterBodyType MeshType)
+void ACharacterZombie::SetMesh()
 {
-	const FString MeshTypeString = EnumHelper::EnumToString(MeshType);
+	if (CharacterBodyType == ECharacterBodyType::None) return;
+	
+	const FString MeshTypeString = EnumHelper::EnumToString(CharacterBodyType);
 	
 	// TODO : Zombie Mesh Data Manage
 	int NormalMesh = 20;
@@ -205,7 +188,7 @@ void ACharacterZombie::SetMesh(const ECharacterBodyType MeshType)
 	int FatMesh = 6;
 
 	int MeshCount = 0;
-	switch (MeshType)
+	switch (CharacterBodyType)
 	{
 		case ECharacterBodyType::Normal:
 			MeshCount = NormalMesh;
@@ -215,6 +198,8 @@ void ACharacterZombie::SetMesh(const ECharacterBodyType MeshType)
 			break;
 		case ECharacterBodyType::Fat:
 			MeshCount = FatMesh;
+			break;
+		case ECharacterBodyType::None:
 			break;
 	}
 

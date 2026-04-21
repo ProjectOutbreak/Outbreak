@@ -1,4 +1,6 @@
 #include "OutbreakGameInstance.h"
+#include "AnimationBudgetAllocatorParameters.h"
+#include "IAnimationBudgetAllocator.h"
 #include "Kismet/GameplayStatics.h"
 #include "Outbreak/Data/GameData.h"
 #include "Outbreak/Game/Graphics/GraphicsSettingsLibrary.h"
@@ -7,11 +9,7 @@
 #include "Sound/SoundCue.h"
 #include "Outbreak/Util/AsynchronousLoadingHelper.h"
 #include "Utilities/DebugHelper.h"
-#include "OutbreakAuthSubsystem.h"
-#include "OutbreakSessionSubsystem.h"
 #include "Engine/World.h"
-
-
 
 void UOutbreakGameInstance::Init()
 {
@@ -19,8 +17,23 @@ void UOutbreakGameInstance::Init()
 	
 	AddAssetsPath();
 	UGraphicsSettingsLibrary::ApplyDefaultGraphics();
-	UE_LOG(LogTemp, Warning, TEXT("GameInstance 초기화 완료"));
+}
 
+void UOutbreakGameInstance::OnStart()
+{
+	Super::OnStart();
+	
+	if (IAnimationBudgetAllocator* Allocator = IAnimationBudgetAllocator::Get(GetWorld()))
+	{
+		FAnimationBudgetAllocatorParameters Params;
+		Params.BudgetInMs = 2.0f;
+		Allocator->SetEnabled(true);
+		Allocator->SetParameters(Params);
+	}
+	else
+	{
+		PRINT_WITH_CURRENT_CONTEXT("Failed to enable Animation Budget Allocator.");
+	}
 }
 
 void UOutbreakGameInstance::AddAssetsPath()
@@ -142,21 +155,3 @@ void UOutbreakGameInstance::ApplySelectedTimePreset()
 	ATimeManager* TM = Cast<ATimeManager>(FoundManagers[0]);
 	TM->ApplyPresetFromGameInstance();
 }
-
-void UOutbreakGameInstance::StartIntegrationTest()
-{
-	auto* AuthSys = GetSubsystem<UOutbreakAuthSubsystem>();
-	FString myID = AuthSys ? AuthSys -> GetSteamId() : TEXT("");
-
-	if (myID.IsEmpty())
-	{
-		UE_LOG(LogTemp,Error,TEXT("[TEST] Failed to find Steam ID"));
-		//return;
-	}
-}
-
-void UOutbreakGameInstance::Shutdown()
-{
-	Super::Shutdown();
-}
-

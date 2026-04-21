@@ -31,8 +31,13 @@ void AFirableBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(AFirableBase, CurrentFireType);
+	DOREPLIFETIME(AFirableBase, CurrentAmmoInMag);
 }
 
+void AFirableBase::OnRep_CurrentAmmoInMag()
+{
+	OnPlayerAmmoChangedDelegate.Broadcast();
+}
 
 void AFirableBase::StartFire()
 {
@@ -70,15 +75,17 @@ void AFirableBase::StopFire()
 
 void AFirableBase::ProcessFire()
 {
-	CurrentAmmoInMag--;
-	if (CurrentAmmoInMag < 0)
+	if (HasAuthority())
 	{
-		CurrentAmmoInMag = 0;
-		StopFire();
+		CurrentAmmoInMag--;
+		if (CurrentAmmoInMag <= 0)
+		{
+			CurrentAmmoInMag = 0;
+			StopFire();
+		}
+		// 서버에서도 UI 갱신이 필요하면 호출
+		OnPlayerAmmoChangedDelegate.Broadcast();
 	}
-	
-	OnPlayerAmmoChangedDelegate.Broadcast();
-
 	AController* OwnerController = GetInstigatorController();
 	if (!OwnerController) return;
 
@@ -95,7 +102,7 @@ void AFirableBase::ProcessFire()
 	QueryParams.AddIgnoredActor(GetOwner());
 	QueryParams.bReturnPhysicalMaterial = true;
 
-	const bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility, QueryParams);
+	const bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Pawn, QueryParams);
 	if (HasAuthority() || OwnerController->IsLocalPlayerController())
 	{
 		Multicast_PlayFireEffects(GetActorLocation(), HitResult);

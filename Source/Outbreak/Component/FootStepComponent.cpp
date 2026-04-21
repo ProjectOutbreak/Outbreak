@@ -8,7 +8,7 @@
 
 UFootStepComponent::UFootStepComponent()
 {
-	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bCanEverTick = false;
 }
 
 
@@ -39,14 +39,16 @@ void UFootStepComponent::HandleFootStep(const FName& SocketName)
 	QueryParams.bReturnPhysicalMaterial = true;
 	QueryParams.AddIgnoredActor(OwningCharacter);
 
-	const bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, ECC_Footstep, QueryParams);
-
-	if (bHit)
+	if (GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, ECC_Footstep, QueryParams))
 	{
-		if (UPhysicalMaterial* PhysMat = HitResult.PhysMaterial.Get())
+		if (const UPhysicalMaterial* PhysMat = HitResult.PhysMaterial.Get())
 		{
-			const EPhysicalSurface SurfaceType = PhysMat->SurfaceType;
-			SoundManager->PlayFootStepSound(SurfaceType, HitResult.ImpactPoint);
+			const EPhysicalSurface HitSurfaceType = PhysMat->SurfaceType;
+			SoundManager->PlayFootStepSound(HitSurfaceType == EPhysicalSurface::SurfaceType_Default ? DefaultSurfaceType : HitSurfaceType, HitResult.ImpactPoint);
+		}
+		else
+		{
+			SoundManager->PlayFootStepSound(DefaultSurfaceType, HitResult.ImpactPoint);
 		}
 	}
 }
