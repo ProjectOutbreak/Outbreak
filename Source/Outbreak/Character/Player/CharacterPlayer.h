@@ -107,7 +107,7 @@ protected:
 	TObjectPtr<UPostProcessComponent> PostProcessComponent;
 	
 	UPROPERTY(VisibleAnywhere, Category = "Player|Components")
-	TObjectPtr<UChildActorComponent> UIComponent;
+	TObjectPtr<ACharacterUIComponent> UIComponent;
 	// ~ End Components
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Player|VFX")
