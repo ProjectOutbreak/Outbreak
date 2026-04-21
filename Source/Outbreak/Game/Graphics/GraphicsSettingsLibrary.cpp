@@ -77,7 +77,15 @@ void UGraphicsSettingsLibrary::ApplyDefaultGraphics()
 
 	if (!bInitialized)
 	{
-		ApplyPreset(EOBGraphicsPreset::Medium, true);
+		if (UGameUserSettings* Settings = GetSettings())
+		{
+			Settings->LoadSettings();
+			
+			Settings->SetOverallScalabilityLevel(1); 
+			Settings->ApplySettings(false);
+			Settings->SaveSettings();
+		}
+
 		GConfig->SetBool(CustomSection, InitKey, true, GGameUserSettingsIni);
 		GConfig->Flush(false, GGameUserSettingsIni);
 	}

@@ -17,6 +17,8 @@ AThrowableProjectile::AThrowableProjectile()
 	CollisionComponent->InitSphereRadius(10.0f);
 	CollisionComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	CollisionComponent->SetCollisionProfileName(TEXT("PhysicsActor"));
+	CollisionComponent->SetWalkableSlopeOverride(FWalkableSlopeOverride(WalkableSlope_Unwalkable, 0.0f));
+	CollisionComponent->CanCharacterStepUpOn = ECB_No;
 	CollisionComponent->SetSimulatePhysics(true);
 	RootComponent = CollisionComponent;
 

@@ -19,6 +19,8 @@ protected:
 
 public:	
 	void SetPlayerName(const FString& Name);
+	void SetSceneCaptureActive(bool bActive);
+	void HidePlayerIcon();
 
 
 protected:
@@ -33,4 +35,7 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, Category = "MiniMap")
 	TObjectPtr<class UTextRenderComponent> PlayerNameText;
+private:
+	FTimerHandle MinimapCaptureTimer;
+	void UpdateMinimap();
 };

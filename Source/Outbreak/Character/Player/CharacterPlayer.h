@@ -15,6 +15,7 @@ class AGranade;
 class AKnife;
 class AM4;
 class UPostProcessComponent;
+class ACharacterUIComponent;
 class USpringArmComponent;
 class UChildActorComponent;
 
@@ -80,6 +81,10 @@ private:
 	void Input_RequestGameOver();
 	UFUNCTION(Client,Reliable)
 	void Server_RequestGameOver();
+	
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_HidePlayerIcon();
+
 public:
 	bool GetIsCutscenePlaying() const { return bIsCutscenePlaying; }
 	bool SetIsCutscenePlaying(const bool bInIsCutscenePlaying) { return bIsCutscenePlaying =  bInIsCutscenePlaying; }

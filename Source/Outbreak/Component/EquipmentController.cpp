@@ -235,6 +235,15 @@ void UEquipmentController::PickupEquipment(class AEquipmentBase* NewItem)
 	AEquipmentBase* CurrentItem = nullptr;
 	EEquipmentType Type = NewItem->GetEquipmentType();
 
+	if (NewItem->bIsAmmoPack)
+	{
+		if (ADefaultPlayerState* PS = CachedOwner->GetPlayerState<ADefaultPlayerState>())
+		{
+			PS->AddAmmo(NewItem->SupplyAmmoType, NewItem->SupplyAmount);
+			NewItem->Destroy();
+			return;
+		}
+	}
 	switch (Type)
 	{
 		case EEquipmentType::PrimaryWeapon:

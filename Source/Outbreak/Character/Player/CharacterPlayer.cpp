@@ -41,11 +41,6 @@ ACharacterPlayer::ACharacterPlayer()
 	FollowCamera->bUsePawnControlRotation = false;
 
 	EquipmentController = CreateDefaultSubobject<UEquipmentController>(TEXT("EquipmentController"));
-
-	UIComponent = CreateDefaultSubobject<UChildActorComponent>(TEXT("UIComponent"));
-	UIComponent->SetupAttachment(RootComponent);
-	UIComponent->SetChildActorClass(ACharacterUIComponent::StaticClass());
-	UIComponent->SetRelativeLocation(FVector::ZeroVector);
 }
 
 void ACharacterPlayer::Tick(float DeltaTime)
@@ -132,13 +127,20 @@ void ACharacterPlayer::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = this;
+	SpawnParams.Instigator = this;
+
+	if (ACharacterUIComponent* SpawnedUIComponent = GetWorld()->SpawnActor<ACharacterUIComponent>(ACharacterUIComponent::StaticClass(), GetActorLocation(),	GetActorRotation(), SpawnParams))
+	{
+		SpawnedUIComponent->AttachToActor(this, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+		SpawnedUIComponent->SetPlayerName(GetName());
+		SpawnedUIComponent->SetSceneCaptureActive(IsLocallyControlled());
+		UIComponent = SpawnedUIComponent;
+	}
+	
 	if (IsLocallyControlled())
 	{
-
-		if (ACharacterUIComponent* UIRig = Cast<ACharacterUIComponent>(UIComponent->GetChildActor()))
-		{
-			UIRig->SetPlayerName(GetName());
-		}
 		SetPlayerControl(CurrentCharacterControlType);
 		SetInitialStateUI();
 		if (AInGamePlayerController* PC = Cast<AInGamePlayerController>(GetController()))
@@ -156,6 +158,8 @@ void ACharacterPlayer::BeginPlay()
 void ACharacterPlayer::Die()
 {
 	if (!HasAuthority()) return;
+
+	Multicast_HidePlayerIcon();
 	
 	AController* SavedController = GetController();
 	
@@ -178,6 +182,13 @@ void ACharacterPlayer::OnRep_Die()
 	}
 	
 	ClearInputMappings();
+}
+void ACharacterPlayer::Multicast_HidePlayerIcon_Implementation()
+{
+	if (UIComponent)
+	{
+		UIComponent->HidePlayerIcon();
+	}
 }
 
 void ACharacterPlayer::OnRep_CurrentHealth()

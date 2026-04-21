@@ -20,7 +20,7 @@ ACharacterUIComponent::ACharacterUIComponent()
     SceneCapture->OrthoWidth = 4000.f;
     SceneCapture->SetRelativeLocation(FVector(0.f, 0.f, 2100.f)); 
     SceneCapture->SetRelativeRotation(FRotator(-90.f, 0.f, 0.f)); 
-    SceneCapture->bCaptureEveryFrame = true;
+    SceneCapture->bCaptureEveryFrame = false;
     SceneCapture->bCaptureOnMovement = false;
 
     static ConstructorHelpers::FObjectFinder<UTextureRenderTarget2D> RenderTargetRef(TEXT("/Script/Engine.TextureRenderTarget2D'/Game/Art/UI/MiniMap/RT_MiniMap.RT_MiniMap'"));
@@ -66,4 +66,45 @@ void ACharacterUIComponent::SetPlayerName(const FString& Name)
     {
         PlayerNameText->SetText(FText::FromString(Name));
     }
+}
+void ACharacterUIComponent::SetSceneCaptureActive(bool bActive)
+{
+	if (SceneCapture)
+	{
+		SceneCapture->SetActive(bActive);
+		SceneCapture->bCaptureEveryFrame = false;
+
+		if (bActive)
+		{
+			GetWorldTimerManager().SetTimer(
+				MinimapCaptureTimer,
+				this,
+				&ACharacterUIComponent::UpdateMinimap,
+				0.033f,
+				true
+			);
+		}
+		else
+		{
+			GetWorldTimerManager().ClearTimer(MinimapCaptureTimer);
+		}
+	}
+}
+void ACharacterUIComponent::HidePlayerIcon()
+{
+	if (PlayerIconSprite)
+	{
+		PlayerIconSprite->SetVisibility(false);
+	}
+	if (PlayerNameText)
+	{
+		PlayerNameText->SetVisibility(false);
+	}
+}
+void ACharacterUIComponent::UpdateMinimap()
+{
+	if (SceneCapture && SceneCapture->IsActive())
+	{
+		SceneCapture->CaptureScene();
+	}
 }
