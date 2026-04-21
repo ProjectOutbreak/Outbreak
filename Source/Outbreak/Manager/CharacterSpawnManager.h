@@ -48,7 +48,8 @@ private:
 	FVector FindRandomSpawnLocation(float MinDistance, float MaxDistance);
 	FVector GetRandomLocationInRadius(const FVector& OptimalHeight, float Radius, bool bDebug) const;
 	void SpawnEnemies();
-
+	void ProcessSpawnQueue(); 
+	
 // --------------------
 // Variables
 // --------------------
@@ -70,6 +71,16 @@ private:
 	FTimerHandle SpawnTimerHandle;
 	bool bIsActivated = false;
 
+	struct FPendingSpawnInfo
+	{
+		UClass* EnemyClass;
+		FTransform SpawnTransform;
+	};
+
+	TQueue<FPendingSpawnInfo> SpawnQueue;
+	FTimerHandle ProcessQueueTimerHandle;
+	int32 QueuedEnemies = 0; 
+	
 	// Data Tables
 	UPROPERTY(EditAnywhere, Category="Data Tables")
 	TObjectPtr<UDataTable> ZombieDataTable;

@@ -33,9 +33,6 @@ void AInGameMode::BeginPlay()
 void AInGameMode::HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer)
 {
 	Super::HandleStartingNewPlayer_Implementation(NewPlayer);
-	
-	DelayedRefreshSpawnManagerTargets();
-	
 	PRINT_WITH_CURRENT_CONTEXT(FString::Printf(TEXT("Handling Starting New Player: %s"), *NewPlayer->GetName()));
 }
 
@@ -148,7 +145,7 @@ void AInGameMode::DelayedRefreshSpawnManagerTargets()
 	FTimerDelegate TimerDelegate;
           
 	TimerDelegate.BindUObject(this, &AInGameMode::RefreshSpawnManagerTargets);
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle, TimerDelegate, 1.0f, false);
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, TimerDelegate, 5.0f, false);
 }
 
 void AInGameMode::RefreshSpawnManagerTargets()
@@ -232,6 +229,21 @@ void AInGameMode::ProcessPlayerQuit(APlayerController* ExitingPlayer)
 		}
 	}
 	ExitingPlayer->ClientReturnToMainMenuWithTextReason(FText::FromString(TEXT("You left the match.")));
+}
+
+void AInGameMode::OnPlayerReady()
+{
+	TRACE_CPUPROFILER_EVENT_SCOPE(OnPlayerReady);
+	ReadyPlayersCount++;
+
+	int32 TotalPlayers = GetNumPlayers();
+
+	PRINT_WITH_CURRENT_CONTEXT(FString::Printf(TEXT("Player Ready! (%d / %d)"), ReadyPlayersCount, TotalPlayers));
+
+	if (ReadyPlayersCount >= TotalPlayers)
+	{
+		RefreshSpawnManagerTargets(); 
+	}
 }
 
 void AInGameMode::ProcessGameOverSequence()

@@ -27,6 +27,7 @@ public:
 	bool IsGameOver() const;
 
 	void ProcessPlayerQuit(APlayerController* ExitingPlayer);
+	void OnPlayerReady();
 	
 private:
 	void InstantiateSpawnManager();
@@ -47,6 +48,7 @@ private:
 	FTimerHandle GameOverTimerHandle;
 
 	bool bIsServerShuttingDown = false;
+	int32 ReadyPlayersCount = 0;
 public:
 	// ~ Begin Getter & Setter
 	FORCEINLINE TObjectPtr<ACharacterSpawnManager> GetSpawnManager() const { return SpawnManagerInstance; }

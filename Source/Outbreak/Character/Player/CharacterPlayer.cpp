@@ -149,6 +149,7 @@ void ACharacterPlayer::BeginPlay()
 				PC->PlayerCameraManager->ViewPitchMax = 20.0f; 
 			}
 		}
+		Server_NotifyReady();
 	}
 }
 
@@ -302,6 +303,14 @@ void ACharacterPlayer::ClearInputMappings() const
 void ACharacterPlayer::SetInitialStateUI()
 {
 	OnRep_CurrentHealth();
+}
+
+void ACharacterPlayer::Server_NotifyReady_Implementation()
+{
+	if (AInGameMode* GM = Cast<AInGameMode>(GetWorld()->GetAuthGameMode()))
+	{
+		GM->OnPlayerReady(); 
+	}
 }
 
 void ACharacterPlayer::SetupMovement()

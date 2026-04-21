@@ -326,11 +326,11 @@ void ACharacterSpawnManager::SpawnEnemies()
 	
 	for (const FSingleEnemyData& EnemyData : WaveData.Enemies)
 	{
-		if (SettingData->MaxEnemies <= SpawnedEnemies)
+		if (SettingData->MaxEnemies <= (SpawnedEnemies + QueuedEnemies))
 			return;
 
 		if (!CheckSpawnChance(EnemyData.SpawnChance))
-			return;
+			continue; 
 
 		const int32 SpawnMin = FMath::Clamp(EnemyData.SpawnMin, 0, EnemyData.SpawnMin);
 		const int32 SpawnMax = FMath::Clamp(EnemyData.SpawnMax, EnemyData.SpawnMin, SettingData->MaxEnemies);
@@ -338,7 +338,7 @@ void ACharacterSpawnManager::SpawnEnemies()
 
 		for (int i = 0; i < SpawnAmount; i++)
 		{
-			if (SettingData->MaxEnemies <= SpawnedEnemies)
+			if (SettingData->MaxEnemies <= (SpawnedEnemies + QueuedEnemies))
 				return;
 
 			FVector SpawnLocation = FindRandomSpawnLocation(SettingData->SpawnDistanceMin, SettingData->SpawnDistanceMax);
@@ -355,16 +355,49 @@ void ACharacterSpawnManager::SpawnEnemies()
 			SpawnTransform.SetRotation(FQuat(LookAtRotation));
 			SpawnTransform.SetScale3D(FVector::OneVector);
 
-			FActorSpawnParameters SpawnParams;
-			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
-			SpawnParams.Instigator = GetInstigator();
-
-			const AActor* SpawnedActor = GetWorld()->SpawnActor<AActor>(EnemyData.Class, SpawnTransform, SpawnParams);
-			if (SpawnedActor)
-			{
-				SpawnedEnemies++;
-			}
+			FPendingSpawnInfo Info = { EnemyData.Class, SpawnTransform };
+			SpawnQueue.Enqueue(Info);
+			QueuedEnemies++; 
 		}
+	}
+
+	if (!SpawnQueue.IsEmpty() && !GetWorld()->GetTimerManager().IsTimerActive(ProcessQueueTimerHandle))
+	{
+		GetWorld()->GetTimerManager().SetTimer(
+			ProcessQueueTimerHandle, 
+			this, 
+			&ACharacterSpawnManager::ProcessSpawnQueue, 
+			0.05f, 
+			true
+		);
+	}
+}
+
+void ACharacterSpawnManager::ProcessSpawnQueue()
+{
+	TRACE_CPUPROFILER_EVENT_SCOPE(SPAWNMANAGER_ProcessSpawnQueue);
+	if (!HasAuthority()) return;
+	
+	FPendingSpawnInfo SpawnInfo;
+	
+	if (SpawnQueue.Dequeue(SpawnInfo))
+	{
+		QueuedEnemies--; 
+
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
+		SpawnParams.Instigator = GetInstigator();
+
+		const AActor* SpawnedActor = GetWorld()->SpawnActor<AActor>(SpawnInfo.EnemyClass, SpawnInfo.SpawnTransform, SpawnParams);
+		if (SpawnedActor)
+		{
+			SpawnedEnemies++;
+		}
+	}
+
+	if (SpawnQueue.IsEmpty())
+	{
+		GetWorld()->GetTimerManager().ClearTimer(ProcessQueueTimerHandle);
 	}
 }
 

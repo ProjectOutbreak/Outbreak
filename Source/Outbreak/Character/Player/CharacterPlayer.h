@@ -69,7 +69,10 @@ private:
 	void SetPlayerControlData(const class UPlayerControlData* InPlayerControlData);
 	void ClearInputMappings() const;
 	void SetInitialStateUI();
-	
+
+	UFUNCTION(Server, Reliable)
+	void Server_NotifyReady();
+
 	// ~ For Debugging
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 	UFUNCTION(Server, Reliable)
@@ -77,7 +80,6 @@ private:
 	void Input_RequestGameOver();
 	UFUNCTION(Client,Reliable)
 	void Server_RequestGameOver();
-	
 public:
 	bool GetIsCutscenePlaying() const { return bIsCutscenePlaying; }
 	bool SetIsCutscenePlaying(const bool bInIsCutscenePlaying) { return bIsCutscenePlaying =  bInIsCutscenePlaying; }
