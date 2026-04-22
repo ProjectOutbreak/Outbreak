@@ -12,6 +12,7 @@
 #include "Outbreak/Manager/SoundManager.h"
 #include "Pawn/OutbreakSpectatorPawn.h"
 #include "OutbreakGameLiftSubsystem.h"
+#include "Data/OutbreakDeveloperSettings.h"
 #include "Interfaces/OnlineSessionInterface.h"
 #include "Utilities/DebugHelper.h"
 
@@ -176,7 +177,8 @@ void AInGameMode::RefreshSpawnManagerTargets()
 		PRINT_WITH_CURRENT_CONTEXT(FString::Printf(TEXT("Refreshing Spawn Manager Targets. Active Players: %d"), PlayerPawns.Num()));
 		SpawnManagerInstance->UpdateActivePlayers(PlayerPawns);
         
-		if (!SpawnManagerInstance->IsActivated())
+		const UOutbreakDeveloperSettings* Settings = UOutbreakDeveloperSettings::Get();
+		if (!SpawnManagerInstance->IsActivated() && Settings->bAutoActivateSpawnManager)
 		{
 			SpawnManagerInstance->Activate();
 		}

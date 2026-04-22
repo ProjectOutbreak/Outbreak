@@ -4,9 +4,10 @@
 #include "Data/OutbreakDeveloperSettings.h"
 
 UOutbreakDeveloperSettings::UOutbreakDeveloperSettings()
-	: EntityConfig(nullptr),
-	  MaxSpawnPerTick(64),
-	  InitialEntityCount(100)
+	: bAutoActivateSpawnManager(true),
+	EntityConfig(nullptr),
+	MaxSpawnPerTick(64),
+	InitialEntityCount(100)
 {
 }
 

@@ -26,6 +26,8 @@ public:
 	static const UOutbreakDeveloperSettings* Get();
 	
 public:
+	UPROPERTY(Config, NoClear, EditAnywhere, BlueprintReadOnly, Category = "System Settings")
+	bool bAutoActivateSpawnManager;
 	
 	UPROPERTY(Config, NoClear, EditAnywhere, BlueprintReadOnly, Category = "System Settings")
 	TSoftObjectPtr<UMassEntityConfigAsset> EntityConfig;
