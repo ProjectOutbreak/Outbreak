@@ -5,6 +5,7 @@
 
 UOutbreakDeveloperSettings::UOutbreakDeveloperSettings()
 	: bAutoActivateSpawnManager(true),
+	bAutoActivateEntitySpawn(true),
 	EntityConfig(nullptr),
 	MaxSpawnPerTick(64),
 	InitialEntityCount(100)

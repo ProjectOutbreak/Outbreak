@@ -36,6 +36,12 @@ void UZombieEntitySubsystem::OnWorldBeginPlay(UWorld& InWorld)
 {
 	Super::OnWorldBeginPlay(InWorld);
 	
+	const UOutbreakDeveloperSettings* Settings = UOutbreakDeveloperSettings::Get();
+	if (Settings && !Settings->bAutoActivateEntitySpawn)
+	{
+		return;
+	}
+	
 	if (!EntityConfig) return;
 	
 	EntityTemplate = EntityConfig->GetOrCreateEntityTemplate(InWorld);

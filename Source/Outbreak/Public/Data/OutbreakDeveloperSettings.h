@@ -30,6 +30,9 @@ public:
 	bool bAutoActivateSpawnManager;
 	
 	UPROPERTY(Config, NoClear, EditAnywhere, BlueprintReadOnly, Category = "System Settings")
+	bool bAutoActivateEntitySpawn;
+	
+	UPROPERTY(Config, NoClear, EditAnywhere, BlueprintReadOnly, Category = "System Settings")
 	TSoftObjectPtr<UMassEntityConfigAsset> EntityConfig;
 	
 	UPROPERTY(Config, NoClear, EditAnywhere, BlueprintReadOnly, Category = "System Settings")
