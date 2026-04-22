@@ -349,6 +349,24 @@ void UEquipmentController::PickupEquipment(class AEquipmentBase* NewItem)
 	NewItem->ForceNetUpdate();
 }
 
+void UEquipmentController::PerformUse()
+{
+	// server only 
+	check(GetOwner()->HasAuthority()); 
+
+	if (!IsValid(CurrentEquippedItem))
+	{
+		return;
+	}
+
+	if (!CurrentEquippedItem->CanUse())
+	{
+		return;
+	}
+	CurrentEquippedItem->OnUse();
+	bIsOnUse = true;
+}
+
 void UEquipmentController::DropEquipment(class AEquipmentBase* ItemToDrop)
 {
 	if (!IsValid(ItemToDrop)) return;
@@ -363,21 +381,16 @@ void UEquipmentController::DropEquipment(class AEquipmentBase* ItemToDrop)
 
 void UEquipmentController::HandleUse()
 {
-	if (!IsValid(CurrentEquippedItem))
-	{
-		return;
-	}
-	if (!GetOwner()->HasAuthority())
-	{
-		Server_HandleUse();
-		return;
-	}
+	// Option : Client Prediction 
 
-	if (!CurrentEquippedItem->CanUse())
-		return;
-	
-	CurrentEquippedItem->OnUse();
-	bIsOnUse = true;
+	if (GetOwner()->HasAuthority())
+	{
+		PerformUse(); 
+	}
+	else
+	{
+		Server_HandleUse(); 
+	}
 }
 
 void UEquipmentController::HandleEndUse()
@@ -644,7 +657,7 @@ void UEquipmentController::Server_EquipBySlot_Implementation(int32 SlotNumber)
 }
 void UEquipmentController::Server_HandleUse_Implementation()
 {
-	HandleUse();
+	PerformUse();	
 }
 void UEquipmentController::Server_HandleEndUse_Implementation()
 {
