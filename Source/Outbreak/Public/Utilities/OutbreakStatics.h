@@ -6,6 +6,8 @@
 #include "UObject/Object.h"
 #include "OutbreakStatics.generated.h"
 
+enum class EZombieSubType : uint8;
+struct FZombieData;
 /**
  * Utility class for Outbreak
  */
@@ -18,5 +20,8 @@ public:
 	
 	/** @return Damage multiplier based on the physical surface type (e.g., head, body, limbs) */
 	static float GetDamageMultiplier(EPhysicalSurface SurfaceType);
+	
+	/** @return Zombie data for the given subtype or nullptr if not found */
+	static const FZombieData* GetZombieData(const UObject* WorldContextObject, const EZombieSubType InSubType);
 	
 };

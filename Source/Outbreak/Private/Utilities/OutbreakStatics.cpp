@@ -2,6 +2,7 @@
 
 #include "Utilities/OutbreakStatics.h"
 #include "Data/OutbreakDeveloperSettings.h"
+#include "Subsystems/GameDataSubsystem.h"
 
 float UOutbreakStatics::GetDamageMultiplier(const EPhysicalSurface SurfaceType)
 {
@@ -18,4 +19,19 @@ float UOutbreakStatics::GetDamageMultiplier(const EPhysicalSurface SurfaceType)
 		default:
 			return 1.0f;
 	}
+}
+
+const FZombieData* UOutbreakStatics::GetZombieData(const UObject* WorldContextObject, const EZombieSubType InSubType)
+{
+	if (const UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull))
+	{
+		if (const UGameInstance* GI = World->GetGameInstance())
+		{
+			if (const UGameDataSubsystem* DataSubsystem = GI->GetSubsystem<UGameDataSubsystem>())
+			{
+				return DataSubsystem->GetZombieData(InSubType);
+			}
+		}
+	}
+	return nullptr;
 }
