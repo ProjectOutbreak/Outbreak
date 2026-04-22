@@ -13,7 +13,10 @@
 				"CoreUObject",
 				"EngineCameras",
 				"AIModule",
-				"UMG"
+				"UMG",
+				"MassEntity",
+				"MassSpawner",
+				"DeveloperSettings"
 			]
 		}
 	],
@@ -47,6 +50,22 @@
 		},
 		{
 			"Name": "AnimationBudgetAllocator",
+			"Enabled": true
+		},
+		{
+			"Name": "MassEntity",
+			"Enabled": true
+		},
+		{
+			"Name": "MassGameplay",
+			"Enabled": true
+		},
+		{
+			"Name": "MassCrowd",
+			"Enabled": true
+		},
+		{
+			"Name": "MassAI",
 			"Enabled": true
 		}
 	]

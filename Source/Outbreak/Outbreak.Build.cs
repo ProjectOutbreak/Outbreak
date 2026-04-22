@@ -41,7 +41,20 @@ public class Outbreak : ModuleRules
 			"GameLiftServerSDK",
 			"ApplicationCore",
 			"OnlineSubsystemUtils",
-			"EasySessions"
+			"EasySessions", 
+			"StructUtils",
+			"DeveloperSettings",
+			// ~ Begin Mass
+			"MassEntity", 
+			"MassCommon", 
+			"MassMovement",
+			"MassSpawner",
+			"MassNavigation",
+			"MassRepresentation",
+			"MassLOD",
+			"MassActors",
+			"MassSignals",
+			// ~ End Mass
 		});
 		
 		PrivateDependencyModuleNames.AddRange(new string[] { "Paper2D", "AnimGraphRuntime", "AnimationBudgetAllocator" });

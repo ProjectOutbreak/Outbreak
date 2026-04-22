@@ -1,0 +1,254 @@
+﻿// Fill out your copyright notice in the Description page of Project Settings.
+
+
+#include "Subsystems/World/ZombieEntitySubsystem.h"
+
+#include "MassCommonFragments.h"
+#include "MassEntityConfigAsset.h"
+#include "MassEntitySubsystem.h"
+#include "MassSpawnerSubsystem.h"
+#include "Data/EntityDataTypes.h"
+#include "Data/OutbreakDeveloperSettings.h"
+#include "Data/ZombieMassFragments.h"
+#include "EnvironmentQuery/EnvQueryManager.h"
+#include "GameFramework/PlayerStart.h"
+#include "Kismet/GameplayStatics.h"
+
+void UZombieEntitySubsystem::Initialize(FSubsystemCollectionBase& Collection)
+{
+	Super::Initialize(Collection);
+	
+	if (const auto* Settings = UOutbreakDeveloperSettings::Get())
+	{
+		if (!Settings->EntityConfig.IsNull())
+		{
+			EntityConfig = Settings->EntityConfig.LoadSynchronous();
+		}
+	}
+}
+
+void UZombieEntitySubsystem::Deinitialize()
+{
+	Super::Deinitialize();
+}
+
+void UZombieEntitySubsystem::OnWorldBeginPlay(UWorld& InWorld)
+{
+	Super::OnWorldBeginPlay(InWorld);
+	
+	if (!EntityConfig) return;
+	
+	EntityTemplate = EntityConfig->GetOrCreateEntityTemplate(InWorld);
+	
+	if (auto* EntitySub = InWorld.GetSubsystem<UMassEntitySubsystem>())
+	{
+		EntityManager = &EntitySub->GetMutableEntityManager();
+	}
+	
+	SpawnerSubsystem = InWorld.GetSubsystem<UMassSpawnerSubsystem>();
+	
+	AssignSpawnPosition();
+	RunSpawnPointQuery();
+	StartSpawnManager();
+}
+
+void UZombieEntitySubsystem::EnqueueSpawnRequest(const FEntitySpawnRequest& SpawnRequest)
+{
+	PendingSpawnRequests.Add(SpawnRequest);
+}
+
+void UZombieEntitySubsystem::StartSpawnManager()
+{
+	const auto& WorldContext = GetWorldRef();
+	if (!IsValid(&WorldContext)) return;
+	
+	if (!WorldContext.GetTimerManager().IsTimerActive(TimerHandle_Spawn))
+	{
+		WorldContext.GetTimerManager().SetTimer(TimerHandle_Spawn, this, &ThisClass::SpawnManager, 0.1f, true);
+	}
+		
+}
+
+void UZombieEntitySubsystem::StopSpawnManager()
+{
+	const auto& WorldContext = GetWorldRef();
+	if (!IsValid(&WorldContext)) return;
+	
+	WorldContext.GetTimerManager().ClearTimer(TimerHandle_Spawn);
+}
+
+void UZombieEntitySubsystem::AssignSpawnPosition()
+{
+	StartPosition = FVector::ZeroVector;
+	
+	TArray<AActor*> PlayerStarts;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerStart::StaticClass(), PlayerStarts);
+	
+	if (PlayerStarts.Num() > 0)
+	{
+		const int32 RandomIndex = FMath::RandRange(0, PlayerStarts.Num() - 1);
+		StartActor = PlayerStarts[RandomIndex];
+		StartPosition = StartActor->GetActorLocation();
+	}
+}
+
+void UZombieEntitySubsystem::CreateStartEntities(const TArray<FVector>& SpawnPoints)
+{
+	const UOutbreakDeveloperSettings* Settings = UOutbreakDeveloperSettings::Get();
+	if (!Settings) return;
+	
+	FEntitySpawnRequest SpawnRequest;
+	SpawnRequest.Type = EEntityType::Entity;
+	SpawnRequest.Count = Settings->InitialEntityCount;
+	SpawnRequest.TotalCount = Settings->InitialEntityCount;
+	SpawnRequest.WorldPos = StartPosition;
+	SpawnRequest.SpawnPoints = SpawnPoints;
+	
+	if (Settings->InitialEntityCount > 0)
+	{
+		EnqueueSpawnRequest(SpawnRequest);
+	}
+}
+
+void UZombieEntitySubsystem::RunSpawnPointQuery()
+{
+	const UOutbreakDeveloperSettings* Settings = UOutbreakDeveloperSettings::Get();
+	if (!Settings || Settings->SpawnPointQuery.IsNull())
+	{
+		// Fallback
+		CreateStartEntities({});
+		return;
+	}
+
+	const UEnvQuery* Query = Settings->SpawnPointQuery.LoadSynchronous();
+	UEnvQueryManager* EQSManager = UEnvQueryManager::GetCurrent(GetWorld());
+	if (!Query || !EQSManager)
+	{
+		CreateStartEntities({});
+		return;
+	}
+	
+	FQueryFinishedSignature Delegate;
+	Delegate.BindUObject(this, &ThisClass::OnSpawnPointQueryFinished);
+
+	const FEnvQueryRequest QueryRequest(Query, StartActor);
+	EQSManager->RunQuery(QueryRequest, EEnvQueryRunMode::AllMatching, Delegate);
+}
+
+void UZombieEntitySubsystem::OnSpawnPointQueryFinished(TSharedPtr<FEnvQueryResult> Result)
+{
+	const UOutbreakDeveloperSettings* Settings = UOutbreakDeveloperSettings::Get();
+	if (!Settings) return;
+	
+	TArray<FVector> SpawnPoints;
+	
+	if (Result.IsValid() && Result->IsSuccessful())
+	{
+		const int32 NumPoints = FMath::Min(Settings->InitialEntityCount, Result->Items.Num());
+		for (int32 i = 0; i < NumPoints; i++)
+		{
+			SpawnPoints.Add(Result->GetItemAsLocation(i));
+		}
+	}
+	
+	CreateStartEntities(SpawnPoints);
+}
+
+void UZombieEntitySubsystem::SpawnManager()
+{
+	ProcessPendingSpawnRequests();
+}
+
+void UZombieEntitySubsystem::ProcessPendingSpawnRequests()
+{
+	if (!EntityManager || !SpawnerSubsystem) return;
+	
+	const auto* Settings = UOutbreakDeveloperSettings::Get();
+	if (!Settings) return;
+	
+	TArray<FMassEntityHandle> SpawnedEntities;
+	int32 SpawnThisTick = Settings->MaxSpawnPerTick;
+	for (int i = PendingSpawnRequests.Num() - 1; i >= 0; --i)
+	{
+		FEntitySpawnRequest& Request = PendingSpawnRequests[i];
+		const int32 ThisBatch = FMath::Min(Request.Count, SpawnThisTick);
+		if (ThisBatch == 0)
+		{
+			PendingSpawnRequests.RemoveAtSwap(i);
+			continue;
+		}
+		
+		FMassEntityTemplate RequestEntityTemplate;
+		switch (Request.Type)
+		{
+			case EEntityType::Entity:
+				RequestEntityTemplate = EntityTemplate;
+				break;
+		}
+		
+		TArray<FMassEntityHandle> RequestEntities;
+		SpawnerSubsystem->SpawnEntities(RequestEntityTemplate, ThisBatch, RequestEntities);
+		
+		ConfigureSpawnedEntities(Request, RequestEntities);
+		
+		Request.Count -= ThisBatch;
+		SpawnThisTick -= ThisBatch;
+		
+		if (Request.Count <= 0)
+		{
+			PendingSpawnRequests.RemoveAtSwap(i);
+		}
+		
+		if (SpawnThisTick <= 0)
+		{
+			return;
+		}
+	}
+}
+
+void UZombieEntitySubsystem::ConfigureSpawnedEntities(const FEntitySpawnRequest& Request, const TArray<FMassEntityHandle>& RequestEntities)
+{
+	const int32 SpawnOffset = Request.TotalCount - Request.Count;
+	int32 EntityIndex = 0;
+	
+	for (const auto& Entity : RequestEntities)
+	{
+		FVector Position = Request.WorldPos;
+		const int32 GlobalIndex = SpawnOffset + EntityIndex;
+		
+		if (Request.SpawnPoints.Num() > 0)
+		{
+			if (GlobalIndex < Request.SpawnPoints.Num())
+			{
+				Position = Request.SpawnPoints[GlobalIndex];
+			}
+		}
+		else
+		{
+			// Need Fallback : Character Spawn   Manager
+		}
+		
+	
+		if (FTransformFragment* TransformFragment = EntityManager->GetFragmentDataPtr<FTransformFragment>(Entity))
+		{
+			TransformFragment->GetMutableTransform().SetLocation(Position);
+		}
+		
+		switch (Request.Type)
+		{
+			case EEntityType::Entity:
+				{
+					if (FZombieEntityFragment* EntityFragment = EntityManager->GetFragmentDataPtr<FZombieEntityFragment>(Entity))
+					{
+						EntityFragment->TimeToLive = Request.TimeToLive;
+					}
+				}
+				break;
+			
+			default:
+				break;
+		}
+		
+		EntityIndex++;
+	}
+}
