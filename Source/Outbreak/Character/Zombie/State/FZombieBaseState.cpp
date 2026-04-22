@@ -7,9 +7,11 @@
 #include "Outbreak/Component/ZombieAIComponent.h"
 #include "Outbreak/Util/Define.h"
 
-FZombieBaseState::FZombieBaseState(const TSharedPtr<TStateMachine<EZombieStateType>>& InFsm, const EZombieStateType InStateKey, ACharacterZombie* InOwner): TState(InFsm, InStateKey)
+FZombieBaseState::FZombieBaseState(const TSharedPtr<TStateMachine<EZombieStateType>>& InFsm, const EZombieStateType InStateKey, ACharacter* InOwner)
+	: TState(InFsm, InStateKey)
 {
 	Owner = InOwner;
+	OwnerCharacter = InOwner;
 	AIController = Cast<AZombieAIComponent>(InOwner->GetController());
 }
 
@@ -23,7 +25,7 @@ TObjectPtr<UZombieAnimInstance> FZombieBaseState::GetAnimInstance()
 {
 	if (!CachedAnimInstance && Owner)
 	{
-		CachedAnimInstance = Cast<UZombieAnimInstance>(Owner->GetMesh()->GetAnimInstance());
+		CachedAnimInstance = Cast<UZombieAnimInstance>(OwnerCharacter->GetMesh()->GetAnimInstance());
 	}
 	return CachedAnimInstance;
 }

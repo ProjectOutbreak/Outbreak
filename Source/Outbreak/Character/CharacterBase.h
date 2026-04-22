@@ -55,7 +55,6 @@ public:
 	FOnCharacterDeathSignature OnCharacterDeathDelegate;
 	
 protected:
-	ECharacterType CharacterType = ECharacterType::None;
 	ECharacterBodyType CharacterBodyType = ECharacterBodyType::None;
 	int32 CurrentExtraHealth = 0;
 

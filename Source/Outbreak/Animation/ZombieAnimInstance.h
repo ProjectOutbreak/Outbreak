@@ -6,6 +6,7 @@
 #include "Animation/AnimInstance.h"
 #include "ZombieAnimInstance.generated.h"
 
+class IZombieInterface;
 class UCharacterMovementComponent;
 class ACharacterZombie;
 
@@ -27,7 +28,7 @@ protected:
 	TObjectPtr<UAnimMontage> ScreamingMontage;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly);
-	TObjectPtr<ACharacterZombie> OwnerZombie;
+	TScriptInterface<IZombieInterface> OwnerZombie;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly);
 	TObjectPtr<UCharacterMovementComponent> MovementComponent;

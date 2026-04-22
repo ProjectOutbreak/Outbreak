@@ -184,9 +184,9 @@ void AFirableBase::ApplyDamageToTarget(AController* InstigatorController, const 
 
 	if (AActor* HitActor = HitResult.GetActor())
 	{
-		if (ACharacterZombie* HitZombie = Cast<ACharacterZombie>(HitActor))
+		if (IZombieInterface* HitZombie = Cast<IZombieInterface>(HitActor))
 		{
-			UGameplayStatics::ApplyPointDamage(HitZombie, FirableData.Damage, HitResult.Location, HitResult, InstigatorController, this, nullptr);
+			UGameplayStatics::ApplyPointDamage(HitActor, FirableData.Damage, HitResult.Location, HitResult, InstigatorController, this, nullptr);
 		}
 	}
 }

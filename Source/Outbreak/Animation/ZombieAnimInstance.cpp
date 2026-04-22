@@ -9,22 +9,25 @@ void UZombieAnimInstance::NativeInitializeAnimation()
 {
 	Super::NativeInitializeAnimation();
 
-	OwnerZombie = Cast<ACharacterZombie>(TryGetPawnOwner());
+	OwnerZombie = TryGetPawnOwner();
 	if (!OwnerZombie) return;
-	MovementComponent = OwnerZombie->GetCharacterMovement();
+	MovementComponent = OwnerZombie->GetCharacter()->GetCharacterMovement();
 }
 
 void UZombieAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
 	Super::NativeUpdateAnimation(DeltaSeconds);
 	
-	if (!IsValid(OwnerZombie))
+	if (OwnerZombie.GetObject() == nullptr)
 	{
-		OwnerZombie = Cast<ACharacterZombie>(TryGetPawnOwner());
+		OwnerZombie = TryGetPawnOwner();
 
-		if (!IsValid(OwnerZombie)) return;
+		if (OwnerZombie.GetObject() == nullptr)
+		{
+			return;
+		}
 
-		MovementComponent = OwnerZombie->GetCharacterMovement();
+		MovementComponent = OwnerZombie->GetCharacter()->GetCharacterMovement();
 	}
 
 	if (!IsValid(MovementComponent)) return;
@@ -32,7 +35,7 @@ void UZombieAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	Velocity = MovementComponent->Velocity;
 	
 	const float RawGroundSpeed = FVector(Velocity.X, Velocity.Y, 0.0f).Size();
-	const float RawDirection = UKismetAnimationLibrary::CalculateDirection(Velocity, OwnerZombie->GetActorRotation());
+	const float RawDirection = UKismetAnimationLibrary::CalculateDirection(Velocity, OwnerZombie->GetCharacter()->GetActorRotation());
 
 	CurrentGroundSpeed = FMath::FInterpTo(CurrentGroundSpeed, RawGroundSpeed, DeltaSeconds, GroundSpeedInterpSpeed);
 	CurrentDirection = FMath::FInterpTo(CurrentDirection, RawDirection, DeltaSeconds, DirectionInterpSpeed);

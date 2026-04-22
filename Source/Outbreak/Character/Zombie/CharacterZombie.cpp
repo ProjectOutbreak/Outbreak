@@ -17,7 +17,6 @@
 
 ACharacterZombie::ACharacterZombie()
 {
-	CharacterType = ECharacterType::Zombie;
 	AIControllerClass = AZombieAIComponent::StaticClass();
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 	

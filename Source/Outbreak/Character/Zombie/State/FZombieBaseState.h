@@ -14,7 +14,7 @@ class OUTBREAK_API FZombieBaseState : public TState<EZombieStateType>
 public:
 	using Super = FZombieBaseState;
 	
-	FZombieBaseState(const TSharedPtr<TStateMachine<EZombieStateType>>& InFsm, const EZombieStateType InStateKey, ACharacterZombie* InOwner);
+	FZombieBaseState(const TSharedPtr<TStateMachine<EZombieStateType>>& InFsm, const EZombieStateType InStateKey, ACharacter* InOwner);
 	virtual void Enter(EZombieStateType PreviousState) override;
 	virtual void Execute(EZombieStateType CurrentState, float DeltaTime) override;
 	virtual void Exit(EZombieStateType NextState) override;
@@ -25,7 +25,8 @@ protected:
 protected:
 	TObjectPtr<ACharacterPlayer> GetTarget() const;
 
-	TObjectPtr<ACharacterZombie> Owner;
+	TScriptInterface<IZombieInterface> Owner;
+	ACharacter* OwnerCharacter;
 	TObjectPtr<AZombieAIComponent> AIController;
 	float RotationSpeed = 180.0f;
 

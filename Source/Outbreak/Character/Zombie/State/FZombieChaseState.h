@@ -16,7 +16,7 @@ enum class EChaseType : uint8
 class OUTBREAK_API FZombieChaseState : public FZombieBaseState
 {
 public:
-	FZombieChaseState(const TSharedPtr<TStateMachine<EZombieStateType>>& InFsm, ACharacterZombie* InOwner);
+	FZombieChaseState(const TSharedPtr<TStateMachine<EZombieStateType>>& InFsm, ACharacter* InOwner);
 
 	virtual void Enter(EZombieStateType PreviousState) override;
 	virtual void Execute(EZombieStateType CurrentState, float DeltaTime) override;

@@ -7,13 +7,16 @@
 #include "Outbreak/Component/ZombieAIComponent.h"
 #include "Outbreak/Util/Define.h"
 
-FZombieChaseState::FZombieChaseState(const TSharedPtr<TStateMachine<EZombieStateType>>& InFsm, ACharacterZombie* InOwner): FZombieBaseState(InFsm, EZombieStateType::Chase, InOwner) { }
+FZombieChaseState::FZombieChaseState(const TSharedPtr<TStateMachine<EZombieStateType>>& InFsm, ACharacter* InOwner)
+: FZombieBaseState(InFsm, EZombieStateType::Chase, InOwner)
+{
+}
 
 void FZombieChaseState::Enter(const EZombieStateType PreviousState)
 {
 	Super::Enter(PreviousState);
 
-	const TObjectPtr<UCharacterMovementComponent> MovementComp = Owner->GetCharacterMovement();
+	const TObjectPtr<UCharacterMovementComponent> MovementComp = OwnerCharacter->GetCharacterMovement();
 	const FZombieData* ZombieData = Owner->GetZombieData();
 	
 	if (!GetTarget() || !MovementComp || !ZombieData || !AIController) return;
@@ -58,7 +61,7 @@ void FZombieChaseState::Execute(const EZombieStateType CurrentState, const float
 		return;
 	}
     
-	const FVector ZombieLocation = Owner->GetActorLocation();
+	const FVector ZombieLocation = OwnerCharacter->GetActorLocation();
 	const FVector PlayerLocation = CurrentTarget->GetActorLocation();
 	const float DistanceToPlayer = FVector::Dist(ZombieLocation, PlayerLocation);
 	const float AttackRange = Owner->GetZombieData()->AttackRange;

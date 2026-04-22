@@ -6,7 +6,7 @@
 class OUTBREAK_API FZombieAlertState : public FZombieBaseState
 {
 public:
-	FZombieAlertState(const TSharedPtr<TStateMachine<EZombieStateType>>& InFsm, ACharacterZombie* InOwner);
+	FZombieAlertState(const TSharedPtr<TStateMachine<EZombieStateType>>& InFsm, ACharacter* InOwner);
 
 	virtual void Enter(EZombieStateType PreviousState) override;
 	virtual void Execute(EZombieStateType CurrentState, float DeltaTime) override;
