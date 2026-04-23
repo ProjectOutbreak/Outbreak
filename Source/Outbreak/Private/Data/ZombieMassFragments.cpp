@@ -12,7 +12,7 @@ FZombieWanderFragment::FZombieWanderFragment()
 	, TargetLocation(FVector::ZeroVector)
 	, TimeUntilNewTarget(0)
 	, Radius(1000.0f)
-	, Speed(100.0f)
+	, Speed(50.0f)
 {
 }
 
