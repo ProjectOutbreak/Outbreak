@@ -99,7 +99,6 @@ public:
 	FORCEINLINE bool IsDead() const { return bIsDead || CurrentHealth <= 0; }
 	virtual FZombieData* GetZombieData() override { return &ZombieData; }
 	virtual bool IsAttacking() const override { return bIsAttacking; }
-	virtual void SetIsAlert(const bool bInIsAlert) override { /* Not Implemented */ }
 	virtual ACharacter* GetCharacter() override { return this; }
 
 };

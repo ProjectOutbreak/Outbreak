@@ -49,7 +49,6 @@ void ACharacterZombie::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 
 	DOREPLIFETIME(ThisClass, ZombieData);
 	DOREPLIFETIME(ThisClass, bIsAttacking);
-	DOREPLIFETIME(ThisClass, bIsAlert);
 }
 
 void ACharacterZombie::InitCharacterData()
@@ -123,6 +122,19 @@ void ACharacterZombie::SetupCollisionAndMesh()
     
 	GetCapsuleComponent()->BodyInstance.LinearDamping = 1.0f;
 	GetCapsuleComponent()->BodyInstance.AngularDamping = 10.0f;
+	
+	if (USkeletalMeshComponent* MeshComp = GetMesh())
+	{
+		if (IsRunningDedicatedServer())
+		{
+			MeshComp->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
+		}
+		else
+		{
+			MeshComp->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::OnlyTickMontagesWhenNotRendered;
+			MeshComp->bEnableUpdateRateOptimizations = true;
+		}
+	}
 }
 
 void ACharacterZombie::SetupMovement()
@@ -134,12 +146,12 @@ void ACharacterZombie::SetupMovement()
 	MovementComp->bUseControllerDesiredRotation = true;
 	MovementComp->RotationRate = FRotator(0.0f, 360.0f, 0.0f);
 	MovementComp->MaxAcceleration = 1024.0f;
-	MovementComp->AvoidanceConsiderationRadius = 500.0f;
-	MovementComp->SetAvoidanceEnabled(true);
-	MovementComp->SetRVOAvoidanceWeight(0.3f);
-	MovementComp->SetAvoidanceGroup(static_cast<int32>(EAvoidanceGroupType::Zombie));
-	MovementComp->SetGroupsToAvoid(static_cast<int32>(EAvoidanceGroupType::Zombie));
-	MovementComp->SetGroupsToIgnore(static_cast<int32>(EAvoidanceGroupType::Player));
+	// MovementComp->AvoidanceConsiderationRadius = 500.0f;
+	// MovementComp->SetAvoidanceEnabled(true);
+	// MovementComp->SetRVOAvoidanceWeight(0.3f);
+	// MovementComp->SetAvoidanceGroup(static_cast<int32>(EAvoidanceGroupType::Zombie));
+	// MovementComp->SetGroupsToAvoid(static_cast<int32>(EAvoidanceGroupType::Zombie));
+	// MovementComp->SetGroupsToIgnore(static_cast<int32>(EAvoidanceGroupType::Player));
 
 	MovementComp->JumpZVelocity = 0.0f;
 }
@@ -218,13 +230,6 @@ void ACharacterZombie::SetIsAttacking(const bool bInIsAttacking)
 	if (!HasAuthority()) return;
 	
 	bIsAttacking = bInIsAttacking;
-}
-
-void ACharacterZombie::SetIsAlert(const bool bInIsAlert)
-{
-	if (!HasAuthority()) return;
-	
-	bIsAlert = bInIsAlert;
 }
 
 void ACharacterZombie::ApplyZombieData()

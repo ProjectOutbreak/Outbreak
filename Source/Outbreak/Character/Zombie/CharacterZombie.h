@@ -41,8 +41,6 @@ protected:
 	
 	UPROPERTY(Replicated)
 	bool bIsAttacking = false;
-	UPROPERTY(Replicated)
-	bool bIsAlert = false;
 	// ~ End Replicated Variables
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Combat")
@@ -86,7 +84,6 @@ public:
 	virtual FZombieData* GetZombieData() override { return &ZombieData; }
 	virtual bool IsAttacking() const override { return bIsAttacking; }
 	virtual void SetIsAttacking(const bool bInIsAttacking) override;
-	virtual void SetIsAlert(const bool bInIsAlert) override;
 	virtual ACharacter* GetCharacter() override { return this; } // TODO : 임시 좀비 인터페이스 삭제 해야 함
 	// ~ End Getter & Setter
 	
