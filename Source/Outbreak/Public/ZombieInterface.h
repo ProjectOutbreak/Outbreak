@@ -25,7 +25,6 @@ public:
 	
 	virtual FZombieData* GetZombieData() = 0;
 	virtual void SetIsAttacking(const bool bInIsAttacking) = 0;
-	virtual void SetIsAlert(const bool bInIsAlert) = 0;
 	virtual ACharacter* GetCharacter() = 0;
 	virtual bool IsAttacking() const = 0;
 	virtual void SetEnableAttackCollision(const bool bEnable) = 0;

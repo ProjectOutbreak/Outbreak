@@ -29,6 +29,16 @@ AZombieAIComponent::AZombieAIComponent()
 	AIPerception->SetDominantSense(SightConfig->GetSenseImplementation());
 }
 
+void AZombieAIComponent::StartStateMachineLogic() const
+{
+	StateMachine->StartLogic();
+}
+
+void AZombieAIComponent::StopStateMachineLogic() const
+{
+	StateMachine->StopLogic();
+}
+
 void AZombieAIComponent::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
@@ -41,6 +51,9 @@ void AZombieAIComponent::PostInitializeComponents()
 void AZombieAIComponent::BeginPlay()
 {
 	Super::BeginPlay();
+
+	SetActorTickInterval(FMath::FRandRange(0.3f, 0.6f));
+	AIPerception->SetComponentTickInterval(FMath::FRandRange(0.3f, 0.6f));
 
 	AIPerception->OnTargetPerceptionUpdated.AddDynamic(this, &AZombieAIComponent::OnTargetPerceptionUpdated);
 }
@@ -117,7 +130,7 @@ void AZombieAIComponent::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus St
 	}
 }
 
-void AZombieAIComponent::SetupAIPerception()
+void AZombieAIComponent::SetupAIPerception() const
 {
 	if (!SightConfig || !GetPawn())
 	{
@@ -134,11 +147,14 @@ void AZombieAIComponent::SetupAIPerception()
 		Data = OwnerZombieEntity->GetZombieData();
 	}
 	
-	SightConfig->SightRadius = Data->SightRadius;
-	SightConfig->LoseSightRadius = Data->LoseSightRadius;
-	SightConfig->PeripheralVisionAngleDegrees = Data->PeripheralVisionAngleDegrees;
+	// SightConfig->SightRadius = Data->SightRadius;
+	// SightConfig->LoseSightRadius = Data->LoseSightRadius;
+	// SightConfig->PeripheralVisionAngleDegrees = Data->PeripheralVisionAngleDegrees;
+	SightConfig->SightRadius = 2000.0f;
+	SightConfig->LoseSightRadius = 3000.0f;
+	SightConfig->PeripheralVisionAngleDegrees = 180.0f;
 	SightConfig->AutoSuccessRangeFromLastSeenLocation = 1000.0f;
-	SightConfig->SetMaxAge(10.0f);
+	SightConfig->SetMaxAge(5.0f);
 
 	AIPerception->ConfigureSense(*SightConfig);
 }
@@ -195,7 +211,8 @@ void AZombieAIComponent::HandleTargetDeath(AActor* DeadActor)
 			DeadPlayer->OnCharacterDeathDelegate.RemoveDynamic(this, &AZombieAIComponent::HandleTargetDeath);
 		}
 		FTimerHandle TempHandle;
-		GetWorld()->GetTimerManager().SetTimer(TempHandle, this, &AZombieAIComponent::FindNewTarget, 0.1f, false);	} 
+		GetWorld()->GetTimerManager().SetTimer(TempHandle, this, &AZombieAIComponent::FindNewTarget, 0.1f, false);
+	} 
 }
 
 void AZombieAIComponent::FindNewTarget()
@@ -208,16 +225,19 @@ void AZombieAIComponent::FindNewTarget()
 
 	for (AActor* Actor : PerceivedActors)
 	{
-		ACharacterPlayer* Player = Cast<ACharacterPlayer>(Actor);
-		if (Player && !Player->IsDead())
+		if (ACharacterPlayer* Player = Cast<ACharacterPlayer>(Actor))
 		{
-			float Distance = FVector::Dist(GetPawn()->GetActorLocation(), Player->GetActorLocation());
-			if (Distance < MinDistance)
+			if (!Player->IsDead())
 			{
-				MinDistance = Distance;
-				BestTarget = Player;
+				float Distance = FVector::Dist(GetPawn()->GetActorLocation(), Player->GetActorLocation());
+				if (Distance < MinDistance)
+				{
+					MinDistance = Distance;
+					BestTarget = Player;
+				}
 			}
 		}
+			
 	}
 
 	if (BestTarget)

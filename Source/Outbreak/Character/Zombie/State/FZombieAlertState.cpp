@@ -1,5 +1,5 @@
 ﻿#include "FZombieAlertState.h"
-#include "Outbreak/Animation/ZombieAnimInstance.h"
+#include "Animation/ZombieAnimInstance.h"
 #include "Outbreak/Character/Zombie/CharacterZombie.h"
 
 FZombieAlertState::FZombieAlertState(const TSharedPtr<TStateMachine<EZombieStateType>>& InFsm, ACharacter* InOwner)
@@ -10,8 +10,6 @@ void FZombieAlertState::Enter(const EZombieStateType PreviousState)
 	Super::Enter(PreviousState);
 
 	if (!OwnerCharacter->HasAuthority()) return;
-	
-	Owner->SetIsAlert(true);
 	
 	if (UZombieAnimInstance* AnimInst = GetAnimInstance())
 	{
@@ -30,8 +28,6 @@ void FZombieAlertState::Execute(const EZombieStateType CurrentState, const float
 void FZombieAlertState::Exit(const EZombieStateType NextState)
 {
 	Super::Exit(NextState);
-	
-	Owner->SetIsAlert(false);
 }
 
 void FZombieAlertState::OnAlertMontageEnded(UAnimMontage* Montage, bool bInterrupted)

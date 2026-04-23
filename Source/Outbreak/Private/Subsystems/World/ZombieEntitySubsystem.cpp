@@ -1,12 +1,9 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "Subsystems/World/ZombieEntitySubsystem.h"
-
 #include "MassCommonFragments.h"
 #include "MassEntityConfigAsset.h"
 #include "MassEntitySubsystem.h"
-#include "MassExecutionContext.h"
 #include "MassSpawnerSubsystem.h"
 #include "Data/EntityDataTypes.h"
 #include "Data/GameData.h"
@@ -61,8 +58,6 @@ void UZombieEntitySubsystem::OnWorldBeginPlay(UWorld& InWorld)
 	{
 		StartSpawnManager();
 	}
-	
-	InWorld.GetTimerManager().SetTimer(TimerHandle_UpdateTargets, this, &ThisClass::UpdateTargetLocations, TargetUpdateInterval, true);
 }
 
 void UZombieEntitySubsystem::EnqueueSpawnRequest(const FEntitySpawnRequest& SpawnRequest)
@@ -246,19 +241,17 @@ void UZombieEntitySubsystem::ConfigureSpawnedEntities(const FEntitySpawnRequest&
 		}
 		
 	
+		FVector RandomRotation = FVector::ZeroVector;
+		RandomRotation.Z = FMath::FRandRange(0.f, 360.f);
 		if (FTransformFragment* TransformFragment = EntityManager->GetFragmentDataPtr<FTransformFragment>(Entity))
 		{
 			TransformFragment->GetMutableTransform().SetLocation(Position);
+			TransformFragment->GetMutableTransform().SetRotation(FQuat::MakeFromEuler(RandomRotation));
 		}
 		
 		if (FZombieWanderFragment* WanderFragment = EntityManager->GetFragmentDataPtr<FZombieWanderFragment>(Entity))
 		{
 			WanderFragment->Origin = Position;
-		}
-		
-		if (FZombieEntityFragment* EntityFragment = EntityManager->GetFragmentDataPtr<FZombieEntityFragment>(Entity))
-		{
-			EntityFragment->TimeToLive = Request.TimeToLive;
 		}
 		
 		const FZombieData* EntityData = UOutbreakStatics::GetZombieData(GetWorld(), EZombieSubType::Runner);
@@ -270,82 +263,9 @@ void UZombieEntitySubsystem::ConfigureSpawnedEntities(const FEntitySpawnRequest&
 		if (FZombieHealthFragment* HealthFragment = EntityManager->GetFragmentDataPtr<FZombieHealthFragment>(Entity))
 		{
 			HealthFragment->CurrentHealth = EntityData->MaxHealth;
-			HealthFragment->MaxHealth = EntityData->MaxHealth;
-			HealthFragment->bIsDead = false;
-		}
-		
-		if (FZombieStateFragment* StateFragment = EntityManager->GetFragmentDataPtr<FZombieStateFragment>(Entity))
-		{
-			StateFragment->CurrentState = EZombieStateType::Idle;
-			StateFragment->bIsAlert = false;
-		}
-		
-		if (FZombieCombatFragment* CombatFragment = EntityManager->GetFragmentDataPtr<FZombieCombatFragment>(Entity))
-		{
-			CombatFragment->AttackDamage = EntityData->AttackDamage;
-			CombatFragment->AttackRange = EntityData->AttackRange;
-			CombatFragment->AttackRate = EntityData->AttackRate;
-		}
-		
-		if (FZombieMovementFragment* MovementFragment = EntityManager->GetFragmentDataPtr<FZombieMovementFragment>(Entity))
-		{
-			MovementFragment->MaxWanderSpeed = EntityData->MaxWanderSpeed;
-			MovementFragment->MaxRunSpeed = EntityData->MaxRunSpeed;
-		}
-		
-		if (FZombiePerceptionFragment* PerceptionFragment = EntityManager->GetFragmentDataPtr<FZombiePerceptionFragment>(Entity))
-		{
-			PerceptionFragment->SightRadius = EntityData->SightRadius;
-			PerceptionFragment->LoseSightRadius = EntityData->LoseSightRadius;
-			PerceptionFragment->PeripheralVisionAngleDegrees = EntityData->PeripheralVisionAngleDegrees;
-		}
-		
-		if (FZombieChaseTargetFragment* TargetFragment = EntityManager->GetFragmentDataPtr<FZombieChaseTargetFragment>(Entity))
-		{
-			TargetFragment->TargetIndex = FMath::RandRange(0, 100);
 		}
 		
 		EntityIndex++;
 	}
 }
 
-void UZombieEntitySubsystem::UpdateTargetLocations()
-{
-	if (GetWorld()->GetNetMode() == NM_Client || !EntityManager)
-	{
-		return;
-	}
-	
-	TArray<AActor*> PlayerPawns;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APawn::StaticClass(), PlayerPawns);
-
-	TArray<FVector> ValidPlayerLocations;
-	for (AActor* Actor : PlayerPawns)
-	{
-		const APawn* P = Cast<APawn>(Actor);
-		if (P && P->IsPlayerControlled())
-		{
-			ValidPlayerLocations.Add(P->GetActorLocation());
-		}
-	}
-
-	if (ValidPlayerLocations.Num() == 0 )
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[%s] No valid player locations found for zombies to target."), CURRENT_CONTEXT);
-		return;
-	}
-
-	FMassEntityQuery SharedUpdateQuery;
-	SharedUpdateQuery.AddSharedRequirement<FZombieChaseTargetSharedFragment>(EMassFragmentAccess::ReadWrite);
-
-	FMassExecutionContext Context(*EntityManager);
-	SharedUpdateQuery.ForEachEntityChunk(*EntityManager, Context, [&ValidPlayerLocations](FMassExecutionContext& EC)
-	{
-		FZombieChaseTargetSharedFragment& SharedTarget = EC.GetMutableSharedFragment<FZombieChaseTargetSharedFragment>();
-		SharedTarget.TargetLocations = ValidPlayerLocations;
-		const FString DebugLocation = FString::JoinBy(ValidPlayerLocations, TEXT("; "), [](const FVector& Vec)
-		{
-			return Vec.ToCompactString();
-		});
-	});
-}
