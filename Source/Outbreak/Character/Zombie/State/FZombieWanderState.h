@@ -7,7 +7,7 @@ enum class EZombieStateType : uint8;
 class FZombieWanderState : public FZombieBaseState
 {
 public:
-	FZombieWanderState(const TSharedPtr<TStateMachine<EZombieStateType>>& InFsm, ACharacterZombie* InOwner);
+	FZombieWanderState(const TSharedPtr<TStateMachine<EZombieStateType>>& InFsm, ACharacter* InOwner);
 
 	virtual void Enter(EZombieStateType PreviousState) override;
 	virtual void Execute(EZombieStateType CurrentState, float DeltaTime) override;

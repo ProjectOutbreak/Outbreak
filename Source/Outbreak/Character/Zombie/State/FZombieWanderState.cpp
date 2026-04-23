@@ -6,15 +6,18 @@
 #include "Outbreak/Component/ZombieAIComponent.h"
 #include "Outbreak/Util/Define.h"
 
-FZombieWanderState::FZombieWanderState(const TSharedPtr<TStateMachine<EZombieStateType>>& InFsm, ACharacterZombie* InOwner): FZombieBaseState(InFsm, EZombieStateType::Wander, InOwner) { }
+FZombieWanderState::FZombieWanderState(const TSharedPtr<TStateMachine<EZombieStateType>>& InFsm, ACharacter* InOwner)
+: FZombieBaseState(InFsm, EZombieStateType::Wander, InOwner)
+{
+}
 
 void FZombieWanderState::Enter(const EZombieStateType PreviousState)
 {
 	Super::Enter(PreviousState);
 	
-	if (Owner && Owner->GetCharacterMovement())
+	if (OwnerCharacter && OwnerCharacter->GetCharacterMovement())
 	{
-		Owner->GetCharacterMovement()->MaxWalkSpeed = WanderSpeed;
+		OwnerCharacter->GetCharacterMovement()->MaxWalkSpeed = WanderSpeed;
 	}
 
 	WanderTimer = FMath::RandRange(MinWanderTime, MaxWanderTime);
@@ -60,11 +63,11 @@ void FZombieWanderState::StartWandering()
 
 bool FZombieWanderState::FindRandomWanderLocation(FVector& OutLocation)
 {
-	UNavigationSystemV1* NavSystem = UNavigationSystemV1::GetCurrent(Owner->GetWorld());
+	UNavigationSystemV1* NavSystem = UNavigationSystemV1::GetCurrent(OwnerCharacter->GetWorld());
 	if (!NavSystem)
 		return false;
     
-	FVector OriginPosition = Owner->GetActorLocation();
+	FVector OriginPosition = OwnerCharacter->GetActorLocation();
     
 	FNavLocation RandomPoint;
 	bool bFound = NavSystem->GetRandomReachablePointInRadius(OriginPosition, WanderRadius, RandomPoint);

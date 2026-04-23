@@ -26,6 +26,7 @@ public:
 	static const UOutbreakDeveloperSettings* Get();
 	
 public:
+	
 	UPROPERTY(Config, NoClear, EditAnywhere, BlueprintReadOnly, Category = "System Settings")
 	bool bAutoActivateSpawnManager;
 	
@@ -43,5 +44,21 @@ public:
 	
 	UPROPERTY(Config, NoClear, EditAnywhere, BlueprintReadOnly, Category = "System Settings", meta = (ClampMin = "0"))
 	int32 InitialEntityCount;
+	
+public:
+	
+	UPROPERTY(Config, NoClear, EditAnywhere, BlueprintReadOnly, Category = "System Settings")
+	TSoftObjectPtr<UDataTable> ZombieDataTable;
+	
+public:
+	
+	UPROPERTY(Config, NoClear, EditAnywhere, BlueprintReadOnly, Category = "Game Balance", meta = (ClampMin = "0"))
+	float HeadDamageMultiplier;
+	
+	UPROPERTY(Config, NoClear, EditAnywhere, BlueprintReadOnly, Category = "Game Balance", meta = (ClampMin = "0"))
+	float BodyDamageMultiplier;
+	
+	UPROPERTY(Config, NoClear, EditAnywhere, BlueprintReadOnly, Category = "Game Balance", meta = (ClampMin = "0"))
+	float LimbDamageMultiplier;
 	
 };

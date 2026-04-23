@@ -47,9 +47,6 @@ private:
 	TObjectPtr<ACharacterPlayer> CurrentTargetPlayer;
 	
 	UPROPERTY()
-	TObjectPtr<class ACharacterZombie> OwnerZombie;
-	
-	UPROPERTY()
 	TObjectPtr<UAIPerceptionComponent> AIPerception;
 	
 	UPROPERTY()

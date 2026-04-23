@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ZombieInterface.h"
 #include "Outbreak/Character/CharacterBase.h"
 #include "Outbreak/Data/GameData.h"
 #include "CharacterZombie.generated.h"
@@ -14,15 +15,15 @@ class AZombieAIComponent;
 class USoundCue;
 
 UCLASS()
-class OUTBREAK_API ACharacterZombie : public ACharacterBase
+class OUTBREAK_API ACharacterZombie : public ACharacterBase, public IZombieInterface
 {
 	GENERATED_BODY()
 
 public:
 	/** Default constructor */
 	ACharacterZombie();
-	
-	void SetEnableAttackCollision(const bool bEnable);
+
+	virtual void SetEnableAttackCollision(const bool bEnable) override;
 
 protected:
 	UFUNCTION()
@@ -82,10 +83,11 @@ public:
 	// ~ End APawn Interface
 	
 	// ~ Begin Getter & Setter
-	FORCEINLINE FZombieData* GetZombieData() { return &ZombieData; }
-	FORCEINLINE bool IsAttacking() const { return bIsAttacking; }
-	void SetIsAttacking(const bool bInIsAttacking);
-	void SetIsAlert(const bool bInIsAlert);
+	virtual FZombieData* GetZombieData() override { return &ZombieData; }
+	virtual bool IsAttacking() const override { return bIsAttacking; }
+	virtual void SetIsAttacking(const bool bInIsAttacking) override;
+	virtual void SetIsAlert(const bool bInIsAlert) override;
+	virtual ACharacter* GetCharacter() override { return this; } // TODO : 임시 좀비 인터페이스 삭제 해야 함
 	// ~ End Getter & Setter
 	
 };

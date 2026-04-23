@@ -4,10 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "MassEntityTraitBase.h"
-#include "ZombieTrait.generated.h"
+#include "ZombieChaseTrait.generated.h"
 
 UCLASS()
-class OUTBREAK_API UZombieTrait : public UMassEntityTraitBase
+class OUTBREAK_API UZombieChaseTrait : public UMassEntityTraitBase
 {
 	GENERATED_BODY()
 	

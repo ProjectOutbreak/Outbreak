@@ -1,6 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "ZombieAIComponent.h"
+
+#include "MassEntity/ZombieEntityBase.h"
 #include "Net/UnrealNetwork.h"
 #include "Outbreak/Character/Zombie/CharacterZombie.h"
 #include "Outbreak/Character/Zombie/State/FZombieAlertState.h"
@@ -46,13 +48,23 @@ void AZombieAIComponent::BeginPlay()
 void AZombieAIComponent::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
-
-	OwnerZombie = Cast<ACharacterZombie>(InPawn);
+	
+	if (InPawn != nullptr && !IsValid(InPawn))
+	{
+		return;
+	}
+	
+	if (ACharacterZombie* OwnerZombie = Cast<ACharacterZombie>(InPawn))
+	{
+		OwnerZombie->OnCharacterDeathDelegate.AddDynamic(this, &AZombieAIComponent::HandleOwnerDeath);
+	}
+	else if (AZombieEntityBase* OwnerZombieEntity = Cast<AZombieEntityBase>(InPawn))
+	{
+		OwnerZombieEntity->OnCharacterDeathDelegate.AddDynamic(this, &AZombieAIComponent::HandleOwnerDeath);
+	}
 	
 	SetupAIPerception();
 	SetupStateMachine();
-	
-	OwnerZombie->OnCharacterDeathDelegate.AddDynamic(this, &AZombieAIComponent::HandleOwnerDeath);
 }
 
 void AZombieAIComponent::Tick(float DeltaTime)
@@ -76,9 +88,10 @@ void AZombieAIComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
 
 void AZombieAIComponent::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 {
-	if (!HasAuthority()) return;
-
-	if (CurrentTargetPlayer) return;
+	if (!HasAuthority() || CurrentTargetPlayer)
+	{
+		return;
+	}
 	
 	if (Stimulus.WasSuccessfullySensed())
 	{
@@ -106,9 +119,21 @@ void AZombieAIComponent::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus St
 
 void AZombieAIComponent::SetupAIPerception()
 {
-	if (!OwnerZombie || !SightConfig) return;
+	if (!SightConfig || !GetPawn())
+	{
+		return;
+	}
 	
-	const auto* Data = OwnerZombie->GetZombieData();
+	FZombieData* Data = nullptr;
+	if (ACharacterZombie* OwnerZombie = GetPawn<ACharacterZombie>())
+	{
+		Data = OwnerZombie->GetZombieData();
+	}
+	else if (AZombieEntityBase* OwnerZombieEntity = GetPawn<AZombieEntityBase>())
+	{
+		Data = OwnerZombieEntity->GetZombieData();
+	}
+	
 	SightConfig->SightRadius = Data->SightRadius;
 	SightConfig->LoseSightRadius = Data->LoseSightRadius;
 	SightConfig->PeripheralVisionAngleDegrees = Data->PeripheralVisionAngleDegrees;
@@ -120,17 +145,30 @@ void AZombieAIComponent::SetupAIPerception()
 
 void AZombieAIComponent::SetupStateMachine()
 {
-	if (!OwnerZombie) return;
-	
-	StateMachine = MakeShared<FZombieStateMachine>();
-	StateMachine->AddState(EZombieStateType::Idle, MakeShared<FZombieIdleState>(StateMachine, OwnerZombie));
-	StateMachine->AddState(EZombieStateType::Wander, MakeShared<FZombieWanderState>(StateMachine, OwnerZombie));
-	StateMachine->AddState(EZombieStateType::Alert, MakeShared<FZombieAlertState>(StateMachine, OwnerZombie));
-	StateMachine->AddState(EZombieStateType::Chase, MakeShared<FZombieChaseState>(StateMachine, OwnerZombie));
-	StateMachine->AddState(EZombieStateType::Attack, MakeShared<FZombieAttackState>(StateMachine, OwnerZombie));
-	StateMachine->AddState(EZombieStateType::Die, MakeShared<FZombieDieState>(StateMachine, OwnerZombie));
-	
-	StateMachine->ChangeState(EZombieStateType::Idle);
+	if (ACharacterZombie* OwnerZombie = Cast<ACharacterZombie>(GetPawn()))
+	{
+		StateMachine = MakeShared<FZombieStateMachine>();
+		StateMachine->AddState(EZombieStateType::Idle, MakeShared<FZombieIdleState>(StateMachine, OwnerZombie));
+		StateMachine->AddState(EZombieStateType::Wander, MakeShared<FZombieWanderState>(StateMachine, OwnerZombie));
+		StateMachine->AddState(EZombieStateType::Alert, MakeShared<FZombieAlertState>(StateMachine, OwnerZombie));
+		StateMachine->AddState(EZombieStateType::Chase, MakeShared<FZombieChaseState>(StateMachine, OwnerZombie));
+		StateMachine->AddState(EZombieStateType::Attack, MakeShared<FZombieAttackState>(StateMachine, OwnerZombie));
+		StateMachine->AddState(EZombieStateType::Die, MakeShared<FZombieDieState>(StateMachine, OwnerZombie));
+		
+		StateMachine->ChangeState(EZombieStateType::Idle);
+	}
+	else if (AZombieEntityBase* OwnerZombieEntity = Cast<AZombieEntityBase>(GetPawn()))
+	{
+		StateMachine = MakeShared<FZombieStateMachine>();
+		StateMachine->AddState(EZombieStateType::Idle, MakeShared<FZombieIdleState>(StateMachine, OwnerZombieEntity));
+		StateMachine->AddState(EZombieStateType::Wander, MakeShared<FZombieWanderState>(StateMachine, OwnerZombieEntity));
+		StateMachine->AddState(EZombieStateType::Alert, MakeShared<FZombieAlertState>(StateMachine, OwnerZombieEntity));
+		StateMachine->AddState(EZombieStateType::Chase, MakeShared<FZombieChaseState>(StateMachine, OwnerZombieEntity));
+		StateMachine->AddState(EZombieStateType::Attack, MakeShared<FZombieAttackState>(StateMachine, OwnerZombieEntity));
+		StateMachine->AddState(EZombieStateType::Die, MakeShared<FZombieDieState>(StateMachine, OwnerZombieEntity));
+		
+		StateMachine->ChangeState(EZombieStateType::Idle);
+	}
 }
 
 void AZombieAIComponent::HandleOwnerDeath(AActor* DeadActor)
@@ -173,7 +211,7 @@ void AZombieAIComponent::FindNewTarget()
 		ACharacterPlayer* Player = Cast<ACharacterPlayer>(Actor);
 		if (Player && !Player->IsDead())
 		{
-			float Distance = FVector::Dist(OwnerZombie->GetActorLocation(), Player->GetActorLocation());
+			float Distance = FVector::Dist(GetPawn()->GetActorLocation(), Player->GetActorLocation());
 			if (Distance < MinDistance)
 			{
 				MinDistance = Distance;

@@ -2,13 +2,14 @@
 #include "Outbreak/Animation/ZombieAnimInstance.h"
 #include "Outbreak/Character/Zombie/CharacterZombie.h"
 
-FZombieAlertState::FZombieAlertState(const TSharedPtr<TStateMachine<EZombieStateType>>& InFsm, ACharacterZombie* InOwner) : FZombieBaseState(InFsm, EZombieStateType::Alert, InOwner) { }
+FZombieAlertState::FZombieAlertState(const TSharedPtr<TStateMachine<EZombieStateType>>& InFsm, ACharacter* InOwner)
+	: FZombieBaseState(InFsm, EZombieStateType::Alert, InOwner) { }
 
 void FZombieAlertState::Enter(const EZombieStateType PreviousState)
 {
 	Super::Enter(PreviousState);
 
-	if (!Owner->HasAuthority()) return;
+	if (!OwnerCharacter->HasAuthority()) return;
 	
 	Owner->SetIsAlert(true);
 	

@@ -1,4 +1,6 @@
 ﻿#include "FZombieStateMachine.h"
+
+#include "Util/EnumHelper.h"
 #include "Utilities/DebugHelper.h"
 
 void FZombieStateMachine::ChangeState(const EZombieStateType Key)

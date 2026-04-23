@@ -9,6 +9,7 @@ UENUM()
 enum class EEntityType : uint8
 {
 	Entity,
+	Zombie,
 };
 
 USTRUCT()

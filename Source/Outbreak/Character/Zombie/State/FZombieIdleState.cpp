@@ -2,13 +2,17 @@
 #include "Outbreak/Character/Zombie/CharacterZombie.h"
 #include "Outbreak/Component/ZombieAIComponent.h"
 
-FZombieIdleState::FZombieIdleState(const TSharedPtr<TStateMachine<EZombieStateType>>& InFsm, ACharacterZombie* InOwner): FZombieBaseState(InFsm, EZombieStateType::Idle, InOwner) { }
+FZombieIdleState::FZombieIdleState(const TSharedPtr<TStateMachine<EZombieStateType>>& InFsm, ACharacter* InOwner)
+: FZombieBaseState(InFsm, EZombieStateType::Idle, InOwner)
+{
+	
+}
 
 void FZombieIdleState::Enter(const EZombieStateType PreviousState)
 {
 	Super::Enter(PreviousState);
 	
-	Owner->GetController()->StopMovement();
+	OwnerCharacter->GetController()->StopMovement();
 
 	IdleTime = FMath::RandRange(MinIdleTime, MaxIdleTime);
 	IdleTimer = 0.0f;

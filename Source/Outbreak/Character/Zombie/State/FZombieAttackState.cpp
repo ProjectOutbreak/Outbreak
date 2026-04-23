@@ -1,13 +1,16 @@
 ﻿#include "FZombieAttackState.h"
 #include "Outbreak/Character/Zombie/CharacterZombie.h"
 
-FZombieAttackState::FZombieAttackState(const TSharedPtr<TStateMachine<EZombieStateType>>& InFsm, ACharacterZombie* InOwner): FZombieBaseState(InFsm, EZombieStateType::Attack, InOwner) { }
+FZombieAttackState::FZombieAttackState(const TSharedPtr<TStateMachine<EZombieStateType>>& InFsm, ACharacter* InOwner)
+	: FZombieBaseState(InFsm, EZombieStateType::Attack, InOwner)
+{
+}
 
 void FZombieAttackState::Enter(const EZombieStateType PreviousState)
 {
 	Super::Enter(PreviousState);
 
-	if (!Owner->HasAuthority()) return;
+	if (!OwnerCharacter->HasAuthority()) return;
 	
 	Owner->SetIsAttacking(true);
 }
@@ -36,7 +39,7 @@ bool FZombieAttackState::IsOutOfAttackRange()
 	
 	const FZombieData* ZombieData = Owner->GetZombieData();
 	const float AttackRange = ZombieData->AttackRange;
-	const float DistanceToTarget = FVector::Dist(Owner->GetActorLocation(), CurrentTarget->GetActorLocation());
+	const float DistanceToTarget = FVector::Dist(OwnerCharacter->GetActorLocation(), CurrentTarget->GetActorLocation());
 	
 	if (DistanceToTarget > AttackRange) return true;
 	

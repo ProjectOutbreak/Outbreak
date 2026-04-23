@@ -31,8 +31,6 @@ ACharacterPlayer::ACharacterPlayer()
 	PostProcessComponent->SetupAttachment(RootComponent);
 	PostProcessComponent->bEnabled = true;
 	
-	CharacterType = ECharacterType::Player;
-
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
 
