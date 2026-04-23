@@ -75,7 +75,7 @@ void ULobbyWidget::NativeConstruct()
 		{
 			if (Text_LobbyCode)
 			{
-				const FString Prefix = TEXT("입장 코드 : ");
+				const FString Prefix = TEXT("Entrance Code : ");
 				FString OutCode;
 				Setting->Data.GetValue(OutCode);
 				Text_LobbyCode->SetText(FText::FromString(Prefix + OutCode));
