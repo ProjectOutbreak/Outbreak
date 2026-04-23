@@ -23,6 +23,7 @@ public:
 	
 	void OnPlayerDie(ACharacter* DeadCharacter, AController* Controller);
 	void ProceedToNextLevel() const;
+	void GameCleared();
 	void GameOver();
 	bool IsGameOver() const;
 
