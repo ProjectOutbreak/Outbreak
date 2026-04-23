@@ -3,6 +3,8 @@
 
 #include "Data/OutbreakDeveloperSettings.h"
 
+#include "Util/Define.h"
+
 UOutbreakDeveloperSettings::UOutbreakDeveloperSettings()
 	: bAutoActivateSpawnManager(true),
 	bAutoActivateEntitySpawn(true),
@@ -11,7 +13,9 @@ UOutbreakDeveloperSettings::UOutbreakDeveloperSettings()
 	InitialEntityCount(100),
 	HeadDamageMultiplier(3.0f),
 	BodyDamageMultiplier(1.0f),
-	LimbDamageMultiplier(0.7f)
+	LimbDamageMultiplier(0.7f),
+	ZombieDataTable(nullptr),
+	DefaultTimePreset(ETimePreset::Noon)
 {
 }
 

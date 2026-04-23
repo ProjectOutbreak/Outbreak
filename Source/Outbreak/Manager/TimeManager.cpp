@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "TimeManager.h"
+#include "Data/OutbreakDeveloperSettings.h"
 #include "Outbreak/Game/Framework/OutBreakGameInstance.h"
 
 ATimeManager::ATimeManager()
@@ -13,10 +13,10 @@ ATimeManager::ATimeManager()
 void ATimeManager::BeginPlay()
 {
 	Super::BeginPlay();
-
-	if (const UOutbreakGameInstance* GI = GetWorld() ? GetWorld()->GetGameInstance<UOutbreakGameInstance>() : nullptr)
+	
+	if (const UOutbreakDeveloperSettings* DevSettings = UOutbreakDeveloperSettings::Get())
 	{
-		ApplyTimePreset(GI->GetSelectedTimePreset());
+		ApplyTimePreset(DevSettings->DefaultTimePreset);
 	}
 	else if (bUseRealWorldTime)
 	{

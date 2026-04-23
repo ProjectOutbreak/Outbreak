@@ -6,6 +6,7 @@
 #include "EnvironmentQuery/EnvQuery.h"
 #include "OutbreakDeveloperSettings.generated.h"
 
+enum class ETimePreset : uint8;
 class UMassEntityConfigAsset;
 /**
  * 
@@ -60,5 +61,10 @@ public:
 	
 	UPROPERTY(Config, NoClear, EditAnywhere, BlueprintReadOnly, Category = "Game Balance", meta = (ClampMin = "0"))
 	float LimbDamageMultiplier;
+	
+public:
+	
+	UPROPERTY(Config, NoClear, EditAnywhere, BlueprintReadOnly, Category = "Time")
+	ETimePreset DefaultTimePreset;
 	
 };

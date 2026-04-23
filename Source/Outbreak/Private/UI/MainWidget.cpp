@@ -267,5 +267,5 @@ void UMainWidget::OnClickJoinGameButton()
 
 void UMainWidget::OnClickSinglePlayButton()
 {
-	// TODO : Single Play 구현
+	UGameplayStatics::OpenLevel(GetWorld(), "L_FirstPhase_edit");
 }
