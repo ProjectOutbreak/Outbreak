@@ -42,59 +42,59 @@ public:
 	void RefreshPlayerList();
 	void UpdateMemberHealth(APlayerState* TargetPS, float NewHealthRatio);
 protected:
-	UPROPERTY(meta = (BindWidget))
+	UPROPERTY(meta = (BindWidgetOptional))
 	UImage* MiniMapImage;
 
-	UPROPERTY(meta = (BindWidget))
+	UPROPERTY(meta = (BindWidgetOptional))
 	UImage* AimImage;
 
-	UPROPERTY(meta = (BindWidget))
+	UPROPERTY(meta = (BindWidgetOptional))
 	UImage* HealthBar;
 	
-	UPROPERTY(meta = (BindWidget))
+	UPROPERTY(meta = (BindWidgetOptional))
 	UTextBlock* MatchTimeTextBlock;
 
-	UPROPERTY(meta = (BindWidget))
+	UPROPERTY(meta = (BindWidgetOptional))
 	UTextBlock* AnnouncementTextBlock;
 
-	UPROPERTY(meta = (BindWidget))
+	UPROPERTY(meta = (BindWidgetOptional))
 	UTextBlock* CurrentHealthTextBlock;
 
-	UPROPERTY(meta = (BindWidget))
+	UPROPERTY(meta = (BindWidgetOptional))
 	UOBCrouchDisplay* CrouchDisplay;
 
-	UPROPERTY(meta = (BindWidget))
+	UPROPERTY(meta = (BindWidgetOptional))
 	UWeaponContainer* WeaponHUD;
 
-	UPROPERTY(meta = (BindWidget))
+	UPROPERTY(meta = (BindWidgetOptional))
 	UBottomInv* BottomInv;
 
 	// //--------Graphics--------//
-	UPROPERTY(meta = (BindWidget))
+	UPROPERTY(meta = (BindWidgetOptional))
 	UWidgetSwitcher* WSMain = nullptr;
-	UPROPERTY(meta = (BindWidget))
+	UPROPERTY(meta = (BindWidgetOptional))
 	UButton* BtnLow;
-	UPROPERTY(meta = (BindWidget))
+	UPROPERTY(meta = (BindWidgetOptional))
 	UButton* BtnMedium;
-	UPROPERTY(meta = (BindWidget))
+	UPROPERTY(meta = (BindWidgetOptional))
 	UButton* BtnHigh;
 
-	UPROPERTY(meta = (BindWidget)) UComboBoxString* CBViewDistance;
-	UPROPERTY(meta = (BindWidget)) UComboBoxString* CBAntiAliasing;
-	UPROPERTY(meta = (BindWidget)) UComboBoxString* CBPostProcess;
-	UPROPERTY(meta = (BindWidget)) UComboBoxString* CBShadows;
-	UPROPERTY(meta = (BindWidget)) UComboBoxString* CBGlobalIllumination;
-	UPROPERTY(meta = (BindWidget)) UComboBoxString* CBReflections;
-	UPROPERTY(meta = (BindWidget)) UComboBoxString* CBTextures;
-	UPROPERTY(meta = (BindWidget)) UComboBoxString* CBEffects;
-	UPROPERTY(meta = (BindWidget)) UComboBoxString* CBFoliage;
-	UPROPERTY(meta = (BindWidget)) UComboBoxString* CBShading;
+	UPROPERTY(meta = (BindWidgetOptional)) UComboBoxString* CBViewDistance;
+	UPROPERTY(meta = (BindWidgetOptional)) UComboBoxString* CBAntiAliasing;
+	UPROPERTY(meta = (BindWidgetOptional)) UComboBoxString* CBPostProcess;
+	UPROPERTY(meta = (BindWidgetOptional)) UComboBoxString* CBShadows;
+	UPROPERTY(meta = (BindWidgetOptional)) UComboBoxString* CBGlobalIllumination;
+	UPROPERTY(meta = (BindWidgetOptional)) UComboBoxString* CBReflections;
+	UPROPERTY(meta = (BindWidgetOptional)) UComboBoxString* CBTextures;
+	UPROPERTY(meta = (BindWidgetOptional)) UComboBoxString* CBEffects;
+	UPROPERTY(meta = (BindWidgetOptional)) UComboBoxString* CBFoliage;
+	UPROPERTY(meta = (BindWidgetOptional)) UComboBoxString* CBShading;
 
-	UPROPERTY(meta = (BindWidget)) UButton* BtnResume;
-	UPROPERTY(meta = (BindWidget)) UButton* BtnGraphics;
-	UPROPERTY(meta = (BindWidget)) UButton* BtnBack;
-	UPROPERTY(meta = (BindWidget)) UButton* BtnApply;
-	UPROPERTY(meta = (BindWidget)) UButton* BtnQuit;
+	UPROPERTY(meta = (BindWidgetOptional)) UButton* BtnResume;
+	UPROPERTY(meta = (BindWidgetOptional)) UButton* BtnGraphics;
+	UPROPERTY(meta = (BindWidgetOptional)) UButton* BtnBack;
+	UPROPERTY(meta = (BindWidgetOptional)) UButton* BtnApply;
+	UPROPERTY(meta = (BindWidgetOptional)) UButton* BtnQuit;
 	
 	UPROPERTY(Transient) int32 PendingViewDistance = 1;
 	UPROPERTY(Transient) int32 PendingAntiAliasing = 1;
@@ -108,7 +108,7 @@ protected:
 	UPROPERTY(Transient) int32 PendingShading = 1;
 	
 	// Status Container
-	UPROPERTY(meta = (BindWidget)) 
+	UPROPERTY(meta = (BindWidgetOptional)) 
 	UCoPlayerStatusContainer* PlayerStatusContainer;
 	FTimerHandle InitRetryTimer;
 public:	
