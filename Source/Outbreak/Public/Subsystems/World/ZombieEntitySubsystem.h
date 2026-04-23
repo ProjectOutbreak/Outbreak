@@ -58,11 +58,6 @@ protected:
 	
 private:
 	
-	void UpdateTargetLocations();
-	
-	const float TargetUpdateInterval = 1.0f;
-	
-	FTimerHandle TimerHandle_UpdateTargets;
 	FTimerHandle TimerHandle_Spawn;
 	FMassEntityManager* EntityManager;
 	FMassEntityTemplate EntityTemplate;

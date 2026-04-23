@@ -1,8 +1,6 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "MassEntity/ZombieWanderProcessor.h"
-
 #include "MassCommonFragments.h"
 #include "MassLODFragments.h"
 #include "NavigationSystem.h"
@@ -28,10 +26,10 @@ void UZombieWanderProcessor::ConfigureQueries()
 
 void UZombieWanderProcessor::Execute(FMassEntityManager& EntityManager, FMassExecutionContext& Context)
 {
-	EntityQuery.ForEachEntityChunk(EntityManager, Context, [](FMassExecutionContext& Ctx)
+	EntityQuery.ForEachEntityChunk(EntityManager, Context, [this](FMassExecutionContext& Ctx)
 	{
 		const auto Transforms = Ctx.GetMutableFragmentView<FTransformFragment>();
-		const auto Wanders    = Ctx.GetMutableFragmentView<FZombieWanderFragment>();
+		const auto Wanders = Ctx.GetMutableFragmentView<FZombieWanderFragment>();
 
 		for (int32 i = 0; i < Ctx.GetNumEntities(); ++i)
 		{
@@ -44,7 +42,7 @@ void UZombieWanderProcessor::Execute(FMassEntityManager& EntityManager, FMassExe
 			{
 				if (Wander.TimeUntilNewTarget <= 0.f)
 				{
-					Wander.TimeUntilNewTarget = FMath::FRandRange(3.f, 6.f);
+					Wander.TimeUntilNewTarget = FMath::FRandRange(3.f, 15.f);
 
 					FNavLocation NavResult;
 					if (NavSystem->GetRandomReachablePointInRadius(Wander.Origin, Wander.Radius, NavResult))
@@ -61,16 +59,19 @@ void UZombieWanderProcessor::Execute(FMassEntityManager& EntityManager, FMassExe
 				0.f
 			);
 
-			const float DistSq   = Delta2D.SizeSquared();
+			const float DistSq = Delta2D.SizeSquared();
 			const float StepSize = Wander.Speed * Ctx.GetDeltaTimeSeconds();
-			if (DistSq < FMath::Square(StepSize)) continue;
+			if (DistSq < FMath::Square(StepSize))
+			{
+				continue;
+			}
 
-			const float   InvDist = FMath::InvSqrt(DistSq);
-			const FVector Dir     = Delta2D * InvDist;
+			const float InvDist = FMath::InvSqrt(DistSq);
+			const FVector Direction = Delta2D * InvDist;
 
-			FVector NewLocation = CurrentLocation + Dir * StepSize;
+			FVector NewLocation = CurrentLocation + Direction * StepSize;
 			Transform.SetLocation(NewLocation);
-			Transform.SetRotation(Dir.ToOrientationQuat());
+			Transform.SetRotation(Direction.ToOrientationQuat());
 		}
 	});
 }

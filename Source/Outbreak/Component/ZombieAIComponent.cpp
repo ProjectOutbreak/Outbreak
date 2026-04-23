@@ -29,6 +29,16 @@ AZombieAIComponent::AZombieAIComponent()
 	AIPerception->SetDominantSense(SightConfig->GetSenseImplementation());
 }
 
+void AZombieAIComponent::StartStateMachineLogic() const
+{
+	StateMachine->StartLogic();
+}
+
+void AZombieAIComponent::StopStateMachineLogic() const
+{
+	StateMachine->StopLogic();
+}
+
 void AZombieAIComponent::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
@@ -117,7 +127,7 @@ void AZombieAIComponent::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus St
 	}
 }
 
-void AZombieAIComponent::SetupAIPerception()
+void AZombieAIComponent::SetupAIPerception() const
 {
 	if (!SightConfig || !GetPawn())
 	{

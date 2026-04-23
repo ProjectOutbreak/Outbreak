@@ -24,7 +24,10 @@ public:
 
 	virtual void ChangeState(T Key)
 	{ 
-		if (CurrentKey == Key) return;
+		if (CurrentKey == Key)
+		{
+			return;
+		}
 		
 		if (!StateMap.Contains(Key))
 		{
@@ -51,7 +54,10 @@ public:
 
 	virtual void Execute(float DeltaTime)
 	{
-		CurrentState->Execute(CurrentKey, DeltaTime);
+		if (bIsLogicRunning && CurrentState.IsValid())
+		{
+			CurrentState->Execute(CurrentKey, DeltaTime);
+		}
 	}
 
 	virtual T GetCurrentState() const
@@ -76,6 +82,16 @@ public:
 	{
 		return CurrentKey == Key;
 	}
+	
+	virtual void StartLogic()
+	{
+		bIsLogicRunning = true;
+	}
+	
+	virtual void StopLogic()
+	{
+		bIsLogicRunning = false;
+	}
 
 private:
 	TMap<T, TSharedPtr<TState<T>>> StateMap;
@@ -83,4 +99,5 @@ private:
 	T PreviousKey;
 	TSharedPtr<TState<T>> CurrentState;
 	TSharedPtr<TState<T>> PreviousState;
+	bool bIsLogicRunning = false;
 };

@@ -19,16 +19,17 @@ class OUTBREAK_API AZombieAIComponent : public AAIController
 	GENERATED_BODY()
 
 public:
+	
+	/** Default constructor */
 	AZombieAIComponent();
-	virtual void PostInitializeComponents() override;
-	virtual void OnPossess(APawn* InPawn) override;
-	virtual void BeginPlay() override;
-	virtual void Tick(float DeltaTime) override;
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	
+	void StartStateMachineLogic() const;
+	
+	void StopStateMachineLogic() const;
 
 private:
 	// ~ Begin Setup Functions
-	void SetupAIPerception();
+	void SetupAIPerception() const;
 	void SetupStateMachine();
 	// ~ End Setup Functions
 
@@ -56,8 +57,21 @@ private:
 	FGenericTeamId TeamId = 1;
 	
 public:
-	// ~ Begin Getter & Setter
+	
+	// ~ Begin AAIController interface
+	virtual void PostInitializeComponents() override;
+	virtual void OnPossess(APawn* InPawn) override;
+	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaTime) override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	// ~ End AAIController interface
+	
+	// ~ Begin IGenericTeamAgentInterface
 	FORCEINLINE virtual FGenericTeamId GetGenericTeamId() const override { return TeamId; }
+	// ~ End IGenericTeamAgentInterface
+	
+	// ~ Begin Getter & Setter
 	FORCEINLINE TObjectPtr<ACharacterPlayer> GetTarget() const { return CurrentTargetPlayer; }
 	// ~ End Getter & Setter
+	
 };
