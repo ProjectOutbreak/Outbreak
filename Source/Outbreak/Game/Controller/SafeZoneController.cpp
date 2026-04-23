@@ -86,10 +86,9 @@ void ASafeZoneController::OnEndZoneEnter(UPrimitiveComponent* OverlappedComp, AA
 						if (GS->SpawnerInstance)
 						{
 							GS->SpawnerInstance->Destroy();
-							UE_LOG(LogTemp, Warning, TEXT("Spawner is Deleted!"))
 						}
 					}
-					InGameModeRef->ProceedToNextLevel();
+					InGameModeRef->GameCleared();
 				}
 			}
 		}		

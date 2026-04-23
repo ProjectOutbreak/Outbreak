@@ -140,6 +140,13 @@ void AInGameMode::ProceedToNextLevel() const
 	GetWorld()->ServerTravel(NextLevelName, true);
 }
 
+void AInGameMode::GameCleared()
+{
+	PRINT_WITH_CURRENT_CONTEXT(TEXT("All Players Escaped! Moving to Dedicated Lobby."));
+	FString LobbyMapPath = TEXT("/Game/Maps/L_Lobby?listen");
+	GetWorld()->ServerTravel(LobbyMapPath);
+}	
+
 void AInGameMode::DelayedRefreshSpawnManagerTargets()
 {
 	FTimerHandle TimerHandle;
