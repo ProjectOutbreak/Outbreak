@@ -70,12 +70,6 @@ AZombieEntityBase::AZombieEntityBase()
 		MovementComp->bUseControllerDesiredRotation = true;
 		MovementComp->RotationRate = FRotator(0.0f, 360.0f, 0.0f);
 		MovementComp->MaxAcceleration = 1024.0f;
-		MovementComp->AvoidanceConsiderationRadius = 500.0f;
-		MovementComp->SetAvoidanceEnabled(true);
-		MovementComp->SetRVOAvoidanceWeight(0.3f);
-		MovementComp->SetAvoidanceGroup(static_cast<int32>(EAvoidanceGroupType::Zombie));
-		MovementComp->SetGroupsToAvoid(static_cast<int32>(EAvoidanceGroupType::Zombie));
-		MovementComp->SetGroupsToIgnore(static_cast<int32>(EAvoidanceGroupType::Player));
 	}
 	
 	FootStepComponent = CreateDefaultSubobject<UFootStepComponent>(TEXT("FootStepComponent"));
@@ -219,16 +213,23 @@ void AZombieEntityBase::BeginPlay()
 	
 	if (HasAuthority())
 	{
-		const AInGameMode* GameMode = Cast<AInGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
-		if (!GameMode) return;
-		
-		ACharacterSpawnManager* SpawnManager = GameMode->GetSpawnManager();
-		if (!SpawnManager) return;
-		
-		const FZombieData* Data = SpawnManager->GetZombieData(EZombieSubType::Runner);
-		if (!Data) return;
-		
+		const FZombieData* Data = UOutbreakStatics::GetZombieData(this, EZombieSubType::Runner);
+		if (!Data)
+		{
+			UE_LOG(LogTemp, Error, TEXT("Fail to get FZombieData"));
+			return;
+		}
 		ZombieData = *Data;
+	}
+	
+	if (UCharacterMovementComponent* MovementComp = GetCharacterMovement())
+	{
+		MovementComp->AvoidanceConsiderationRadius = 500.0f;
+		MovementComp->SetAvoidanceEnabled(true);
+		MovementComp->SetRVOAvoidanceWeight(0.3f);
+		MovementComp->SetAvoidanceGroup(static_cast<int32>(EAvoidanceGroupType::Zombie));
+		MovementComp->SetGroupsToAvoid(static_cast<int32>(EAvoidanceGroupType::Zombie));
+		MovementComp->SetGroupsToIgnore(static_cast<int32>(EAvoidanceGroupType::Player));
 	}
 }
 

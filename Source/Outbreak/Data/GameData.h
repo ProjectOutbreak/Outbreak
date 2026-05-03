@@ -310,19 +310,19 @@ struct FThrowableData : public FWeaponData
 	float FuseTime = 3.0f;
 
 	UPROPERTY(EditAnywhere, Category = "Animation")
-	TObjectPtr<UAnimMontage> ThrowMontage;
+	TObjectPtr<UAnimMontage> ThrowMontage = nullptr;
 
 	UPROPERTY(EditAnywhere, Category = "VFX")
-	TObjectPtr<UNiagaraSystem> ExplosionVfx;
+	TObjectPtr<UNiagaraSystem> ExplosionVfx = nullptr;
 
 	UPROPERTY(EditAnywhere, Category = "VFX")
 	FVector VFXScale = FVector(1.0f);
 
 	UPROPERTY(EditAnywhere, Category = "Projectile")
-	TSubclassOf<class AThrowableProjectile> ProjectileClass;
+	TSubclassOf<class AThrowableProjectile> ProjectileClass = nullptr;
 
 	UPROPERTY(EditAnywhere, Category = "Sound")
-	USoundBase* ExplosionSound;
+	USoundBase* ExplosionSound = nullptr;
 };
 
 USTRUCT()
