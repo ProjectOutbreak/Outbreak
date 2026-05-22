@@ -1,7 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "CharacterSpawnManager.h"
+
+#include "MassSpawner.h"
 #include "NavigationSystem.h"
 #include "GameFramework/Character.h"
+#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Outbreak/Character/Player/CharacterPlayer.h"
 #include "Outbreak/Data/GameData.h"
@@ -47,6 +50,15 @@ void ACharacterSpawnManager::Activate()
 {
 	if (!HasAuthority() || bIsActivated)
 		return;
+	
+	FTimerHandle MassSpawnDelayHandle;
+	GetWorld()->GetTimerManager().SetTimer(
+		MassSpawnDelayHandle, 
+		this, 
+		&ACharacterSpawnManager::ActivateMassSpawner,
+		1.0f,
+		false
+	);
 	
 	bIsActivated = true;
 	GetWorld()->GetTimerManager().SetTimer(
@@ -398,6 +410,25 @@ void ACharacterSpawnManager::ProcessSpawnQueue()
 	if (SpawnQueue.IsEmpty())
 	{
 		GetWorld()->GetTimerManager().ClearTimer(ProcessQueueTimerHandle);
+	}
+}
+
+void ACharacterSpawnManager::ActivateMassSpawner()
+{
+	if (UWorld* World = GetWorld())
+	{
+		TArray<AActor*> FoundSpawners;
+		UGameplayStatics::GetAllActorsOfClass(World, AMassSpawner::StaticClass(), FoundSpawners);
+
+		for (AActor* Actor : FoundSpawners)
+		{
+			if (AMassSpawner* MassSpawner = Cast<AMassSpawner>(Actor))
+			{
+				MassSpawner->DoSpawning();
+                
+				UE_LOG(LogTemp, Log, TEXT("[SpawnManager] Successfully triggered Mass Spawner: %s"), *MassSpawner->GetName());
+			}
+		}
 	}
 }
 

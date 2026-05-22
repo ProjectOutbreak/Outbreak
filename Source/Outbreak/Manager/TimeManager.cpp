@@ -108,11 +108,6 @@ FRotator ATimeManager::GetSunRotation() const
 	const float DayRatio = CurrentTimeInSeconds / SecondsInDay;
     const float PitchAngle = 90.0f - (DayRatio * 360.0f);
 	const float YawAngle = 180.f;
-	if (GEngine)
-	{
-		FString DebugMessage = FString::Printf(TEXT("Current Time: %.2f, Pitch Angle: %.2f"), GetTimeOfDayInHours(), PitchAngle);
-		GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Yellow, DebugMessage);
-	}
 
 	return FRotator(PitchAngle, YawAngle, 0.f);
 }

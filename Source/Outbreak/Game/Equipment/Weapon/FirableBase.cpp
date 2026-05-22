@@ -202,8 +202,6 @@ void AFirableBase::Multicast_PlayFireEffects_Implementation(const FVector Muzzle
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, FireSound, MuzzleLocation);
 	}
-    
-	DrawDebugLine(GetWorld(), GetActorLocation(), HitResult.TraceEnd, HitResult.GetActor() ? FColor::Green : FColor::Red, false, 0.5f, 0, 0.5f);
 }
 void AFirableBase::Client_ApplyRecoil_Implementation()
 {

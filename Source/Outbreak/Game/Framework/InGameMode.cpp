@@ -1,9 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "InGameMode.h"
-
 #include "EasySessionSubsystem.h"
-#include "OnlineSubsystem.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerController.h"
 #include "Containers/Set.h"
@@ -13,7 +11,6 @@
 #include "Pawn/OutbreakSpectatorPawn.h"
 #include "OutbreakGameLiftSubsystem.h"
 #include "Data/OutbreakDeveloperSettings.h"
-#include "Interfaces/OnlineSessionInterface.h"
 #include "Utilities/DebugHelper.h"
 
 AInGameMode::AInGameMode()
@@ -31,17 +28,20 @@ void AInGameMode::BeginPlay()
 	}
 }
 
-void AInGameMode::HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer)
+void AInGameMode::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	Super::HandleStartingNewPlayer_Implementation(NewPlayer);
-	PRINT_WITH_CURRENT_CONTEXT(FString::Printf(TEXT("Handling Starting New Player: %s"), *NewPlayer->GetName()));
+	Super::EndPlay(EndPlayReason);
+	
+	if (GetWorld())
+	{
+		GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
+	}
 }
 
 void AInGameMode::Logout(AController* Exiting)
 {
 	Super::Logout(Exiting);
 
-	PRINT_WITH_CURRENT_CONTEXT(FString::Printf(TEXT("Player Left: %s"), *Exiting->GetName()));
 	DelayedRefreshSpawnManagerTargets();
 
 	if (bIsServerShuttingDown) return;
@@ -113,36 +113,8 @@ void AInGameMode::OnPlayerDie(ACharacter* DeadCharacter, AController* Controller
 	}
 }
 
-void AInGameMode::ProceedToNextLevel() const
-{
-	if (!HasAuthority()) return;
-
-	FString NextLevelName;
-
-	FName CurrentLevel = *UGameplayStatics::GetCurrentLevelName(GetWorld(), true);
-
-	if (CurrentLevel == TEXT("L_FirstPhase"))
-	{
-		NextLevelName = TEXT("/Game/Maps/SecondPhase?listen");
-	}
-	else if (CurrentLevel == TEXT("SecondPhase"))
-	{
-		NextLevelName = TEXT("/Game/Maps/ThirdPhase?listen");
-	}
-	else if (CurrentLevel == TEXT("ThirdPhase"))
-	{
-		NextLevelName = TEXT("/Game/Maps/LastPhase?listen");
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("게임 종료"));
-	}
-	GetWorld()->ServerTravel(NextLevelName, true);
-}
-
 void AInGameMode::GameCleared()
 {
-	PRINT_WITH_CURRENT_CONTEXT(TEXT("All Players Escaped! Moving to Dedicated Lobby."));
 	FString LobbyMapPath = TEXT("/Game/Maps/L_Lobby?listen");
 	GetWorld()->ServerTravel(LobbyMapPath);
 }	
@@ -158,7 +130,6 @@ void AInGameMode::DelayedRefreshSpawnManagerTargets()
 
 void AInGameMode::RefreshSpawnManagerTargets()
 {
-	PRINT_WITH_CURRENT_CONTEXT(TEXT("Refreshing Spawn Manager Targets..."));
 	if (!SpawnManagerInstance)
 	{
 		InstantiateSpawnManager();
@@ -178,7 +149,6 @@ void AInGameMode::RefreshSpawnManagerTargets()
 
 	if (PlayerPawns.Num() > 0)
 	{
-		PRINT_WITH_CURRENT_CONTEXT(FString::Printf(TEXT("Refreshing Spawn Manager Targets. Active Players: %d"), PlayerPawns.Num()));
 		SpawnManagerInstance->UpdateActivePlayers(PlayerPawns);
         
 		const UOutbreakDeveloperSettings* Settings = UOutbreakDeveloperSettings::Get();
@@ -246,9 +216,7 @@ void AInGameMode::OnPlayerReady()
 	ReadyPlayersCount++;
 
 	int32 TotalPlayers = GetNumPlayers();
-
-	PRINT_WITH_CURRENT_CONTEXT(FString::Printf(TEXT("Player Ready! (%d / %d)"), ReadyPlayersCount, TotalPlayers));
-
+	
 	if (ReadyPlayersCount >= TotalPlayers)
 	{
 		RefreshSpawnManagerTargets(); 
@@ -293,8 +261,6 @@ void AInGameMode::GameOver()
 		SpawnManagerInstance->Deactivate();
 	}
 
-	// TODO : GameOver UI RPC
-	FTimerHandle RestartTimerHandle;
 	GetWorld()->GetTimerManager().SetTimer(GameOverTimerHandle, this, &AInGameMode::ProcessGameOverSequence, 5.0f, false);
 }
 

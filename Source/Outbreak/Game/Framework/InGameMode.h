@@ -18,11 +18,10 @@ class OUTBREAK_API AInGameMode : public AGameModeBase
 public:
 	AInGameMode();
 	virtual void BeginPlay() override;
-	virtual void HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer) override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void Logout(AController* Exiting) override;
 	
 	void OnPlayerDie(ACharacter* DeadCharacter, AController* Controller);
-	void ProceedToNextLevel() const;
 	void GameCleared();
 	void GameOver();
 	bool IsGameOver() const;

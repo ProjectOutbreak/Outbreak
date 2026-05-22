@@ -48,7 +48,9 @@ private:
 	FVector FindRandomSpawnLocation(float MinDistance, float MaxDistance);
 	FVector GetRandomLocationInRadius(const FVector& OptimalHeight, float Radius, bool bDebug) const;
 	void SpawnEnemies();
-	void ProcessSpawnQueue(); 
+	void ProcessSpawnQueue();
+	
+	void ActivateMassSpawner();
 	
 // --------------------
 // Variables
